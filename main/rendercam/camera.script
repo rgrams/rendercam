@@ -1,23 +1,22 @@
 
+-- The camera script is fairly light (so far, anyway).
 
--- This script must send view and projection matrices to the render script every frame via a function reference
---		or send them to the camera module, and let the render script grab them whenever.
+-- 1. It holds the properties so the user can set them in the editor.
+-- 2. It updates the camera's position and rotation with the rendercam module.
 
---
 local rendercam = require "main.rendercam.rendercam"
-
-local PERSPECTIVE = hash("perspective")
-local ORTHOGRAPHIC = hash("orthographic")
 
 go.property("active", true)
 go.property("nearZ", 1)
 go.property("farZ", 1000)
-go.property("projection", hash("perspective"))
+go.property("orthographic", true)
 go.property("fov", 1.05)
 go.property("orthoScale", 1)
 
 go.property("fixedAspectRatio", false)
-go.property("aspectRatio", 1.777777) -- only used with a fixed aspect ratio
+-- Using a vector property to set aspectRatio so it can be more accurate.
+-- This way you don't end up with 800 x 599.9994812093 px view areas. 
+go.property("aspectRatio", vmath.vector3(16, 9, 0)) -- only used with a fixed aspect ratio
 
 go.property("viewArea", vmath.vector3(800, 600, 500))
 go.property("useViewArea", false)
@@ -27,76 +26,50 @@ go.property("fixedArea", true)
 go.property("fixedWidth", false)
 go.property("fixedHeight", false)
 
-
 local FORWARDVEC = vmath.vector3(0, 0, -1)
 local UPVEC = vmath.vector3(0, 1, 0)
 local RIGHTVEC = vmath.vector3(1, 0, 0)
 
 
-local function get_view_matrix(self)
-	return vmath.matrix4_look_at(self.pos, self.pos + self.forwardVec, self.upVec)
-end
-
-local function get_projection_matrix(self)
-	if self.projection == hash("perspective") then
-		return vmath.matrix4_perspective(self.fov, self.aspectRatio, self.nearZ, self.farZ)
-	else
-		return vmath.matrix4_orthographic(-self.orthoHalfX, self.orthoHalfX, -self.orthoHalfY, self.orthoHalfY, self.nearZ, self.farZ)
-	end
-end
-
-local function update_ortho_halfSizes(self)
-	self.orthoHalfX = self.orthoSize.x * 0.5 * self.orthoScale
-	self.orthoHalfY = self.orthoSize.y * 0.5 * self.orthoScale
-end
-
-local function zoom(self, z)
-	if self.projection == PERSPECTIVE then
-		self.pos = self.pos - self.forwardVec * z
-		self.update = true
-	elseif self.projection == ORTHOGRAPHIC then
-		self.orthoScale = self.orthoScale + z * 0.01
-		update_ortho_halfSizes(self)
-	end
-end
-
-local function pan(self, dx, dy)
-	self.pos = self.pos + self.upVec * dy + self.rightVec * dx
-end
-
-local function get_initial_scaleMode(self)
-	-- Get aspect ratio option
+function init(self)
+	-- Get initial scale mode
 	for i, v in ipairs({ "expandView", "fixedArea", "fixedWidth", "fixedHeight" }) do
 		self[v] = self[v] and hash(v)
 	end
 	self.scaleMode = self.expandView or self.fixedArea or self.fixedWidth or self.fixedHeight -- get first checked
 	if not self.scaleMode then self.scaleMode = hash("fixedArea") end
-end
 
+	-- Make sure nearZ and farZ are valid values
+	if self.nearZ <= 0 then self.nearZ = 0.1 end
+	if self.farZ < 0 then self.farZ = 0.1 end
 
---########################################  Init  ########################################
-function init(self)
-	get_initial_scaleMode(self)
+	-- Turn aspect ratio from x, y into a single number
+	self.aspectRatio = self.aspectRatio.x / self.aspectRatio.y
 
+	-- Modify viewArea based on aspect ratio, etc.
 	if self.fixedAspectRatio then
-		-- aspect ratio overrides viewArea (uses viewArea.x)
-		if self.useViewArea then self.viewArea.y = self.viewArea.x / self.aspectRatio
+		if self.useViewArea then
+			-- aspectRatio overrides proportion of viewArea (uses viewArea.x)
+			self.viewArea.y = self.viewArea.x / self.aspectRatio
 		else
+			-- or get fixed aspect viewArea inside current window
 			local scale = math.min(rendercam.winSize.x / self.aspectRatio, rendercam.winSize.y / 1)
 			self.viewArea.x = scale * self.aspectRatio;  self.viewArea.y = scale
 		end
-	elseif not self.useViewArea then
+	elseif not self.useViewArea then -- not using viewArea and non-fixed aspect ratio
+		-- Set viewArea to current window size
 		self.viewArea.x = rendercam.winSize.x;  self.viewArea.y = rendercam.winSize.y
 	end
 
-
+	-- Get initial vectors & stuff
 	self.pos = go.get_world_position()
 	self.rot = go.get_world_rotation()
 	self.forwardVec = vmath.rotate(self.rot, FORWARDVEC)
 	self.upVec = vmath.rotate(self.rot, UPVEC)
 	self.rightVec = vmath.rotate(self.rot, RIGHTVEC)
-
 	self.id = go.get_id()
+
+	-- Put all camera data into a table for rendercam module and init camera.
 	self.data = {
 		active = self.active,
 		id = self.id,
@@ -107,7 +80,7 @@ function init(self)
 		abs_nearZ = self.nearZ,
 		abs_farZ = self.farZ,
 		rot = self.rot,
-		projection = self.projection,
+		orthographic = self.orthographic,
 		fov = self.fov,
 		fixedAspectRatio = self.fixedAspectRatio,
 		orthoScale = self.orthoScale,
@@ -137,7 +110,7 @@ end
 
 function on_message(self, message_id, message, sender)
 	if message_id == hash("post-update") then
-		--self.pos = go.get_world_position()
+		-- have to update pos after update or it jitters like crazy
 		self.data.pos = go.get_world_position()
 		self.data.abs_nearZ = self.data.pos.z - self.data.nearZ
 		self.data.abs_farZ = self.data.pos.z - self.data.farZ

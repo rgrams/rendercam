@@ -16,14 +16,9 @@ instances {
   component_properties {
     id: "script"
     properties {
-      id: "projection"
-      value: "orthographic"
-      type: PROPERTY_TYPE_HASH
-    }
-    properties {
-      id: "orthoScale"
-      value: "1.5"
-      type: PROPERTY_TYPE_NUMBER
+      id: "orthographic"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
       id: "fixedAspectRatio"
@@ -32,12 +27,12 @@ instances {
     }
     properties {
       id: "aspectRatio"
-      value: "1.3333333333333333"
-      type: PROPERTY_TYPE_NUMBER
+      value: "4.0, 3.0, 0.0"
+      type: PROPERTY_TYPE_VECTOR3
     }
     properties {
       id: "viewArea"
-      value: "480.0, 360.0, 500.0"
+      value: "1000.0, 1000.0, 500.0"
       type: PROPERTY_TYPE_VECTOR3
     }
     properties {
@@ -52,7 +47,7 @@ instances {
     }
     properties {
       id: "fixedArea"
-      value: "false"
+      value: "true"
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {

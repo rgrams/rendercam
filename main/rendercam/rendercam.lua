@@ -68,7 +68,7 @@ function M.calculate_view()
 end
 
 function M.calculate_proj() -- calculate projection matrix
-	if curCam.projection == PERSPECTIVE then
+	if not curCam.orthographic then
 		M.proj = vmath.matrix4_perspective(curCam.fov, curCam.aspectRatio, curCam.nearZ, curCam.farZ)
 	else -- ORTHOGRAPHIC
 		local x = curCam.halfViewArea.x * curCam.orthoScale
@@ -150,20 +150,20 @@ function M.update_window(newX, newY)
 		print("     Fixed Aspect Ratio - viewportOffset = ", M.viewportOffset, M.viewportScale)
 	end
 
-	if curCam.projection == PERSPECTIVE then
+	if curCam.orthographic then
+		curCam.halfViewArea.x = x/2;  curCam.halfViewArea.y = y/2
+	else
 		curCam.fov = get_fov(curCam.viewArea.z, curCam.viewArea.y * 0.5)
 		print("     calculated aspect, FOV = ", curCam.aspectRatio, curCam.fov)
-	else
-		curCam.halfViewArea.x = x/2;  curCam.halfViewArea.y = y/2
 	end
 end
 
 function M.zoom(z, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
-	if cam.projection == PERSPECTIVE then
-		cam.pos = cam.pos - cam.forwardVec * z
-	else
+	if cam.orthographic then
 		cam.orthoScale = cam.orthoScale + z * 0.01
+	else
+		cam.pos = cam.pos - cam.forwardVec * z
 	end
 end
 
