@@ -1,0 +1,145 @@
+
+
+-- This script must send view and projection matrices to the render script every frame via a function reference
+--		or send them to the camera module, and let the render script grab them whenever.
+
+--
+local rendercam = require "main.rendercam.rendercam"
+
+local PERSPECTIVE = hash("perspective")
+local ORTHOGRAPHIC = hash("orthographic")
+
+go.property("active", true)
+go.property("nearZ", 1)
+go.property("farZ", 1000)
+go.property("projection", hash("perspective"))
+go.property("fov", 1.05)
+go.property("orthoScale", 1)
+
+go.property("fixedAspectRatio", false)
+go.property("aspectRatio", 1.777777) -- only used with a fixed aspect ratio
+
+go.property("viewArea", vmath.vector3(800, 600, 500))
+go.property("useViewArea", false)
+
+go.property("expandView", true)
+go.property("fixedArea", true)
+go.property("fixedWidth", false)
+go.property("fixedHeight", false)
+
+
+local FORWARDVEC = vmath.vector3(0, 0, -1)
+local UPVEC = vmath.vector3(0, 1, 0)
+local RIGHTVEC = vmath.vector3(1, 0, 0)
+
+
+local function get_view_matrix(self)
+	return vmath.matrix4_look_at(self.pos, self.pos + self.forwardVec, self.upVec)
+end
+
+local function get_projection_matrix(self)
+	if self.projection == hash("perspective") then
+		return vmath.matrix4_perspective(self.fov, self.aspectRatio, self.nearZ, self.farZ)
+	else
+		return vmath.matrix4_orthographic(-self.orthoHalfX, self.orthoHalfX, -self.orthoHalfY, self.orthoHalfY, self.nearZ, self.farZ)
+	end
+end
+
+local function update_ortho_halfSizes(self)
+	self.orthoHalfX = self.orthoSize.x * 0.5 * self.orthoScale
+	self.orthoHalfY = self.orthoSize.y * 0.5 * self.orthoScale
+end
+
+local function zoom(self, z)
+	if self.projection == PERSPECTIVE then
+		self.pos = self.pos - self.forwardVec * z
+		self.update = true
+	elseif self.projection == ORTHOGRAPHIC then
+		self.orthoScale = self.orthoScale + z * 0.01
+		update_ortho_halfSizes(self)
+	end
+end
+
+local function pan(self, dx, dy)
+	self.pos = self.pos + self.upVec * dy + self.rightVec * dx
+end
+
+local function get_initial_scaleMode(self)
+	-- Get aspect ratio option
+	for i, v in ipairs({ "expandView", "fixedArea", "fixedWidth", "fixedHeight" }) do
+		self[v] = self[v] and hash(v)
+	end
+	self.scaleMode = self.expandView or self.fixedArea or self.fixedWidth or self.fixedHeight -- get first checked
+	if not self.scaleMode then self.scaleMode = hash("fixedArea") end
+end
+
+
+--########################################  Init  ########################################
+function init(self)
+	get_initial_scaleMode(self)
+
+	if self.fixedAspectRatio then
+		-- aspect ratio overrides viewArea (uses viewArea.x)
+		if self.useViewArea then self.viewArea.y = self.viewArea.x / self.aspectRatio
+		else
+			local scale = math.min(rendercam.winSize.x / self.aspectRatio, rendercam.winSize.y / 1)
+			self.viewArea.x = scale * self.aspectRatio;  self.viewArea.y = scale
+		end
+	elseif not self.useViewArea then
+		self.viewArea.x = rendercam.winSize.x;  self.viewArea.y = rendercam.winSize.y
+	end
+
+
+	self.pos = go.get_world_position()
+	self.rot = go.get_world_rotation()
+	self.forwardVec = vmath.rotate(self.rot, FORWARDVEC)
+	self.upVec = vmath.rotate(self.rot, UPVEC)
+	self.rightVec = vmath.rotate(self.rot, RIGHTVEC)
+
+	self.id = go.get_id()
+	self.data = {
+		active = self.active,
+		id = self.id,
+		script = msg.url("#"),
+		nearZ = self.nearZ,
+		farZ = self.farZ,
+		pos = self.pos,
+		abs_nearZ = self.nearZ,
+		abs_farZ = self.farZ,
+		rot = self.rot,
+		projection = self.projection,
+		fov = self.fov,
+		fixedAspectRatio = self.fixedAspectRatio,
+		orthoScale = self.orthoScale,
+		aspectRatio = self.aspectRatio,
+		scaleMode = self.scaleMode,
+		useViewArea = self.useViewArea,
+		viewArea = self.viewArea,
+		halfViewArea = vmath.vector3(self.viewArea) * 0.5,
+		forwardVec = self.forwardVec,
+		upVec = self.upVec, -- or panning and calculating view matrix
+		rightVec = self.rightVec -- for panning
+	}
+	rendercam.camera_init(self.id, self.data)
+end
+
+function update(self, dt)
+	-- Update transform stuff
+	self.rot = go.get_world_rotation()
+	self.data.rot = self.rot
+	self.data.forwardVec = vmath.rotate(self.rot, FORWARDVEC)
+	self.data.upVec = vmath.rotate(self.rot, UPVEC)
+	self.data.rightVec = vmath.rotate(self.rot, RIGHTVEC)
+	go.set_position(self.data.pos)
+
+	msg.post("#", "post-update")
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("post-update") then
+		--self.pos = go.get_world_position()
+		self.data.pos = go.get_world_position()
+		self.data.abs_nearZ = self.data.pos.z - self.data.nearZ
+		self.data.abs_farZ = self.data.pos.z - self.data.farZ
+	end
+end

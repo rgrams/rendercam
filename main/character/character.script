@@ -1,0 +1,51 @@
+
+local render_transform = require "main.rendercam.rendercam"
+
+
+--########################################  Init  ########################################
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	self.inputvect = vmath.vector3(0)
+	self.speed = 300
+end
+
+--########################################  Update  ########################################
+function update(self, dt)
+	if vmath.length(self.inputvect) ~= 0 then
+		local vect = vmath.normalize(self.inputvect)
+		go.set_position(go.get_position() + vect * self.speed * dt)
+	end
+	local screenpos = render_transform.world_to_screen(go.get_position())
+	msg.post("main#screen_widget", "set position", {pos = screenpos})
+end
+
+--########################################  On Input  ########################################
+function on_input(self, action_id, action)
+	if action.pressed then
+		if action_id == hash("up") then
+			self.inputvect.y = self.inputvect.y + 1
+		elseif action_id == hash("down") then
+			self.inputvect.y = self.inputvect.y - 1
+		elseif action_id == hash("left") then
+			self.inputvect.x = self.inputvect.x - 1
+		elseif action_id == hash("right") then
+			self.inputvect.x = self.inputvect.x + 1
+		end
+
+	elseif action.released then
+		if action_id == hash("up") then
+			self.inputvect.y = self.inputvect.y - 1
+		elseif action_id == hash("down") then
+			self.inputvect.y = self.inputvect.y + 1
+		elseif action_id == hash("left") then
+			self.inputvect.x = self.inputvect.x + 1
+		elseif action_id == hash("right") then
+			self.inputvect.x = self.inputvect.x - 1
+		end
+	end
+end
+
+--########################################  Final  ########################################
+function final(self)
+	msg.post(".", "release_input_focus")
+end

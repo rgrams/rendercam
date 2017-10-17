@@ -1,0 +1,12 @@
+
+local node
+
+function init(self)
+	node = gui.get_node("node")
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("set position") then
+		gui.set_position(node, message.pos)
+	end
+end

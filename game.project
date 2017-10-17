@@ -1,0 +1,22 @@
+[project]
+title = Rendercam
+version = 0.8
+
+[bootstrap]
+main_collection = /main/main.collectionc
+render = /main/rendercam/my.renderc
+
+[input]
+game_binding = /input/game.input_bindingc
+
+[display]
+width = 1280
+height = 600
+variable_dt = 1
+
+[physics]
+scale = 0.02
+
+[script]
+shared_state = 1
+
