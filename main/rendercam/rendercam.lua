@@ -190,8 +190,8 @@ function M.world_to_screen(pos)
 
 	pos = m * pos
 	pos = pos * (1/pos.w)
-	pos.x = (pos.x / 2 + 0.5) * M.window.x
-	pos.y = (pos.y / 2 + 0.5) * M.window.y
+	pos.x = (pos.x / 2 + 0.5) * M.viewport.width + M.viewport.x
+	pos.y = (pos.y / 2 + 0.5) * M.viewport.height + M.viewport.y
 
 	return vmath.vector3(pos.x, pos.y, 0)
 end

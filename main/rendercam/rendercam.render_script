@@ -6,7 +6,7 @@ local IDENTITY_MATRIX = vmath.matrix4()
 
 local function update_window(self)
 	rendercam.update_window(render.get_window_width(), render.get_window_height())
-	self.gui_proj = vmath.matrix4_orthographic(0, rendercam.window.x, 0, rendercam.window.y, -1, 1)
+	self.gui_proj = vmath.matrix4_orthographic(vp.x, vp.x + vp.width, vp.y, vp.y + vp.height, -1, 1)
 end
 
 function init(self)
@@ -48,8 +48,9 @@ function update(self)
     render.draw(self.model_pred)
     render.draw_debug3d()
 
+	-- GUI Rendering
     render.set_view(IDENTITY_MATRIX)
-	render.set_projection(self.gui_proj)
+	render.set_projection(self.gui_proj) -- gui_proj only calculated on update_window
 
 	render.disable_state(render.STATE_CULL_FACE)
     render.disable_state(render.STATE_DEPTH_TEST)
@@ -67,7 +68,7 @@ function on_message(self, message_id, message)
         self.clear_color = message.color
 	elseif message_id == hash("window_resized") then -- sent by engine
 		update_window(self)
-	elseif message_id == hash("update window") then -- sent by rendercam when a camera is activated
+	elseif message_id == hash("update window") then -- sent by rendercam when a camera is activated ("window_resized" engine message requires data)
 		update_window(self)
     end
 end
