@@ -15,7 +15,7 @@ go.property("orthoScale", 1)
 
 go.property("fixedAspectRatio", false)
 -- Using a vector property to set aspectRatio so it can be more accurate.
--- This way you don't end up with 800 x 599.9994812093 px view areas. 
+-- This way you don't end up with 800 x 599.9994812093 px view areas.
 go.property("aspectRatio", vmath.vector3(16, 9, 0)) -- only used with a fixed aspect ratio
 
 go.property("viewArea", vmath.vector3(800, 600, 500))
@@ -26,6 +26,7 @@ go.property("fixedArea", true)
 go.property("fixedWidth", false)
 go.property("fixedHeight", false)
 
+local DEFAULT_VIEWDIST = 500 -- arbitrary distance in front of camera used to calculate world view size on window changes
 local FORWARDVEC = vmath.vector3(0, 0, -1)
 local UPVEC = vmath.vector3(0, 1, 0)
 local RIGHTVEC = vmath.vector3(1, 0, 0)
@@ -53,13 +54,15 @@ function init(self)
 			self.viewArea.y = self.viewArea.x / self.aspectRatio
 		else
 			-- or get fixed aspect viewArea inside current window
-			local scale = math.min(rendercam.winSize.x / self.aspectRatio, rendercam.winSize.y / 1)
+			local scale = math.min(rendercam.window.x / self.aspectRatio, rendercam.window.y / 1)
 			self.viewArea.x = scale * self.aspectRatio;  self.viewArea.y = scale
 		end
 	elseif not self.useViewArea then -- not using viewArea and non-fixed aspect ratio
 		-- Set viewArea to current window size
-		self.viewArea.x = rendercam.winSize.x;  self.viewArea.y = rendercam.winSize.y
+		self.viewArea.x = rendercam.window.x;  self.viewArea.y = rendercam.window.y
 	end
+
+	if not self.useViewArea then self.viewArea.z = DEFAULT_VIEWDIST end
 
 	-- Get initial vectors & stuff
 	self.pos = go.get_world_position()

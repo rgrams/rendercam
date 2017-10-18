@@ -10,15 +10,11 @@ local SCALEMODE_FIXEDAREA = hash("fixedArea")
 local SCALEMODE_FIXEDWIDTH = hash("fixedWidth")
 local SCALEMODE_FIXEDHEIGHT = hash("fixedHeight")
 
-local DEFAULT_VIEWDIST = 500 -- arbitrary distance in front of camera used to calculate world view size on window changes
-
 M.view = vmath.matrix4()
 M.proj = vmath.matrix4()
 
-M.winSize = vmath.vector3()
-M.winHalfSize = vmath.vector3()
-M.viewportOffset = vmath.vector3()
-M.viewportScale = vmath.vector3(1)
+M.window = vmath.vector3()
+M.viewport = { x = 0, y = 0, width = M.window.x, height = M.window.y, scale = { x = 1, y = 1 } }
 
 local nearz = 100
 local farz = 1000
@@ -36,18 +32,16 @@ function M.activate_camera(id)
 		if curCam then curCam.active = false end
 		curCam = cameras[id]
 		if curCam.useViewArea then
-			local winSize = vmath.vector3(M.winSize) -- save copy of winSize
-			M.update_winSize(curCam.viewArea.x, curCam.viewArea.y) -- set winSize to viewArea so that'll be used as the old winSize
-			M.update_window(winSize.x, winSize.y) -- update window with real winSize as the new size
+			M.update_window_size(curCam.viewArea.x, curCam.viewArea.y) -- set window to viewArea so that'll be used as the old window
+			msg.post("@render:", "update window")
 		else
-			M.update_window()
+			msg.post("@render:", "update window")
 		end
 	end
 end
 
 function M.camera_init(id, data)
 	cameras[id] = data
-	if not data.useViewArea then data.viewArea.z = DEFAULT_VIEWDIST end
 	if data.active then
 		M.activate_camera(id)
 	end
@@ -57,14 +51,14 @@ function M.camera_final(id)
 	cameras[id] = nil
 end
 
-function M.calculate_view()
+function M.calculate_view() -- called from render script on update
 	-- The view matrix is just the camera object transform. (Translation & rotation. Scale is ignored)
 	--		It changes as the camera is translated and rotated, but has nothing to do with aspect ratio or anything else.
 	M.view = vmath.matrix4_look_at(curCam.pos, curCam.pos + curCam.forwardVec, curCam.upVec)
 	return M.view
 end
 
-function M.calculate_proj()
+function M.calculate_proj() -- called from render script on update
 	if curCam.orthographic then
 		local x = curCam.halfViewArea.x * curCam.orthoScale
 		local y = curCam.halfViewArea.y * curCam.orthoScale
@@ -121,23 +115,27 @@ local function get_fov(distance, y) -- must use Y, not X
 end
 
 function M.update_window(newX, newY)
-	newX = newX or M.winSize.x
-	newY = newY or M.winSize.y
+	newX = newX or M.window.x
+	newY = newY or M.window.y
 
-	local x, y = M.get_target_worldViewSize(curCam, curCam.viewArea.x, curCam.viewArea.y, M.winSize.x, M.winSize.y, newX, newY)
+	local x, y = M.get_target_worldViewSize(curCam, curCam.viewArea.x, curCam.viewArea.y, M.window.x, M.window.y, newX, newY)
 	curCam.viewArea.x = x;  curCam.viewArea.y = y
 	curCam.aspectRatio = x / y
 
-	M.update_winSize(newX, newY)
+	M.update_window_size(newX, newY)
 
-	if curCam.fixedAspectRatio then -- if fixed aspect ratio, calculate viewport cropping offset
-		local scale = math.min(M.winSize.x / curCam.aspectRatio, M.winSize.y / 1)
-		M.viewportOffset.x = (M.winSize.x - curCam.aspectRatio * scale)*0.5
-		M.viewportOffset.y = (M.winSize.y - 1 * scale)*0.5
+	if curCam.fixedAspectRatio then -- if fixed aspect ratio, calculate viewport cropping
+		local scale = math.min(M.window.x / curCam.aspectRatio, M.window.y / 1)
+		M.viewport.width = curCam.aspectRatio * scale
+		M.viewport.height = scale
 
-		local finalViewport = M.winSize - M.viewportOffset * 2
-		M.viewportScale.x = finalViewport.x / M.winSize.x
-		M.viewportScale.y = finalViewport.y / M.winSize.y
+		-- Viewport offset: bar on edge of screen from fixed aspect ratio
+		M.viewport.x = (M.window.x - M.viewport.width) * 0.5
+		M.viewport.y = (M.window.y - M.viewport.height) * 0.5
+
+		-- For screen-to-viewport coordinate conversion
+		M.viewport.scale.x = M.viewport.width / newX
+		M.viewport.scale.y = M.viewport.height / newY
 	end
 
 	if curCam.orthographic then
@@ -166,15 +164,15 @@ function M.screen_to_world(x, y, worldz, cam_id)
 	worldz = worldz or 0
 
 	if cam.fixedAspectRatio then -- convert screen coordinates to viewport coordinates
-		x = (x - M.viewportOffset.x) / M.viewportScale.x
-		y = (y - M.viewportOffset.y) / M.viewportScale.y
+		x = (x - M.viewport.x) / M.viewport.scale.x
+		y = (y - M.viewport.y) / M.viewport.scale.y
 	end
 
 	local m = vmath.inv(M.proj * M.view)
 
 	-- Remap coordinates to range -1 to 1
-	local x1 = (x - M.winSize.x * 0.5) / M.winSize.x * 2
-	local y1 = (y - M.winSize.y * 0.5) / M.winSize.y * 2
+	local x1 = (x - M.window.x * 0.5) / M.window.x * 2
+	local y1 = (y - M.window.y * 0.5) / M.window.y * 2
 
 	local np = m * vmath.vector4(x1, y1, -1, 1)
 	local fp = m * vmath.vector4(x1, y1, 1, 1)
@@ -192,15 +190,15 @@ function M.world_to_screen(pos)
 
 	pos = m * pos
 	pos = pos * (1/pos.w)
-	pos.x = (pos.x / 2 + 0.5) * M.winSize.x
-	pos.y = (pos.y / 2 + 0.5) * M.winSize.y
+	pos.x = (pos.x / 2 + 0.5) * M.window.x
+	pos.y = (pos.y / 2 + 0.5) * M.window.y
 
 	return vmath.vector3(pos.x, pos.y, 0)
 end
 
-function M.update_winSize(x, y)
-	M.winSize.x = x;  M.winSize.y = y
-	M.winHalfSize.x = x * 0.5;  M.winHalfSize.y = y * 0.5
+function M.update_window_size(x, y)
+	M.window.x = x;  M.window.y = y
+	M.viewport.width = x;  M.viewport.height = y
 end
 
 
