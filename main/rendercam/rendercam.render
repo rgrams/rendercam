@@ -1,1 +1,1 @@
-script: "/main/rendercam/universal.render_script"
+script: "/main/rendercam/rendercam.render_script"
