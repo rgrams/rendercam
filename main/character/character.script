@@ -1,5 +1,5 @@
 
-local render_transform = require "main.rendercam.rendercam"
+local rendercam = require "main.rendercam.rendercam"
 
 
 --########################################  Init  ########################################
@@ -11,12 +11,13 @@ end
 
 --########################################  Update  ########################################
 function update(self, dt)
+	self.pos = go.get_position()
 	if vmath.length(self.inputvect) ~= 0 then
 		local vect = vmath.normalize(self.inputvect)
-		go.set_position(go.get_position() + vect * self.speed * dt)
+		self.pos = self.pos + vect * self.speed * dt
+		go.set_position(self.pos)
 	end
-	local screenpos = render_transform.world_to_screen(go.get_position())
-	msg.post("main#screen_widget", "set position", {pos = screenpos})
+	msg.post("main#screen_widget", "set position", {pos = self.pos})
 end
 
 --########################################  On Input  ########################################

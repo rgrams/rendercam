@@ -16,6 +16,15 @@ M.proj = vmath.matrix4()
 M.window = vmath.vector3()
 M.viewport = { x = 0, y = 0, width = M.window.x, height = M.window.y, scale = { x = 1, y = 1 } }
 
+M.configWin = vmath.vector3(M.window)
+M.configAspect = M.configWin.x / M.configWin.y
+--				Fit								Zoom							Stretch
+M.guiAdjust = { [0] = {sx=1, sy=1, ox=0, oy=0}, [1] = {sx=1, sy=1, ox=0, oy=0}, [2] = {sx=1, sy=1, ox=0, oy=0} }
+M.guiOffset = vmath.vector3()
+M.GUI_ADJUST_FIT = 0
+M.GUI_ADJUST_ZOOM = 1
+M.GUI_ADJUST_STRETCH = 2
+
 local cameras = {}
 local curCam = nil
 
@@ -107,6 +116,29 @@ local function get_fov(distance, y) -- must use Y, not X
 	return math.atan(y / distance) * 2
 end
 
+local function calculate_gui_adjust_scales()
+	local sx, sy = M.window.x / M.configWin.x, M.window.y / M.configWin.y
+
+	-- Fit
+	local adj = M.guiAdjust[M.GUI_ADJUST_FIT]
+	local scale = math.min(sx, sy)
+	adj.sx = scale;  adj.sy = scale
+	adj.ox = (M.window.x - M.configWin.x * adj.sx) * 0.5 / adj.sx
+	adj.oy = (M.window.y - M.configWin.y * adj.sy) * 0.5 / adj.sy
+
+	-- Zoom
+	adj = M.guiAdjust[M.GUI_ADJUST_ZOOM]
+	scale = math.max(sx, sy)
+	adj.sx = scale;  adj.sy = scale
+	adj.ox = (M.window.x - M.configWin.x * adj.sx) * 0.5 / adj.sx
+	adj.oy = (M.window.y - M.configWin.y * adj.sy) * 0.5 / adj.sy
+
+	-- Stretch
+	adj = M.guiAdjust[M.GUI_ADJUST_STRETCH]
+	adj.sx = sx;  adj.sy = sy
+	-- distorts to fit window, offsets always zero
+end
+
 function M.update_window(newX, newY)
 	newX = newX or M.window.x
 	newY = newY or M.window.y
@@ -136,6 +168,8 @@ function M.update_window(newX, newY)
 	else
 		curCam.fov = get_fov(curCam.viewArea.z, curCam.viewArea.y * 0.5)
 	end
+
+	calculate_gui_adjust_scales()
 end
 
 function M.zoom(z, cam_id)
@@ -177,7 +211,7 @@ function M.screen_to_world(x, y, worldz, cam_id)
 	return vmath.vector3(worldpos.x, worldpos.y, worldpos.z) -- convert vector4 to vector3
 end
 
-function M.world_to_screen(pos)
+function M.world_to_screen(pos, adjust)
 	local m = M.proj * M.view
 	pos = vmath.vector4(pos.x, pos.y, pos.z, 1)
 
@@ -185,6 +219,11 @@ function M.world_to_screen(pos)
 	pos = pos * (1/pos.w)
 	pos.x = (pos.x / 2 + 0.5) * M.viewport.width + M.viewport.x
 	pos.y = (pos.y / 2 + 0.5) * M.viewport.height + M.viewport.y
+
+	if adjust then
+		pos.x = pos.x / M.guiAdjust[adjust].sx - M.guiAdjust[adjust].ox
+		pos.y = pos.y / M.guiAdjust[adjust].sy - M.guiAdjust[adjust].oy
+	end
 
 	return vmath.vector3(pos.x, pos.y, 0)
 end

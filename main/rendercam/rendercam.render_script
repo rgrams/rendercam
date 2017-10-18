@@ -18,7 +18,9 @@ function init(self)
 
     self.clear_color = vmath.vector4(0.1, 0.1, 0.1, 0)
 
+
 	rendercam.update_window_size(render.get_window_width(), render.get_window_height())
+	rendercam.configWin.x = render.get_width();  rendercam.configWin.y = render.get_height()
 end
 
 function update(self)

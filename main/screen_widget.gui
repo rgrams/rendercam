@@ -59,7 +59,7 @@ nodes {
   clipping_mode: CLIPPING_MODE_NONE
   clipping_visible: true
   clipping_inverted: false
-  alpha: 0.0
+  alpha: 0.1
   template_node_child: false
   size_mode: SIZE_MODE_AUTO
 }
@@ -190,5 +190,5 @@ nodes {
   text_tracking: 0.0
 }
 material: "/builtins/materials/gui.material"
-adjust_reference: ADJUST_REFERENCE_DISABLED
+adjust_reference: ADJUST_REFERENCE_PARENT
 max_nodes: 512

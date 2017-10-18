@@ -1,12 +1,32 @@
 
+local rendercam = require "main.rendercam.rendercam"
+
 local node
 
+local unhovercolor = vmath.vector4(1, 1, 1, 0.1)
+local hovercolor = vmath.vector4(1, 1, 1, 0.25)
+
+
 function init(self)
+	msg.post(".", "acquire_input_focus")
 	node = gui.get_node("node")
+	adjust = gui.get_adjust_mode(node)
+
+	print("Adjust mode = ", gui.get_adjust_mode(node))
 end
 
 function on_message(self, message_id, message, sender)
 	if message_id == hash("set position") then
-		gui.set_position(node, message.pos)
+		gui.set_position(node, rendercam.world_to_screen(message.pos, adjust))
+	end
+end
+
+function on_input(self, action_id, action)
+	if not action_id then
+		if gui.pick_node(node, action.x, action.y) then
+			gui.set_color(node, hovercolor)
+		else
+			gui.set_color(node, unhovercolor)
+		end
 	end
 end

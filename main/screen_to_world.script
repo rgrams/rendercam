@@ -4,28 +4,18 @@ local rendercam = require "main.rendercam.rendercam"
 local mouse_spos = vmath.vector3() -- screen pos
 local mouse_wpos = vmath.vector3() -- world pos
 
-local window_res = vmath.vector3()
-
 local zstep = 10
 local panning = false
-local campos = vmath.vector3()
-
--- master camera settings - these are sent to the camera and transform module
-local nearz = 100
-local farz = 1000
 
 
---########################################  Init  ########################################
 function init(self)
 	msg.post(".", "acquire_input_focus")
 	go.set("logo#sprite", "tint.w", 0.2)
 end
 
---########################################  On Input  ########################################
 function on_input(self, action_id, action)
 	if action_id == nil then
-		mouse_spos.x = action.screen_x
-		mouse_spos.y = action.screen_y
+		mouse_spos.x = action.screen_x;  mouse_spos.y = action.screen_y
 
 		mouse_wpos = rendercam.screen_to_world(mouse_spos.x, mouse_spos.y)
 		msg.post("cursor/main#script", "update pos", {pos = mouse_wpos})
@@ -54,7 +44,6 @@ function on_input(self, action_id, action)
 	end
 end
 
---########################################  Final  ########################################
 function final(self)
 	msg.post(".", "release_input_focus")
 end
