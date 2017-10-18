@@ -16,13 +16,6 @@ M.proj = vmath.matrix4()
 M.window = vmath.vector3()
 M.viewport = { x = 0, y = 0, width = M.window.x, height = M.window.y, scale = { x = 1, y = 1 } }
 
-local nearz = 100
-local farz = 1000
-local abs_nearZ = nearz -- absolute nearz and farz
-local abs_farZ = farz -- regular nearz and farz are relative to camera z
-local world_plane_z = 0
-local campos = vmath.vector3(0, 0, 1000)
-
 local cameras = {}
 local curCam = nil
 
