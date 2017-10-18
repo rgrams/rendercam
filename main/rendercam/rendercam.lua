@@ -32,7 +32,6 @@ local curCam = nil
 
 
 function M.activate_camera(id)
-	print("rendercam.activate_camera")
 	if cameras[id] then
 		if curCam then curCam.active = false end
 		curCam = cameras[id]
@@ -47,10 +46,8 @@ function M.activate_camera(id)
 end
 
 function M.camera_init(id, data)
-	print("rendercam.camera_init")
 	cameras[id] = data
 	if not data.useViewArea then data.viewArea.z = DEFAULT_VIEWDIST end
-	print("viewArea = ", data.viewArea)
 	if data.active then
 		M.activate_camera(id)
 	end
@@ -61,27 +58,25 @@ function M.camera_final(id)
 end
 
 function M.calculate_view()
-	-- The view matrix is just the camera object transform. (translation & rotation, scale is ignored)
+	-- The view matrix is just the camera object transform. (Translation & rotation. Scale is ignored)
 	--		It changes as the camera is translated and rotated, but has nothing to do with aspect ratio or anything else.
 	M.view = vmath.matrix4_look_at(curCam.pos, curCam.pos + curCam.forwardVec, curCam.upVec)
 	return M.view
 end
 
-function M.calculate_proj() -- calculate projection matrix
-	if not curCam.orthographic then
-		M.proj = vmath.matrix4_perspective(curCam.fov, curCam.aspectRatio, curCam.nearZ, curCam.farZ)
-	else -- ORTHOGRAPHIC
+function M.calculate_proj()
+	if curCam.orthographic then
 		local x = curCam.halfViewArea.x * curCam.orthoScale
 		local y = curCam.halfViewArea.y * curCam.orthoScale
 		M.proj = vmath.matrix4_orthographic(-x, x, -y, y, curCam.nearZ, curCam.farZ)
+	else -- perspective
+		M.proj = vmath.matrix4_perspective(curCam.fov, curCam.aspectRatio, curCam.nearZ, curCam.farZ)
 	end
 
 	return M.proj
 end
 
 function M.get_target_worldViewSize(cam, lastX, lastY, lastWinX, lastWinY, winX, winY)
-	print("get_target_worldViewSize ", cam.scaleMode, lastX, lastY, lastWinX, lastWinY, winX, winY)
-
 	local x, y
 
 	if cam.fixedAspectRatio then
@@ -92,8 +87,6 @@ function M.get_target_worldViewSize(cam, lastX, lastY, lastWinX, lastWinY, winX,
 			--		The proportion and world view area remain the same.
 			x, y = lastX, lastY
 		end
-		print("pre-aspect mod: x, y = ", x, y)
-
 		-- Enforce aspect ratio
 		local scale = math.min(x / cam.aspectRatio, y / 1)
 		x, y = scale * cam.aspectRatio, scale
@@ -130,10 +123,8 @@ end
 function M.update_window(newX, newY)
 	newX = newX or M.winSize.x
 	newY = newY or M.winSize.y
-	print("rendercam.update_window - new window size = ", newX, newY)
 
 	local x, y = M.get_target_worldViewSize(curCam, curCam.viewArea.x, curCam.viewArea.y, M.winSize.x, M.winSize.y, newX, newY)
-	print("     calculated viewArea = ", x .. ", " .. y)
 	curCam.viewArea.x = x;  curCam.viewArea.y = y
 	curCam.aspectRatio = x / y
 
@@ -147,14 +138,12 @@ function M.update_window(newX, newY)
 		local finalViewport = M.winSize - M.viewportOffset * 2
 		M.viewportScale.x = finalViewport.x / M.winSize.x
 		M.viewportScale.y = finalViewport.y / M.winSize.y
-		print("     Fixed Aspect Ratio - viewportOffset = ", M.viewportOffset, M.viewportScale)
 	end
 
 	if curCam.orthographic then
 		curCam.halfViewArea.x = x/2;  curCam.halfViewArea.y = y/2
 	else
 		curCam.fov = get_fov(curCam.viewArea.z, curCam.viewArea.y * 0.5)
-		print("     calculated aspect, FOV = ", curCam.aspectRatio, curCam.fov)
 	end
 end
 
@@ -172,13 +161,14 @@ function M.pan(dx, dy, cam_id)
 	cam.pos = cam.pos + cam.rightVec * dx + cam.upVec * dy
 end
 
---########################################  Screen to World  ########################################
-function M.screen_to_world(x, y, worldz)
-	-- convert screen coordinates to viewport coordinates (if fixed aspect ratio)
-	x = (x - M.viewportOffset.x) / M.viewportScale.x
-	y = (y - M.viewportOffset.y) / M.viewportScale.y
-
+function M.screen_to_world(x, y, worldz, cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
 	worldz = worldz or 0
+
+	if cam.fixedAspectRatio then -- convert screen coordinates to viewport coordinates
+		x = (x - M.viewportOffset.x) / M.viewportScale.x
+		y = (y - M.viewportOffset.y) / M.viewportScale.y
+	end
 
 	local m = vmath.inv(M.proj * M.view)
 
@@ -191,13 +181,11 @@ function M.screen_to_world(x, y, worldz)
 	np = np * (1/np.w)
 	fp = fp * (1/fp.w)
 
-	local t = ( worldz - curCam.abs_nearZ) / (curCam.abs_farZ - curCam.abs_nearZ) -- normalize desired Z to 0-1 from nearz to farz
-	local worldpos = vmath.lerp(t, np, fp) -- vector4
-	--print(worldpos)
-	return vmath.vector3(worldpos.x, worldpos.y, worldpos.z)
+	local t = ( worldz - cam.abs_nearZ) / (cam.abs_farZ - cam.abs_nearZ) -- normalize desired Z to 0-1 from nearz to farz
+	local worldpos = vmath.lerp(t, np, fp)
+	return vmath.vector3(worldpos.x, worldpos.y, worldpos.z) -- convert vector4 to vector3
 end
 
---########################################  World to Screen  ########################################
 function M.world_to_screen(pos)
 	local m = M.proj * M.view
 	pos = vmath.vector4(pos.x, pos.y, pos.z, 1)
@@ -210,21 +198,10 @@ function M.world_to_screen(pos)
 	return vmath.vector3(pos.x, pos.y, 0)
 end
 
---########################################  Set Window Resolution  ########################################
 function M.update_winSize(x, y)
 	M.winSize.x = x;  M.winSize.y = y
 	M.winHalfSize.x = x * 0.5;  M.winHalfSize.y = y * 0.5
 end
 
---########################################  Set Camera  ########################################
-function M.update_camera_pos(pos, near, far) -- near & far args are optional
-	print("rendercam - update_camera_pos")
-	nearz = near or nearz
-	farz = far or farz
-
-	campos = pos
-	abs_nearz = campos.z - nearz
-	abs_farz = campos.z - farz
-end
 
 return M

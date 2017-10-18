@@ -1,15 +1,14 @@
 
 local rendercam = require "main.rendercam.rendercam"
+
 local IDENTITY_MATRIX = vmath.matrix4()
 
 
 local function update_window(self)
-	print("Render - update window")
 	rendercam.update_window(render.get_window_width(), render.get_window_height())
 end
 
 function init(self)
-	print("Render script init")
     self.tile_pred = render.predicate({"tile"})
     self.gui_pred = render.predicate({"gui"})
     self.text_pred = render.predicate({"text"})
@@ -31,8 +30,6 @@ function update(self)
 	self.projection = rendercam.calculate_proj()
 	local x, y = rendercam.viewportOffset.x, rendercam.viewportOffset.y
 	render.set_viewport(x, y, render.get_window_width() - x * 2, render.get_window_height() - y * 2)
-
-	if self.first then print("####  RENDER SCRIPT FIRST UPDATE  ####\n") self.first = false end
 
     render.set_depth_mask(true)
     render.clear({[render.BUFFER_COLOR_BIT] = self.clear_color, [render.BUFFER_DEPTH_BIT] = 1, [render.BUFFER_STENCIL_BIT] = 0})
@@ -77,7 +74,6 @@ function on_message(self, message_id, message)
 		-- this will never be recieved, no actual camera components in use.
 	elseif message_id == hash("window_resized") then
 		-- currently getting window width/height every update (multiple times)
-		print("  ----------------  window resized  ----------------")
 		update_window(self)
     end
 end
