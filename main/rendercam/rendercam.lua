@@ -29,50 +29,11 @@ local cameras = {}
 local curCam = nil
 
 
-function M.activate_camera(id)
-	if cameras[id] then
-		if curCam then curCam.active = false end
-		curCam = cameras[id]
-		if curCam.useViewArea then
-			M.update_window_size(curCam.viewArea.x, curCam.viewArea.y) -- set window to viewArea so that'll be used as the old window
-			msg.post("@render:", "update window")
-		else
-			msg.post("@render:", "update window")
-		end
-	end
-end
+-- ---------------------------------------------------------------------------------
+--| 							PRIVATE FUNCTIONS									|
+-- ---------------------------------------------------------------------------------
 
-function M.camera_init(id, data)
-	cameras[id] = data
-	if data.active then
-		M.activate_camera(id)
-	end
-end
-
-function M.camera_final(id)
-	cameras[id] = nil
-end
-
-function M.calculate_view() -- called from render script on update
-	-- The view matrix is just the camera object transform. (Translation & rotation. Scale is ignored)
-	--		It changes as the camera is translated and rotated, but has nothing to do with aspect ratio or anything else.
-	M.view = vmath.matrix4_look_at(curCam.pos, curCam.pos + curCam.forwardVec, curCam.upVec)
-	return M.view
-end
-
-function M.calculate_proj() -- called from render script on update
-	if curCam.orthographic then
-		local x = curCam.halfViewArea.x * curCam.orthoScale
-		local y = curCam.halfViewArea.y * curCam.orthoScale
-		M.proj = vmath.matrix4_orthographic(-x, x, -y, y, curCam.nearZ, curCam.farZ)
-	else -- perspective
-		M.proj = vmath.matrix4_perspective(curCam.fov, curCam.aspectRatio, curCam.nearZ, curCam.farZ)
-	end
-
-	return M.proj
-end
-
-function M.get_target_worldViewSize(cam, lastX, lastY, lastWinX, lastWinY, winX, winY)
+local function get_target_worldViewSize(cam, lastX, lastY, lastWinX, lastWinY, winX, winY)
 	local x, y
 
 	if cam.fixedAspectRatio then
@@ -105,7 +66,7 @@ function M.get_target_worldViewSize(cam, lastX, lastY, lastWinX, lastWinY, winX,
 			local ratio = winX / winY
 			x, y = lastY * ratio, lastY
 		else
-			error("rendercam.get_target_worldViewSize() - camera: " .. cam.id .. ", scale mode not found.")
+			error("rendercam - get_target_worldViewSize() - camera: " .. cam.id .. ", scale mode not found.")
 		end
 	end
 
@@ -139,14 +100,83 @@ local function calculate_gui_adjust_scales()
 	-- distorts to fit window, offsets always zero
 end
 
+
+-- ---------------------------------------------------------------------------------
+--| 					PUBLIC FUNCTIONS I: CAMERA STUFF							|
+-- ---------------------------------------------------------------------------------
+
+function M.activate_camera(id)
+	if cameras[id] then
+		if curCam then curCam.active = false end
+		curCam = cameras[id]
+		if curCam.useViewArea then
+			M.update_window_size(curCam.viewArea.x, curCam.viewArea.y) -- set window to viewArea so that'll be used as the old window
+			msg.post("@render:", "update window")
+		else
+			msg.post("@render:", "update window")
+		end
+	end
+end
+
+function M.camera_init(id, data)
+	cameras[id] = data
+	if data.active then
+		M.activate_camera(id)
+	end
+end
+
+function M.camera_final(id)
+	cameras[id] = nil
+end
+
+function M.zoom(z, cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	if cam.orthographic then
+		cam.orthoScale = cam.orthoScale + z * 0.01
+	else
+		cam.pos = cam.pos - cam.forwardVec * z
+	end
+end
+
+function M.pan(dx, dy, cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	cam.pos = cam.pos + cam.rightVec * dx + cam.upVec * dy
+end
+
+-- ---------------------------------------------------------------------------------
+--| 					PUBLIC FUNCTIONS II: RENDER SCRIPT							|
+-- ---------------------------------------------------------------------------------
+
+function M.calculate_view() -- called from render script on update
+	-- The view matrix is just the camera object transform. (Translation & rotation. Scale is ignored)
+	--		It changes as the camera is translated and rotated, but has nothing to do with aspect ratio or anything else.
+	M.view = vmath.matrix4_look_at(curCam.pos, curCam.pos + curCam.forwardVec, curCam.upVec)
+	return M.view
+end
+
+function M.calculate_proj() -- called from render script on update
+	if curCam.orthographic then
+		local x = curCam.halfViewArea.x * curCam.orthoScale
+		local y = curCam.halfViewArea.y * curCam.orthoScale
+		M.proj = vmath.matrix4_orthographic(-x, x, -y, y, curCam.nearZ, curCam.farZ)
+	else -- perspective
+		M.proj = vmath.matrix4_perspective(curCam.fov, curCam.aspectRatio, curCam.nearZ, curCam.farZ)
+	end
+	return M.proj
+end
+
+function M.update_window_size(x, y)
+	M.window.x = x;  M.window.y = y
+	M.viewport.width = x;  M.viewport.height = y
+end
+
 function M.update_window(newX, newY)
 	newX = newX or M.window.x
 	newY = newY or M.window.y
 
-	local x, y = M.get_target_worldViewSize(curCam, curCam.viewArea.x, curCam.viewArea.y, M.window.x, M.window.y, newX, newY)
+	local x, y = get_target_worldViewSize(curCam, curCam.viewArea.x, curCam.viewArea.y, M.window.x, M.window.y, newX, newY)
 	curCam.viewArea.x = x;  curCam.viewArea.y = y
 	curCam.aspectRatio = x / y
-
 	M.update_window_size(newX, newY)
 
 	if curCam.fixedAspectRatio then -- if fixed aspect ratio, calculate viewport cropping
@@ -172,19 +202,9 @@ function M.update_window(newX, newY)
 	calculate_gui_adjust_scales()
 end
 
-function M.zoom(z, cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
-	if cam.orthographic then
-		cam.orthoScale = cam.orthoScale + z * 0.01
-	else
-		cam.pos = cam.pos - cam.forwardVec * z
-	end
-end
-
-function M.pan(dx, dy, cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
-	cam.pos = cam.pos + cam.rightVec * dx + cam.upVec * dy
-end
+-- ---------------------------------------------------------------------------------
+--| 					PUBLIC FUNCTIONS III: TRANSFORMS							|
+-- ---------------------------------------------------------------------------------
 
 function M.screen_to_world(x, y, worldz, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
@@ -226,11 +246,6 @@ function M.world_to_screen(pos, adjust)
 	end
 
 	return vmath.vector3(pos.x, pos.y, 0)
-end
-
-function M.update_window_size(x, y)
-	M.window.x = x;  M.window.y = y
-	M.viewport.width = x;  M.viewport.height = y
 end
 
 
