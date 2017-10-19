@@ -27,17 +27,17 @@ instances {
     }
     properties {
       id: "aspectRatio"
-      value: "4.0, 3.0, 0.0"
+      value: "5.0, 3.0, 0.0"
       type: PROPERTY_TYPE_VECTOR3
     }
     properties {
       id: "viewArea"
-      value: "1000.0, 1000.0, 500.0"
+      value: "1600.0, 1000.0, 500.0"
       type: PROPERTY_TYPE_VECTOR3
     }
     properties {
       id: "useViewArea"
-      value: "true"
+      value: "false"
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
@@ -112,7 +112,7 @@ embedded_instances {
   id: "main"
   data: "components {\n"
   "  id: \"script\"\n"
-  "  component: \"/main/screen_to_world.script\"\n"
+  "  component: \"/main/main_example.script\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
@@ -127,7 +127,7 @@ embedded_instances {
   "}\n"
   "components {\n"
   "  id: \"screen_widget\"\n"
-  "  component: \"/main/screen_widget.gui\"\n"
+  "  component: \"/main/GUI_example.gui\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
