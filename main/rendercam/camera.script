@@ -73,6 +73,7 @@ function init(self)
 	self.rightVec = vmath.rotate(self.rot, RIGHTVEC)
 	self.id = go.get_id()
 	self.shake = vmath.vector3()
+	self.followPos = vmath.vector3()
 
 	-- Put all camera data into a table for rendercam module and init camera.
 	self.data = {
@@ -98,7 +99,9 @@ function init(self)
 		upVec = self.upVec, -- or panning, shaking, and calculating view matrix
 		rightVec = self.rightVec, -- for panning and shaking
 		shakes = {},
-		recoils = {}
+		recoils = {},
+		follows = {},
+		following = false
 	}
 	rendercam.camera_init(self.id, self.data)
 end
@@ -143,7 +146,16 @@ function on_message(self, message_id, message, sender)
 			if v.t <= 0 then table.remove(self.data.recoils, i) end
 		end
 
-		if #self.data.recoils + #self.data.shakes > 0 then
+		if self.data.following then
+			self.followPos.x = 0;  self.followPos.y = 0;
+			for i, v in ipairs(self.data.follows) do
+				self.followPos = self.followPos + go.get_position(v)
+			end
+			self.followPos = self.followPos * (1/#self.data.follows)
+			self.data.pos = self.followPos
+		end
+
+		if #self.data.recoils + #self.data.shakes + #self.data.follows > 0 then
 			self.data.pos = self.data.pos + self.shake
 			go.set_position(self.data.pos)
 		end

@@ -161,6 +161,22 @@ function M.stop_shaking(cam_id)
 	cam.recoils = {}
 end
 
+function M.follow(target_id, cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	table.insert(cam.follows, target_id)
+	cam.following = true
+end
+
+function M.unfollow(target_id, cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	for i, v in ipairs(cam.follows) do
+		if v == target_id then
+			table.remove(cam.follows, i)
+			if #cam.follows == 0 then cam.following = false end
+		end
+	end
+end
+
 -- ---------------------------------------------------------------------------------
 --| 					PUBLIC FUNCTIONS II: RENDER SCRIPT							|
 -- ---------------------------------------------------------------------------------
