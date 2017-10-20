@@ -2,13 +2,12 @@
 local M = {}
 
 
-local PERSPECTIVE = hash("perspective")
-local ORTHOGRAPHIC = hash("orthographic")
-
 local SCALEMODE_EXPANDVIEW = hash("expandView")
 local SCALEMODE_FIXEDAREA = hash("fixedArea")
 local SCALEMODE_FIXEDWIDTH = hash("fixedWidth")
 local SCALEMODE_FIXEDHEIGHT = hash("fixedHeight")
+
+M.ortho_zoom_mult = 0.01
 
 M.view = vmath.matrix4()
 M.proj = vmath.matrix4()
@@ -133,10 +132,28 @@ function M.camera_final(id)
 	cameras[id] = nil
 end
 
+function M.get_ortho_scale(cam_id)
+	local cam = cameras[cam_id]
+	if cam.orthographic then
+		return cam.orthoScale
+	else
+		print("ERROR: rendercam.get_ortho_scale() - this camera is not orthographic")
+	end
+end
+
+function M.set_ortho_scale(s, cam_id)
+	local cam = cameras[cam_id]
+	if cam.orthographic then
+		cam.orthoScale = s
+	else
+		print("ERROR: rendercam.set_ortho_scale() - this camera is not orthographic")
+	end
+end
+
 function M.zoom(z, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	if cam.orthographic then
-		cam.orthoScale = cam.orthoScale + z * 0.01
+		cam.orthoScale = cam.orthoScale + z * M.ortho_zoom_mult
 	else
 		cam.lpos = cam.lpos - cam.lforwardVec * z
 		go.set_position(cam.lpos, cam.id)

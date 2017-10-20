@@ -17,7 +17,7 @@ instances {
     id: "script"
     properties {
       id: "orthographic"
-      value: "false"
+      value: "true"
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
