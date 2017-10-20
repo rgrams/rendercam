@@ -104,44 +104,50 @@ function init(self)
 end
 
 function update(self, dt)
-	-- Update transform stuff
-	self.rot = go.get_world_rotation()
-	self.data.rot = self.rot
-	self.data.forwardVec = vmath.rotate(self.rot, FORWARDVEC)
-	self.data.upVec = vmath.rotate(self.rot, UPVEC)
-	self.data.rightVec = vmath.rotate(self.rot, RIGHTVEC)
-
-	self.data.pos = self.data.pos - self.shake -- subtract last frame's shake
-	self.shake.x = 0;  self.shake.y = 0;  self.shake.z = 0
-	for i=#self.data.shakes, 1, -1 do -- iterate backwards so I can remove arbitrary elements without problems
-		local v = self.data.shakes[i]
-		local d = math.random() * v.dist * v.t / v.dur -- linear falloff
-		local angle = math.random() * TWO_PI
-		self.shake = self.shake + self.data.rightVec * math.sin(angle) * d
-		self.shake = self.shake + self.data.upVec * math.cos(angle) * d
-		v.t = v.t - dt
-		if v.t <= 0 then table.remove(self.data.shakes, i) end
-	end
-
-	for i=#self.data.recoils, 1, -1 do
-		local v = self.data.recoils[i]
-		local d = v.t / v.dur
-		d = d*d -- square falloff
-		self.shake = self.shake + vmath.rotate(self.rot, v.vec * d) -- rotate recoil vec so it's relative to the camera
-		v.t = v.t - dt
-		if v.t <= 0 then table.remove(self.data.recoils, i) end
-	end
-	self.data.pos = self.data.pos + self.shake
-
-	go.set_position(self.data.pos)
-
+	self.dt = dt -- faster to store than to send in message
 	msg.post("#", "post-update")
 end
 
 function on_message(self, message_id, message, sender)
 	if message_id == hash("post-update") then
 		-- have to update pos after update or it jitters like crazy
+
+		-- Update transform stuff
 		self.data.pos = go.get_world_position()
+		self.rot = go.get_world_rotation()
+		self.data.rot = self.rot
+		self.data.forwardVec = vmath.rotate(self.rot, FORWARDVEC)
+		self.data.upVec = vmath.rotate(self.rot, UPVEC)
+		self.data.rightVec = vmath.rotate(self.rot, RIGHTVEC)
+
+		-- Camera Shake
+		self.data.pos = self.data.pos - self.shake -- subtract last frame's shake
+		self.shake.x = 0;  self.shake.y = 0;  self.shake.z = 0
+		for i=#self.data.shakes, 1, -1 do -- iterate backwards so I can remove arbitrary elements without problems
+			local v = self.data.shakes[i]
+			local d = math.random() * v.dist * v.t / v.dur -- linear falloff
+			local angle = math.random() * TWO_PI
+			self.shake = self.shake + self.data.rightVec * math.sin(angle) * d
+			self.shake = self.shake + self.data.upVec * math.cos(angle) * d
+			v.t = v.t - self.dt
+			if v.t <= 0 then table.remove(self.data.shakes, i) end
+		end
+
+		-- Camera Recoil
+		for i=#self.data.recoils, 1, -1 do
+			local v = self.data.recoils[i]
+			local d = v.t / v.dur
+			d = d*d -- square falloff
+			self.shake = self.shake + vmath.rotate(self.rot, v.vec * d) -- rotate recoil vec so it's relative to the camera
+			v.t = v.t - self.dt
+			if v.t <= 0 then table.remove(self.data.recoils, i) end
+		end
+
+		if #self.data.recoils + #self.data.shakes > 0 then
+			self.data.pos = self.data.pos + self.shake
+			go.set_position(self.data.pos)
+		end
+
 		self.data.abs_nearZ = self.data.pos.z - self.data.nearZ
 		self.data.abs_farZ = self.data.pos.z - self.data.farZ
 	end

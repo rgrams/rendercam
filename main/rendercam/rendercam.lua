@@ -135,12 +135,14 @@ function M.zoom(z, cam_id)
 		cam.orthoScale = cam.orthoScale + z * 0.01
 	else
 		cam.pos = cam.pos - cam.forwardVec * z
+		go.set_position(cam.pos, cam.id)
 	end
 end
 
 function M.pan(dx, dy, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	cam.pos = cam.pos + cam.rightVec * dx + cam.upVec * dy
+	go.set_position(cam.pos, cam.id)
 end
 
 function M.shake(dist, dur, cam_id)
