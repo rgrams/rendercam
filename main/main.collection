@@ -27,7 +27,7 @@ instances {
     }
     properties {
       id: "aspectRatio"
-      value: "5.0, 3.0, 0.0"
+      value: "1280.0, 600.0, 0.0"
       type: PROPERTY_TYPE_VECTOR3
     }
     properties {
@@ -80,6 +80,54 @@ instances {
     y: 0.0
     z: 0.0
     w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+instances {
+  id: "camera2"
+  prototype: "/main/rendercam/camera.go"
+  position {
+    x: 0.0
+    y: 0.0
+    z: 500.0
+  }
+  rotation {
+    x: 0.0
+    y: -0.3007058
+    z: 0.0
+    w: 0.95371693
+  }
+  component_properties {
+    id: "script"
+    properties {
+      id: "active"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "farZ"
+      value: "2000.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "orthographic"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "expandView"
+      value: "true"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "fixedArea"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
   }
   scale3 {
     x: 1.0

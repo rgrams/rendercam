@@ -48,6 +48,12 @@ function on_input(self, action_id, action)
 	elseif action_id == hash("enter") and action.pressed then
 		go.set_position(vmath.vector3(-500, -500, 900), "camera")
 
+	elseif action_id == hash("1") and action.pressed then
+		rendercam.activate_camera(go.get_id("camera"))
+
+	elseif action_id == hash("2") and action.pressed then
+		rendercam.activate_camera(go.get_id("camera2"))
+
 	elseif action_id == hash("escape") then
 		msg.post("@system:", "exit", {code = 0})
 	end

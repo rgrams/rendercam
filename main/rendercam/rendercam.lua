@@ -107,14 +107,18 @@ end
 
 function M.activate_camera(id)
 	if cameras[id] then
-		if curCam then curCam.active = false end
-		curCam = cameras[id]
-		if curCam.useViewArea then
-			M.update_window_size(curCam.viewArea.x, curCam.viewArea.y) -- set window to viewArea so that'll be used as the old window
-			msg.post("@render:", "update window")
-		else
-			msg.post("@render:", "update window")
+		if cameras[id] ~= curCam then
+			if curCam then curCam.active = false end
+			curCam = cameras[id]
+			if curCam.useViewArea then
+				M.update_window_size(curCam.viewArea.x, curCam.viewArea.y) -- set window to viewArea so that'll be used as the old window
+				msg.post("@render:", "update window")
+			else
+				msg.post("@render:", "update window")
+			end
 		end
+	else
+		print("WARNING: rendercam.activate_camera() - camera ".. id .. " not found. ")
 	end
 end
 
@@ -225,6 +229,9 @@ function M.update_window(newX, newY)
 		-- For screen-to-viewport coordinate conversion
 		M.viewport.scale.x = M.viewport.width / newX
 		M.viewport.scale.y = M.viewport.height / newY
+	else
+		M.viewport.x = 0;  M.viewport.y = 0
+		M.viewport.width = newX;  M.viewport.height = newY
 	end
 
 	if curCam.orthographic then

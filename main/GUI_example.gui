@@ -44,8 +44,8 @@ nodes {
   blend_mode: BLEND_MODE_ALPHA
   texture: ""
   id: "box"
-  xanchor: XANCHOR_LEFT
-  yanchor: YANCHOR_BOTTOM
+  xanchor: XANCHOR_NONE
+  yanchor: YANCHOR_NONE
   pivot: PIVOT_SW
   adjust_mode: ADJUST_MODE_FIT
   layer: ""
@@ -278,8 +278,8 @@ nodes {
   blend_mode: BLEND_MODE_ALPHA
   texture: ""
   id: "box2"
-  xanchor: XANCHOR_RIGHT
-  yanchor: YANCHOR_TOP
+  xanchor: XANCHOR_NONE
+  yanchor: YANCHOR_NONE
   pivot: PIVOT_NE
   adjust_mode: ADJUST_MODE_FIT
   layer: ""
