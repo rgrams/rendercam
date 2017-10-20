@@ -77,27 +77,28 @@ function init(self)
 
 	-- Put all camera data into a table for rendercam module and init camera.
 	self.data = {
-		active = self.active,
-		id = self.id,
-		script = msg.url("#"),
-		nearZ = self.nearZ,
-		farZ = self.farZ,
-		pos = self.pos,
-		abs_nearZ = self.nearZ,
-		abs_farZ = self.farZ,
-		rot = self.rot,
-		orthographic = self.orthographic,
-		fov = self.fov,
-		fixedAspectRatio = self.fixedAspectRatio,
-		orthoScale = self.orthoScale,
-		aspectRatio = self.aspectRatio,
-		scaleMode = self.scaleMode,
-		useViewArea = self.useViewArea,
-		viewArea = self.viewArea,
-		halfViewArea = vmath.vector3(self.viewArea) * 0.5,
-		forwardVec = self.forwardVec,
-		upVec = self.upVec, -- or panning, shaking, and calculating view matrix
-		rightVec = self.rightVec, -- for panning and shaking
+		active = self.active,--
+		id = self.id,--
+		nearZ = self.nearZ,--
+		farZ = self.farZ,--
+		abs_nearZ = self.nearZ,--
+		abs_farZ = self.farZ,--
+		orthographic = self.orthographic,--
+		fov = self.fov,--
+		fixedAspectRatio = self.fixedAspectRatio,--
+		orthoScale = self.orthoScale,--
+		aspectRatio = self.aspectRatio,--
+		scaleMode = self.scaleMode,--
+		useViewArea = self.useViewArea,--
+		viewArea = self.viewArea,--
+		halfViewArea = vmath.vector3(self.viewArea) * 0.5,--
+		wpos = self.wpos,--
+		wforwardVec = self.wforwardVec, -- for calculating view matrix
+		wupVec = self.wupVec, -- for calculating view matrix
+		lpos = self.lpos,--
+		lforwardVec = self.lforwardVec, -- for zooming
+		lupVec = self.lupVec, -- or panning
+		lrightVec = self.lrightVec, -- for panning
 		shakes = {},
 		recoils = {},
 		follows = {},
@@ -116,22 +117,21 @@ function on_message(self, message_id, message, sender)
 		-- have to update pos after update or it jitters like crazy
 
 		-- Update transform stuff
-		self.data.pos = go.get_world_position()
-		self.rot = go.get_world_rotation()
-		self.data.rot = self.rot
-		self.data.forwardVec = vmath.rotate(self.rot, FORWARDVEC)
-		self.data.upVec = vmath.rotate(self.rot, UPVEC)
-		self.data.rightVec = vmath.rotate(self.rot, RIGHTVEC)
+		self.data.lpos = go.get_position()
+		self.lrot = go.get_rotation()
+		self.data.lforwardVec = vmath.rotate(self.lrot, FORWARDVEC)
+		self.data.lupVec = vmath.rotate(self.lrot, UPVEC)
+		self.data.lrightVec = vmath.rotate(self.lrot, RIGHTVEC)
 
 		-- Camera Shake
-		self.data.pos = self.data.pos - self.shake -- subtract last frame's shake
+		self.data.lpos = self.data.lpos - self.shake -- subtract last frame's shake
 		self.shake.x = 0;  self.shake.y = 0;  self.shake.z = 0
 		for i=#self.data.shakes, 1, -1 do -- iterate backwards so I can remove arbitrary elements without problems
 			local v = self.data.shakes[i]
 			local d = math.random() * v.dist * v.t / v.dur -- linear falloff
 			local angle = math.random() * TWO_PI
-			self.shake = self.shake + self.data.rightVec * math.sin(angle) * d
-			self.shake = self.shake + self.data.upVec * math.cos(angle) * d
+			self.shake = self.shake + self.data.lrightVec * math.sin(angle) * d
+			self.shake = self.shake + self.data.lupVec * math.cos(angle) * d
 			v.t = v.t - self.dt
 			if v.t <= 0 then table.remove(self.data.shakes, i) end
 		end
@@ -141,7 +141,7 @@ function on_message(self, message_id, message, sender)
 			local v = self.data.recoils[i]
 			local d = v.t / v.dur
 			d = d*d -- square falloff
-			self.shake = self.shake + vmath.rotate(self.rot, v.vec * d) -- rotate recoil vec so it's relative to the camera
+			self.shake = self.shake + vmath.rotate(self.lrot, v.vec * d) -- rotate recoil vec so it's relative to the camera
 			v.t = v.t - self.dt
 			if v.t <= 0 then table.remove(self.data.recoils, i) end
 		end
@@ -156,11 +156,18 @@ function on_message(self, message_id, message, sender)
 		end
 
 		if #self.data.recoils + #self.data.shakes + #self.data.follows > 0 then
-			self.data.pos = self.data.pos + self.shake
-			go.set_position(self.data.pos)
+			self.data.lpos = self.data.lpos + self.shake
+			go.set_position(self.data.lpos)
 		end
 
-		self.data.abs_nearZ = self.data.pos.z - self.data.nearZ
-		self.data.abs_farZ = self.data.pos.z - self.data.farZ
+		-- Save world transform data for calculating view matrix
+		self.data.wpos = go.get_world_position()
+		self.wrot = go.get_world_rotation()
+		self.data.wforwardVec = vmath.rotate(self.wrot, FORWARDVEC)
+		self.data.wupVec = vmath.rotate(self.wrot, UPVEC)
+		-- Absolute/world near and far positions for screen-to-world transform
+		self.data.abs_nearZ = self.data.wpos.z - self.data.nearZ
+		self.data.abs_farZ = self.data.wpos.z - self.data.farZ
 	end
 end
+

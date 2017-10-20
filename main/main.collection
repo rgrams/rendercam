@@ -135,6 +135,54 @@ instances {
     z: 1.0
   }
 }
+instances {
+  id: "camera3"
+  prototype: "/main/rendercam/camera.go"
+  position {
+    x: 0.0
+    y: 0.0
+    z: 600.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  component_properties {
+    id: "script"
+    properties {
+      id: "active"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "farZ"
+      value: "2000.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "orthographic"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "expandView"
+      value: "true"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "fixedArea"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
 collection_instances {
   id: "cursor"
   collection: "/main/cursor.collection"
@@ -341,5 +389,26 @@ embedded_instances {
     x: 10.0
     y: 10.0
     z: 5.0
+  }
+}
+embedded_instances {
+  id: "orbit pivot"
+  children: "camera3"
+  data: ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
   }
 }

@@ -138,15 +138,15 @@ function M.zoom(z, cam_id)
 	if cam.orthographic then
 		cam.orthoScale = cam.orthoScale + z * 0.01
 	else
-		cam.pos = cam.pos - cam.forwardVec * z
-		go.set_position(cam.pos, cam.id)
+		cam.lpos = cam.lpos - cam.lforwardVec * z
+		go.set_position(cam.lpos, cam.id)
 	end
 end
 
 function M.pan(dx, dy, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
-	cam.pos = cam.pos + cam.rightVec * dx + cam.upVec * dy
-	go.set_position(cam.pos, cam.id)
+	cam.lpos = cam.lpos + cam.lrightVec * dx + cam.lupVec * dy
+	go.set_position(cam.lpos, cam.id)
 end
 
 function M.shake(dist, dur, cam_id)
@@ -188,7 +188,7 @@ end
 function M.calculate_view() -- called from render script on update
 	-- The view matrix is just the camera object transform. (Translation & rotation. Scale is ignored)
 	--		It changes as the camera is translated and rotated, but has nothing to do with aspect ratio or anything else.
-	M.view = vmath.matrix4_look_at(curCam.pos, curCam.pos + curCam.forwardVec, curCam.upVec)
+	M.view = vmath.matrix4_look_at(curCam.wpos, curCam.wpos + curCam.wforwardVec, curCam.wupVec)
 	return M.view
 end
 
