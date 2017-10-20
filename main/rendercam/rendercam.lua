@@ -18,7 +18,7 @@ M.viewport = { x = 0, y = 0, width = M.window.x, height = M.window.y, scale = { 
 
 M.configWin = vmath.vector3(M.window)
 M.configAspect = M.configWin.x / M.configWin.y
---				Fit								Zoom							Stretch
+--				Fit		(scale)		(offset)	Zoom						Stretch
 M.guiAdjust = { [0] = {sx=1, sy=1, ox=0, oy=0}, [1] = {sx=1, sy=1, ox=0, oy=0}, [2] = {sx=1, sy=1, ox=0, oy=0} }
 M.guiOffset = vmath.vector3()
 M.GUI_ADJUST_FIT = 0
@@ -141,6 +141,22 @@ end
 function M.pan(dx, dy, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	cam.pos = cam.pos + cam.rightVec * dx + cam.upVec * dy
+end
+
+function M.shake(dist, dur, cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	table.insert(cam.shakes, { dist = dist, dur = dur, t = dur })
+end
+
+function M.recoil(vec, dur, cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	table.insert(cam.recoils, { vec = vec, dur = dur, t = dur })
+end
+
+function M.stop_shaking(cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	cam.shakes = {}
+	cam.recoils = {}
 end
 
 -- ---------------------------------------------------------------------------------

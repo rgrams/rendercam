@@ -39,6 +39,12 @@ function on_input(self, action_id, action)
 			panning = false
 		end
 
+	elseif action_id == hash("space") and action.pressed then
+		self.long = not self.long
+		--rendercam.shake(self.long and 10 or 30, self.long and 4 or 0.3)
+		local angle = math.random() * math.pi * 2
+		rendercam.recoil(vmath.vector3(math.cos(angle) * 0, math.sin(angle) * 0, 50), 0.9)
+
 	elseif action_id == hash("escape") then
 		msg.post("@system:", "exit", {code = 0})
 	end

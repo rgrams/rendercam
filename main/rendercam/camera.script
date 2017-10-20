@@ -27,6 +27,7 @@ go.property("fixedWidth", false)
 go.property("fixedHeight", false)
 
 local DEFAULT_VIEWDIST = 500 -- arbitrary distance in front of camera used to calculate world view size on window changes
+local TWO_PI = math.pi * 2
 local FORWARDVEC = vmath.vector3(0, 0, -1)
 local UPVEC = vmath.vector3(0, 1, 0)
 local RIGHTVEC = vmath.vector3(1, 0, 0)
@@ -71,6 +72,7 @@ function init(self)
 	self.upVec = vmath.rotate(self.rot, UPVEC)
 	self.rightVec = vmath.rotate(self.rot, RIGHTVEC)
 	self.id = go.get_id()
+	self.shake = vmath.vector3()
 
 	-- Put all camera data into a table for rendercam module and init camera.
 	self.data = {
@@ -93,8 +95,10 @@ function init(self)
 		viewArea = self.viewArea,
 		halfViewArea = vmath.vector3(self.viewArea) * 0.5,
 		forwardVec = self.forwardVec,
-		upVec = self.upVec, -- or panning and calculating view matrix
-		rightVec = self.rightVec -- for panning
+		upVec = self.upVec, -- or panning, shaking, and calculating view matrix
+		rightVec = self.rightVec, -- for panning and shaking
+		shakes = {},
+		recoils = {}
 	}
 	rendercam.camera_init(self.id, self.data)
 end
@@ -106,6 +110,29 @@ function update(self, dt)
 	self.data.forwardVec = vmath.rotate(self.rot, FORWARDVEC)
 	self.data.upVec = vmath.rotate(self.rot, UPVEC)
 	self.data.rightVec = vmath.rotate(self.rot, RIGHTVEC)
+
+	self.data.pos = self.data.pos - self.shake -- subtract last frame's shake
+	self.shake.x = 0;  self.shake.y = 0;  self.shake.z = 0
+	for i=#self.data.shakes, 1, -1 do -- iterate backwards so I can remove arbitrary elements without problems
+		local v = self.data.shakes[i]
+		local d = math.random() * v.dist * v.t / v.dur -- linear falloff
+		local angle = math.random() * TWO_PI
+		self.shake = self.shake + self.data.rightVec * math.sin(angle) * d
+		self.shake = self.shake + self.data.upVec * math.cos(angle) * d
+		v.t = v.t - dt
+		if v.t <= 0 then table.remove(self.data.shakes, i) end
+	end
+
+	for i=#self.data.recoils, 1, -1 do
+		local v = self.data.recoils[i]
+		local d = v.t / v.dur
+		d = d*d -- square falloff
+		self.shake = self.shake + vmath.rotate(self.rot, v.vec * d) -- rotate recoil vec so it's relative to the camera
+		v.t = v.t - dt
+		if v.t <= 0 then table.remove(self.data.recoils, i) end
+	end
+	self.data.pos = self.data.pos + self.shake
+
 	go.set_position(self.data.pos)
 
 	msg.post("#", "post-update")

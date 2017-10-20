@@ -18,6 +18,10 @@ key_trigger {
   input: KEY_ESC
   action: "escape"
 }
+key_trigger {
+  input: KEY_SPACE
+  action: "space"
+}
 mouse_trigger {
   input: MOUSE_BUTTON_LEFT
   action: "left click"
