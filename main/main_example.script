@@ -26,12 +26,11 @@ function on_input(self, action_id, action)
 	if action_id == nil then
 		mouse_spos.x = action.screen_x;  mouse_spos.y = action.screen_y
 
-		mouse_wpos = rendercam.screen_to_world(mouse_spos.x, mouse_spos.y)
+		mouse_wpos = rendercam.screen_to_world_2d(mouse_spos.x, mouse_spos.y)
 		msg.post("cursor/main#script", "update pos", {pos = mouse_wpos})
 
 		if panning then
-			local last_mouse_wpos = rendercam.screen_to_world(mouse_spos.x - action.screen_dx, mouse_spos.y - action.screen_dy)
-			local dv = -(mouse_wpos - last_mouse_wpos)
+			local dv = -rendercam.screen_to_world_2d(action.screen_dx, action.screen_dy, true)
 			rendercam.pan(dv.x, dv.y)
 		end
 

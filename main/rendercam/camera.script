@@ -81,7 +81,6 @@ function init(self)
 		self.fov = math.rad(self.fov) -- FOV is set in degrees
 		if not self.orthographic and not self.useViewArea then -- don't use FOV if using view area
 			self.viewArea.y = (self.viewArea.z * math.tan(self.fov * 0.5)) * 2
-			print(self.viewArea.y)
 			if self.fixedAspectRatio then
 				self.viewArea.x = self.viewArea.y * self.aspectRatio
 			end
@@ -96,6 +95,7 @@ function init(self)
 		farZ = self.farZ,--
 		abs_nearZ = self.nearZ,--
 		abs_farZ = self.farZ,--
+		["2dWorldZ"] = self["2dWorldZ"],
 		orthographic = self.orthographic,--
 		fov = self.fov,--
 		fixedAspectRatio = self.fixedAspectRatio,--

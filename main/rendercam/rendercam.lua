@@ -268,13 +268,22 @@ end
 --| 					PUBLIC FUNCTIONS III: TRANSFORMS							|
 -- ---------------------------------------------------------------------------------
 
-function M.screen_to_world(x, y, worldz, cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
-	worldz = worldz or 0
-
-	if cam.fixedAspectRatio then -- convert screen coordinates to viewport coordinates
+function M.screen_to_viewport(x, y, delta)
+	if delta then
+		x = x / M.viewport.scale.x
+		y = y / M.viewport.scale.y
+	else
 		x = (x - M.viewport.x) / M.viewport.scale.x
 		y = (y - M.viewport.y) / M.viewport.scale.y
+	end
+	return x, y
+end
+
+-- Returns start and end points for a ray from the camera through the supplied screen coordinates
+-- Start point is on the camera near plane, end point is on the far plane.
+function M.screen_to_world_ray(x, y)
+	if curCam.fixedAspectRatio then -- convert screen coordinates to viewport coordinates
+		x, y = M.screen_to_viewport(x, y)
 	end
 
 	local m = vmath.inv(M.proj * M.view)
@@ -288,7 +297,30 @@ function M.screen_to_world(x, y, worldz, cam_id)
 	np = np * (1/np.w)
 	fp = fp * (1/fp.w)
 
-	local t = ( worldz - cam.abs_nearZ) / (cam.abs_farZ - cam.abs_nearZ) -- normalize desired Z to 0-1 from nearz to farz
+	return np, fp
+end
+
+function M.screen_to_world_2d(x, y, delta, worldz)
+	worldz = worldz or curCam["2dWorldZ"]
+
+	if curCam.fixedAspectRatio then
+		x, y = M.screen_to_viewport(x, y, delta)
+	end
+
+	local m = not delta and vmath.inv(M.proj * M.view) or vmath.inv(M.proj)
+
+	-- Remap coordinates to range -1 to 1
+	x1 = (x - M.window.x * 0.5) / M.window.x * 2
+	y1 = (y - M.window.y * 0.5) / M.window.y * 2
+
+	if delta then x1 = x1 + 1;  y1 = y1 + 1 end
+
+	local np = m * vmath.vector4(x1, y1, -1, 1)
+	local fp = m * vmath.vector4(x1, y1, 1, 1)
+	np = np * (1/np.w)
+	fp = fp * (1/fp.w)
+
+	local t = ( worldz - curCam.abs_nearZ) / (curCam.abs_farZ - curCam.abs_nearZ) -- normalize desired Z to 0-1 from abs_nearZ to abs_farZ
 	local worldpos = vmath.lerp(t, np, fp)
 	return vmath.vector3(worldpos.x, worldpos.y, worldpos.z) -- convert vector4 to vector3
 end
