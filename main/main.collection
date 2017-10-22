@@ -120,7 +120,7 @@ instances {
     }
     properties {
       id: "fov"
-      value: "1.25"
+      value: "75.0"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
