@@ -182,9 +182,13 @@ function M.stop_shaking(cam_id)
 	cam.recoils = {}
 end
 
-function M.follow(target_id, cam_id)
+function M.follow(target_id, allowMultiFollow, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
-	table.insert(cam.follows, target_id)
+	if allowMultiFollow then
+		table.insert(cam.follows, target_id)
+	else
+		cam.follows = { target_id }
+	end
 	cam.following = true
 end
 

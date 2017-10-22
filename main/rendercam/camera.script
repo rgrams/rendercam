@@ -152,7 +152,8 @@ function on_message(self, message_id, message, sender)
 				self.followPos = self.followPos + go.get_position(v)
 			end
 			self.followPos = self.followPos * (1/#self.data.follows)
-			self.data.pos = self.followPos
+			self.followPos = vmath.lerp(self.dt * 5, self.data.lpos, self.followPos)
+			self.data.lpos.x = self.followPos.x;  self.data.lpos.y = self.followPos.y
 		end
 
 		if #self.data.recoils + #self.data.shakes + #self.data.follows > 0 then

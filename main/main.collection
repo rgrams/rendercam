@@ -97,9 +97,9 @@ instances {
   }
   rotation {
     x: 0.0
-    y: -0.3007058
+    y: 0.0
     z: 0.0
-    w: 0.95371693
+    w: 1.0
   }
   component_properties {
     id: "script"
@@ -119,13 +119,33 @@ instances {
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
+      id: "fov"
+      value: "1.25"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "fixedAspectRatio"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
       id: "expandView"
-      value: "true"
+      value: "false"
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
       id: "fixedArea"
       value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "fixedWidth"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "fixedHeight"
+      value: "true"
       type: PROPERTY_TYPE_BOOLEAN
     }
   }
