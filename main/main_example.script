@@ -1,5 +1,5 @@
 
-local rendercam = require "main.rendercam.rendercam"
+local rendercam = require "rendercam.rendercam"
 
 local mouse_spos = vmath.vector3() -- screen pos
 local mouse_wpos = vmath.vector3() -- world pos

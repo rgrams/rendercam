@@ -4,7 +4,7 @@
 -- 1. It holds the properties so the user can set them in the editor.
 -- 2. It updates the camera's position and rotation with the rendercam module.
 
-local rendercam = require "main.rendercam.rendercam"
+local rendercam = require "rendercam.rendercam"
 
 go.property("active", true)
 go.property("nearZ", 1)

@@ -1,5 +1,5 @@
 
-local rendercam = require "main.rendercam.rendercam"
+local rendercam = require "rendercam.rendercam"
 
 
 --########################################  Init  ########################################

@@ -1,7 +1,7 @@
 name: "main"
 instances {
   id: "camera"
-  prototype: "/main/rendercam/camera.go"
+  prototype: "/rendercam/camera.go"
   position {
     x: 0.0
     y: 0.0
@@ -89,7 +89,7 @@ instances {
 }
 instances {
   id: "camera2"
-  prototype: "/main/rendercam/camera.go"
+  prototype: "/rendercam/camera.go"
   position {
     x: 0.0
     y: 0.0
@@ -157,7 +157,7 @@ instances {
 }
 instances {
   id: "camera3"
-  prototype: "/main/rendercam/camera.go"
+  prototype: "/rendercam/camera.go"
   position {
     x: 0.0
     y: 0.0

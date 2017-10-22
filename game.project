@@ -4,7 +4,7 @@ version = 0.8
 
 [bootstrap]
 main_collection = /main/main.collectionc
-render = /main/rendercam/rendercam.renderc
+render = /rendercam/rendercam.renderc
 
 [input]
 game_binding = /input/game.input_bindingc
@@ -19,4 +19,7 @@ scale = 0.02
 
 [script]
 shared_state = 1
+
+[library]
+include_dirs = rendercam
 
