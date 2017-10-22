@@ -5,7 +5,7 @@ instances {
   position {
     x: 0.0
     y: 0.0
-    z: 500.0
+    z: 0.0
   }
   rotation {
     x: 0.0
@@ -15,6 +15,16 @@ instances {
   }
   component_properties {
     id: "script"
+    properties {
+      id: "nearZ"
+      value: "-1.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "farZ"
+      value: "1.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
     properties {
       id: "orthographic"
       value: "true"

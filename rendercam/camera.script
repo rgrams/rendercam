@@ -7,8 +7,8 @@
 local rendercam = require "rendercam.rendercam"
 
 go.property("active", true)
-go.property("nearZ", 1)
-go.property("farZ", 1000)
+go.property("nearZ", -1)
+go.property("farZ", 1)
 go.property("2dWorldZ", 0)
 go.property("orthographic", true)
 go.property("fov", -1)
@@ -41,9 +41,11 @@ function init(self)
 	self.scaleMode = self.expandView or self.fixedArea or self.fixedWidth or self.fixedHeight -- get first checked
 	if not self.scaleMode then self.scaleMode = hash("fixedArea") end
 
-	-- Make sure nearZ and farZ are valid values
-	if self.nearZ <= 0 then self.nearZ = 0.1 end
-	if self.farZ < 0 then self.farZ = 0.1 end
+	-- Make sure nearZ and farZ are valid values (if a perspective camera)
+	if not self.orthographic then
+		if self.nearZ <= 0 then self.nearZ = 0.1 end
+		if self.farZ < 0 then self.farZ = 0.1 end
+	end
 
 	-- Turn aspect ratio from x, y into a single number
 	self.aspectRatio = self.aspectRatio.x / self.aspectRatio.y
