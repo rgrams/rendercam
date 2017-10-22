@@ -8,6 +8,7 @@ local SCALEMODE_FIXEDWIDTH = hash("fixedWidth")
 local SCALEMODE_FIXEDHEIGHT = hash("fixedHeight")
 
 M.ortho_zoom_mult = 0.01
+M.follow_lerp_speed = 3
 
 M.view = vmath.matrix4()
 M.proj = vmath.matrix4()
@@ -180,6 +181,10 @@ function M.stop_shaking(cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	cam.shakes = {}
 	cam.recoils = {}
+end
+
+function M.follow_lerp_func(curPos, targetPos, dt)
+	return vmath.lerp(dt * M.follow_lerp_speed, curPos, targetPos)
 end
 
 function M.follow(target_id, allowMultiFollow, cam_id)

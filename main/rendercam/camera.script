@@ -165,7 +165,7 @@ function on_message(self, message_id, message, sender)
 				self.followPos = self.followPos + go.get_position(v)
 			end
 			self.followPos = self.followPos * (1/#self.data.follows)
-			self.followPos = vmath.lerp(self.dt * 5, self.data.lpos, self.followPos)
+			self.followPos = rendercam.follow_lerp_func(self.data.lpos, self.followPos, self.dt)
 			self.data.lpos.x = self.followPos.x;  self.data.lpos.y = self.followPos.y
 		end
 
