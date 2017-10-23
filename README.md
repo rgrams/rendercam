@@ -31,10 +31,10 @@ Leave checked for an orthographic camera, uncheck for a perspective camera. Cert
 The distance in front of the camera where rendering will start, relative to the camera's position. This can be any value for orthographic cameras, but must be greater than zero for perspective cameras.
 
 #### Far Z <kbd>number</kbd>
-The distance in front of the camer where rendering will end, relative to the camera's position. Should be greater than Near Z.
+The distance in front of the camera where rendering will end, relative to the camera's position. Should be greater than Near Z.
 
-#### 2d World Z <kbd>number</kbd>
-The z coordinate of the game world for 2D or 2.5D games (orthographic _or_ perspective camera). This is the z position used for screen-to-world position transforms, and if you are using a set camera view area (see below), this is the z position those dimensions will be measured at.
+#### View Distance <kbd>number</kbd>
+The distance in front of the camera where the game world is located. This is usually 0 for orthographic cameras, or the z position of a perspective camera for 2.5D games (if the game world is at Z=0). For most perspective cameras (non-fixed-FOV), this is the distance at which the view area is measured. The View Distance is subtracted from the camera Z position on init to get the world Z position used for screen-to-world position transforms. 
 
 #### FOV (field of view) <kbd>number</kbd>
 The field of view for perspective cameras, in degrees. This property is generally unused (and should be left at -1), as the FOV will be calculated based on other settings. If you want a camera with a fixed FOV, make sure "Use View Area" is un-checked, select the "Fixed Height" scale mode, and set FOV to your desired angle. The aspect ratio can be fixed or not.

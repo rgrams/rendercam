@@ -129,6 +129,11 @@ instances {
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
+      id: "viewDistance"
+      value: "500.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
       id: "fov"
       value: "75.0"
       type: PROPERTY_TYPE_NUMBER
@@ -194,6 +199,11 @@ instances {
     properties {
       id: "farZ"
       value: "2000.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "viewDistance"
+      value: "600.0"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {

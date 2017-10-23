@@ -285,7 +285,7 @@ function M.screen_to_viewport(x, y, delta)
 end
 
 function M.screen_to_world_2d(x, y, delta, worldz)
-	worldz = worldz or curCam["2dWorldZ"]
+	worldz = worldz or curCam.worldZ
 
 	if curCam.fixedAspectRatio then
 		x, y = M.screen_to_viewport(x, y, delta)
