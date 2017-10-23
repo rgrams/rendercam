@@ -22,7 +22,7 @@ go.property("aspectRatio", vmath.vector3(16, 9, 0)) -- only used with a fixed as
 go.property("useViewArea", false)
 go.property("viewArea", vmath.vector3(800, 600, 500))
 
-go.property("expandView", true)
+go.property("expandView", false)
 go.property("fixedArea", true)
 go.property("fixedWidth", false)
 go.property("fixedHeight", false)
