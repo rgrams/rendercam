@@ -22,7 +22,7 @@ instances {
     }
     properties {
       id: "nearZ"
-      value: "-1.0"
+      value: "-225.0"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
@@ -81,8 +81,8 @@ instances {
   id: "character"
   prototype: "/main/character/character.go"
   position {
-    x: 149.924
-    y: 0.0
+    x: -435.076
+    y: 177.0
     z: 0.0
   }
   rotation {
@@ -124,6 +124,11 @@ instances {
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
+      id: "nearZ"
+      value: "0.1"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
       id: "farZ"
       value: "2000.0"
       type: PROPERTY_TYPE_NUMBER
@@ -135,7 +140,7 @@ instances {
     }
     properties {
       id: "fov"
-      value: "75.0"
+      value: "60.0"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
@@ -207,6 +212,16 @@ instances {
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
+      id: "fixedAspectRatio"
+      value: "true"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "aspectRatio"
+      value: "1.0, 1.0, 0.0"
+      type: PROPERTY_TYPE_VECTOR3
+    }
+    properties {
       id: "expandView"
       value: "true"
       type: PROPERTY_TYPE_BOOLEAN
@@ -214,6 +229,64 @@ instances {
     properties {
       id: "fixedArea"
       value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+instances {
+  id: "camera4"
+  prototype: "/rendercam/camera.go"
+  position {
+    x: 0.0
+    y: 0.0
+    z: 600.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  component_properties {
+    id: "script"
+    properties {
+      id: "active"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "orthographic"
+      value: "true"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "nearZ"
+      value: "-1000.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "farZ"
+      value: "2000.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "viewDistance"
+      value: "600.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "expandView"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "fixedArea"
+      value: "true"
       type: PROPERTY_TYPE_BOOLEAN
     }
   }
@@ -333,24 +406,24 @@ embedded_instances {
   "embedded_components {\n"
   "  id: \"model\"\n"
   "  type: \"model\"\n"
-  "  data: \"mesh: \\\"/main/test_mesh.dae\\\"\\n"
+  "  data: \"mesh: \\\"/main/voxel house_2.dae\\\"\\n"
   "material: \\\"/builtins/materials/model.material\\\"\\n"
-  "textures: \\\"/main/images/logo.png\\\"\\n"
+  "textures: \\\"/main/images/TEX_Square_64.png\\\"\\n"
   "skeleton: \\\"\\\"\\n"
   "animations: \\\"\\\"\\n"
   "default_animation: \\\"\\\"\\n"
   "name: \\\"unnamed\\\"\\n"
   "\"\n"
   "  position {\n"
-  "    x: 316.0\n"
-  "    y: -625.0\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
   "    z: 0.0\n"
   "  }\n"
   "  rotation {\n"
   "    x: 0.0\n"
-  "    y: 0.0\n"
+  "    y: 1.0\n"
   "    z: 0.0\n"
-  "    w: 1.0\n"
+  "    w: 6.123234E-17\n"
   "  }\n"
   "}\n"
   "embedded_components {\n"
@@ -434,6 +507,27 @@ embedded_instances {
 embedded_instances {
   id: "orbit pivot"
   children: "camera3"
+  data: ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+embedded_instances {
+  id: "orbit pivot 2"
+  children: "camera4"
   data: ""
   position {
     x: 0.0

@@ -9,9 +9,13 @@ local panning = false
 
 local orbit_cam_speed = 0.3
 
+local xrot = vmath.quat_rotation_x(math.rad(-30))
+
 
 function update(self, dt)
-	go.set_rotation(vmath.quat_rotation_y(self.orbitCamAngle), "orbit pivot")
+	local rot = vmath.quat_rotation_y(self.orbitCamAngle) * xrot
+	go.set_rotation(rot, "orbit pivot")
+	go.set_rotation(rot, "orbit pivot 2")
 	self.orbitCamAngle = self.orbitCamAngle + orbit_cam_speed * dt
 end
 
@@ -49,12 +53,11 @@ function on_input(self, action_id, action)
 
 	elseif action_id == hash("space") and action.pressed then
 		self.long = not self.long
-		rendercam.shake(self.long and 10 or 30, self.long and 4 or 0.3)
-		local angle = math.random() * math.pi * 2
-		--rendercam.recoil(vmath.vector3(math.cos(angle) * 0, math.sin(angle) * 0, 50), 0.9)
+		rendercam.shake(self.long and 10 or 30, self.long and 1 or 0.1)
 
 	elseif action_id == hash("enter") and action.pressed then
-		go.set_position(vmath.vector3(-500, -500, 900), "camera")
+		local angle = math.random() * math.pi * 2
+		rendercam.recoil(vmath.vector3(-20, 0, 0), 0.3)
 
 	elseif action_id == hash("1") and action.pressed then
 		rendercam.activate_camera(go.get_id("camera"))
@@ -64,6 +67,9 @@ function on_input(self, action_id, action)
 
 	elseif action_id == hash("3") and action.pressed then
 		rendercam.activate_camera(go.get_id("camera3"))
+
+	elseif action_id == hash("4") and action.pressed then
+		rendercam.activate_camera(go.get_id("camera4"))
 
 	elseif action_id == hash("escape") then
 		msg.post("@system:", "exit", {code = 0})

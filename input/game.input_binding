@@ -38,6 +38,10 @@ key_trigger {
   input: KEY_3
   action: "3"
 }
+key_trigger {
+  input: KEY_4
+  action: "4"
+}
 mouse_trigger {
   input: MOUSE_BUTTON_LEFT
   action: "left click"
