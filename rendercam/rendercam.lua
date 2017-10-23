@@ -105,11 +105,11 @@ end
 --| 					PUBLIC FUNCTIONS I: CAMERA STUFF							|
 -- ---------------------------------------------------------------------------------
 
-function M.activate_camera(id)
-	if cameras[id] then
-		if cameras[id] ~= curCam then
+function M.activate_camera(cam_id)
+	if cameras[cam_id] then
+		if cameras[cam_id] ~= curCam then
 			if curCam then curCam.active = false end
-			curCam = cameras[id]
+			curCam = cameras[cam_id]
 			if curCam.useViewArea then
 				M.update_window_size(curCam.viewArea.x, curCam.viewArea.y) -- set window to viewArea so that'll be used as the old window
 				msg.post("@render:", "update window")
@@ -118,37 +118,19 @@ function M.activate_camera(id)
 			end
 		end
 	else
-		print("WARNING: rendercam.activate_camera() - camera ".. id .. " not found. ")
+		print("WARNING: rendercam.activate_camera() - camera ".. cam_id .. " not found. ")
 	end
 end
 
-function M.camera_init(id, data)
-	cameras[id] = data
+function M.camera_init(cam_id, data)
+	cameras[cam_id] = data
 	if data.active then
-		M.activate_camera(id)
+		M.activate_camera(cam_id)
 	end
 end
 
-function M.camera_final(id)
-	cameras[id] = nil
-end
-
-function M.get_ortho_scale(cam_id)
-	local cam = cameras[cam_id]
-	if cam.orthographic then
-		return cam.orthoScale
-	else
-		print("ERROR: rendercam.get_ortho_scale() - this camera is not orthographic")
-	end
-end
-
-function M.set_ortho_scale(s, cam_id)
-	local cam = cameras[cam_id]
-	if cam.orthographic then
-		cam.orthoScale = s
-	else
-		print("ERROR: rendercam.set_ortho_scale() - this camera is not orthographic")
-	end
+function M.camera_final(cam_id)
+	cameras[cam_id] = nil
 end
 
 function M.zoom(z, cam_id)
@@ -158,6 +140,24 @@ function M.zoom(z, cam_id)
 	else
 		cam.lpos = cam.lpos - cam.lforwardVec * z
 		go.set_position(cam.lpos, cam.id)
+	end
+end
+
+function M.get_ortho_scale(cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	if cam.orthographic then
+		return cam.orthoScale
+	else
+		print("ERROR: rendercam.get_ortho_scale() - this camera is not orthographic")
+	end
+end
+
+function M.set_ortho_scale(s, cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	if cam.orthographic then
+		cam.orthoScale = s
+	else
+		print("ERROR: rendercam.set_ortho_scale() - this camera is not orthographic")
 	end
 end
 
@@ -183,10 +183,6 @@ function M.stop_shaking(cam_id)
 	cam.recoils = {}
 end
 
-function M.follow_lerp_func(curPos, targetPos, dt)
-	return vmath.lerp(dt * M.follow_lerp_speed, curPos, targetPos)
-end
-
 function M.follow(target_id, allowMultiFollow, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	if allowMultiFollow then
@@ -205,6 +201,10 @@ function M.unfollow(target_id, cam_id)
 			if #cam.follows == 0 then cam.following = false end
 		end
 	end
+end
+
+function M.follow_lerp_func(curPos, targetPos, dt)
+	return vmath.lerp(dt * M.follow_lerp_speed, curPos, targetPos)
 end
 
 -- ---------------------------------------------------------------------------------
@@ -284,27 +284,6 @@ function M.screen_to_viewport(x, y, delta)
 	return x, y
 end
 
--- Returns start and end points for a ray from the camera through the supplied screen coordinates
--- Start point is on the camera near plane, end point is on the far plane.
-function M.screen_to_world_ray(x, y)
-	if curCam.fixedAspectRatio then -- convert screen coordinates to viewport coordinates
-		x, y = M.screen_to_viewport(x, y)
-	end
-
-	local m = vmath.inv(M.proj * M.view)
-
-	-- Remap coordinates to range -1 to 1
-	local x1 = (x - M.window.x * 0.5) / M.window.x * 2
-	local y1 = (y - M.window.y * 0.5) / M.window.y * 2
-
-	local np = m * vmath.vector4(x1, y1, -1, 1)
-	local fp = m * vmath.vector4(x1, y1, 1, 1)
-	np = np * (1/np.w)
-	fp = fp * (1/fp.w)
-
-	return np, fp
-end
-
 function M.screen_to_world_2d(x, y, delta, worldz)
 	worldz = worldz or curCam["2dWorldZ"]
 
@@ -328,6 +307,27 @@ function M.screen_to_world_2d(x, y, delta, worldz)
 	local t = ( worldz - curCam.abs_nearZ) / (curCam.abs_farZ - curCam.abs_nearZ) -- normalize desired Z to 0-1 from abs_nearZ to abs_farZ
 	local worldpos = vmath.lerp(t, np, fp)
 	return vmath.vector3(worldpos.x, worldpos.y, worldpos.z) -- convert vector4 to vector3
+end
+
+-- Returns start and end points for a ray from the camera through the supplied screen coordinates
+-- Start point is on the camera near plane, end point is on the far plane.
+function M.screen_to_world_ray(x, y)
+	if curCam.fixedAspectRatio then -- convert screen coordinates to viewport coordinates
+		x, y = M.screen_to_viewport(x, y)
+	end
+
+	local m = vmath.inv(M.proj * M.view)
+
+	-- Remap coordinates to range -1 to 1
+	local x1 = (x - M.window.x * 0.5) / M.window.x * 2
+	local y1 = (y - M.window.y * 0.5) / M.window.y * 2
+
+	local np = m * vmath.vector4(x1, y1, -1, 1)
+	local fp = m * vmath.vector4(x1, y1, 1, 1)
+	np = np * (1/np.w)
+	fp = fp * (1/fp.w)
+
+	return vmath.vector3(np.x, np.y, np.z), vmath.vector3(fp.x, fp.y, fp.z)
 end
 
 function M.world_to_screen(pos, adjust)

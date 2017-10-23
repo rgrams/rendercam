@@ -16,6 +16,11 @@ instances {
   component_properties {
     id: "script"
     properties {
+      id: "orthographic"
+      value: "true"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
       id: "nearZ"
       value: "-1.0"
       type: PROPERTY_TYPE_NUMBER
@@ -24,11 +29,6 @@ instances {
       id: "farZ"
       value: "1.0"
       type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "orthographic"
-      value: "true"
-      type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
       id: "fixedAspectRatio"
@@ -41,23 +41,23 @@ instances {
       type: PROPERTY_TYPE_VECTOR3
     }
     properties {
-      id: "viewArea"
-      value: "1600.0, 1000.0, 500.0"
-      type: PROPERTY_TYPE_VECTOR3
-    }
-    properties {
       id: "useViewArea"
       value: "false"
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
+      id: "viewArea"
+      value: "1600.0, 1000.0, 500.0"
+      type: PROPERTY_TYPE_VECTOR3
+    }
+    properties {
       id: "expandView"
-      value: "false"
+      value: "true"
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
       id: "fixedArea"
-      value: "true"
+      value: "false"
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
@@ -119,14 +119,14 @@ instances {
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
-      id: "farZ"
-      value: "2000.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
       id: "orthographic"
       value: "false"
       type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "farZ"
+      value: "2000.0"
+      type: PROPERTY_TYPE_NUMBER
     }
     properties {
       id: "fov"
@@ -187,14 +187,14 @@ instances {
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
-      id: "farZ"
-      value: "2000.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
       id: "orthographic"
       value: "false"
       type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "farZ"
+      value: "2000.0"
+      type: PROPERTY_TYPE_NUMBER
     }
     properties {
       id: "expandView"

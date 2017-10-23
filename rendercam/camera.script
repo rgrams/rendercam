@@ -7,10 +7,10 @@
 local rendercam = require "rendercam.rendercam"
 
 go.property("active", true)
+go.property("orthographic", true)
 go.property("nearZ", -1)
 go.property("farZ", 1)
 go.property("2dWorldZ", 0)
-go.property("orthographic", true)
 go.property("fov", -1)
 go.property("orthoScale", 1)
 
@@ -19,8 +19,8 @@ go.property("fixedAspectRatio", false)
 -- This way you don't end up with 800 x 599.9994812093 px view areas.
 go.property("aspectRatio", vmath.vector3(16, 9, 0)) -- only used with a fixed aspect ratio
 
-go.property("viewArea", vmath.vector3(800, 600, 500))
 go.property("useViewArea", false)
+go.property("viewArea", vmath.vector3(800, 600, 500))
 
 go.property("expandView", true)
 go.property("fixedArea", true)
