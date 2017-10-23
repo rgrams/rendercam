@@ -12,7 +12,7 @@ Then open the "Project" menu of the editor and click "Fetch Libraries". You shou
 
 ## Basic Setup
 
-It just takes two simple steps to get Rendercam up and running.
+After installation, it just takes two simple steps to get Rendercam up and running.
 
 1. Select the Rendercam render script in your game.project file. Under "bootstrap", edit the "Render" field and select "/rendercam/rendercam.render".
 2. Add a Rendercam camera to your scene. Add "camera.go" from the rendercam folder to your main collection. It can be a child of another game object, or not, but make sure it's z-position is zero (this is for the default camera settings only).
@@ -76,7 +76,7 @@ local rendercam = require "rendercam.rendercam"
 ```
 
 #### rendercam.activate_camera(cam_id)
-Activate the camera and deactivate the last active camera.
+Activate a different camera.
 
 _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object.
