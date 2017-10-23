@@ -37,7 +37,7 @@ The distance in front of the camer where rendering will end, relative to the cam
 The z coordinate of the game world for 2D or 2.5D games (orthographic _or_ perspective camera). This is the z position used for screen-to-world position transforms, and if you are using a set camera view area (see below), this is the z position those dimensions will be measured at.
 
 #### FOV (field of view) <kbd>number</kbd>
-The field of view for perspective cameras, in degrees. This property is generally unused, as the FOV will be calculated based on other settings. If you want a camera with a fixed FOV, make sure "Use View Area" is _un-checked_ and select the "Fixed Height" scale mode. The aspect ratio can be fixed or not.
+The field of view for perspective cameras, in degrees. This property is generally unused (and should be left at -1), as the FOV will be calculated based on other settings. If you want a camera with a fixed FOV, make sure "Use View Area" is un-checked, select the "Fixed Height" scale mode, and set FOV to your desired angle. The aspect ratio can be fixed or not.
 
 #### Ortho Scale <kbd>number</kbd>
 The initial "zoom"/scale for orthographic cameras. At an ortho scale of 2 the camera will show an area of the world four times as large (x and y are both doubled) as it would at scale 1. Or 1/4 of the area at scale 0.5, etc. See the "View Area" property below to set the initial view are of your camera.
