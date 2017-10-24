@@ -21,7 +21,6 @@ end
 
 function init(self)
 	msg.post(".", "acquire_input_focus")
-	go.set("logo#sprite", "tint.w", 0.2)
 	self.orbitCamAngle = 0
 	rendercam.follow(go.get_id("character"), true, go.get_id("camera"))
 end
