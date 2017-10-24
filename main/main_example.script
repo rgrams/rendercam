@@ -6,31 +6,35 @@ local mouse_wpos = vmath.vector3() -- world pos
 
 local zstep = 10
 local panning = false
-
 local orbit_cam_speed = 0.3
 
+local cursor = msg.url("main", "/cursor/dot", "script")
+print(cursor)
 local xrot = vmath.quat_rotation_x(math.rad(-30))
 
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	self.orbitCamAngle = 0
+	rendercam.follow(go.get_id("character"), true, go.get_id("camera"))
+
+	self.mouse_spos = vmath.vector3()
+end
 
 function update(self, dt)
 	local rot = vmath.quat_rotation_y(self.orbitCamAngle) * xrot
 	go.set_rotation(rot, "orbit pivot")
 	go.set_rotation(rot, "orbit pivot 2")
 	self.orbitCamAngle = self.orbitCamAngle + orbit_cam_speed * dt
-end
 
-function init(self)
-	msg.post(".", "acquire_input_focus")
-	self.orbitCamAngle = 0
-	rendercam.follow(go.get_id("character"), true, go.get_id("camera"))
+
+	self.mouse_wpos = rendercam.screen_to_world_2d(self.mouse_spos.x, self.mouse_spos.y)
+	msg.post(cursor, "update pos", {pos = self.mouse_wpos})
 end
 
 function on_input(self, action_id, action)
 	if action_id == nil then
-		mouse_spos.x = action.screen_x;  mouse_spos.y = action.screen_y
-
-		mouse_wpos = rendercam.screen_to_world_2d(mouse_spos.x, mouse_spos.y)
-		msg.post("cursor/main#script", "update pos", {pos = mouse_wpos})
+		self.mouse_spos.x = action.screen_x;  self.mouse_spos.y = action.screen_y
 
 		if panning then
 			local dv = -rendercam.screen_to_world_2d(action.screen_dx, action.screen_dy, true)

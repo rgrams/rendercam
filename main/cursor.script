@@ -15,9 +15,7 @@ end
 function on_message(self, message_id, message, sender)
 	if message_id == hash("update pos") then
 		self.pos = message.pos
-		go.set_position(self.pos, "dot")
-		label.set_text("#xcoord", round(self.pos.x * 100)/100)
-		label.set_text("#ycoord", round(self.pos.y * 100)/100)
-		label.set_text("#zcoord", round(self.pos.z * 100)/100)
+		go.set_position(self.pos)
+		label.set_text("#label", string.format("(%.1f, %.1f)", self.pos.x, self.pos.y))
 	end
 end
