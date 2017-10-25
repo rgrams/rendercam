@@ -11,8 +11,6 @@ function init(self)
 	msg.post(".", "acquire_input_focus")
 	node = gui.get_node("node")
 	adjust = gui.get_adjust_mode(node)
-
-	print("Adjust mode = ", gui.get_adjust_mode(node))
 end
 
 function on_message(self, message_id, message, sender)

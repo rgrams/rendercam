@@ -9,8 +9,10 @@ local panning = false
 local orbit_cam_speed = 0.3
 
 local cursor = msg.url("main", "/cursor/dot", "script")
-print(cursor)
 local xrot = vmath.quat_rotation_x(math.rad(-30))
+local cam_ids
+local planeNormal = vmath.vector3(0, 0, 1)
+local planePoint = vmath.vector3(0, 0, 0)
 
 
 function init(self)
@@ -19,6 +21,8 @@ function init(self)
 	rendercam.follow(go.get_id("character"), true, go.get_id("camera"))
 
 	self.mouse_spos = vmath.vector3()
+	cam_ids = { go.get_id("camera1"), go.get_id("camera2"), go.get_id("camera3"), go.get_id("camera4") }
+	self.camIndex = 1
 end
 
 function update(self, dt)
@@ -28,7 +32,17 @@ function update(self, dt)
 	self.orbitCamAngle = self.orbitCamAngle + orbit_cam_speed * dt
 
 
-	self.mouse_wpos = rendercam.screen_to_world_2d(self.mouse_spos.x, self.mouse_spos.y)
+	if self.camIndex == 1 then
+		-- if using the 2D orthographic camera
+		self.mouse_wpos = rendercam.screen_to_world_2d(self.mouse_spos.x, self.mouse_spos.y)
+	else
+		-- if using one of the other cameras
+		--		screen_to_world_2d works for a 2D-oriented perspective camera, but
+		--		will have some slight imprecision based on the size of the view depth.
+		local point = rendercam.screen_to_world_plane(self.mouse_spos.x, self.mouse_spos.y, planeNormal, planePoint)
+		-- point will be nil if the camera angle is parallel to the plane
+		if point then self.mouse_wpos = point end
+	end
 	msg.post(cursor, "update pos", {pos = self.mouse_wpos})
 end
 
@@ -37,8 +51,14 @@ function on_input(self, action_id, action)
 		self.mouse_spos.x = action.screen_x;  self.mouse_spos.y = action.screen_y
 
 		if panning then
-			local dv = -rendercam.screen_to_world_2d(action.screen_dx, action.screen_dy, true)
-			rendercam.pan(dv.x, dv.y)
+			if self.camIndex == 1 or self.camIndex == 2 then
+				-- if using one of the 2D-oriented cameras, use cursor world delta
+				local dv = rendercam.screen_to_world_2d(action.screen_dx, action.screen_dy, true)
+				rendercam.pan(-dv.x, -dv.y)
+			else
+				-- if using one of the 3D-oriented cameras, just use screen delta
+				rendercam.pan(-action.screen_dx, -action.screen_dy)
+			end
 		end
 
 	elseif action_id == hash("mouse wheel up") then
@@ -63,16 +83,20 @@ function on_input(self, action_id, action)
 		rendercam.recoil(vmath.vector3(-20, 0, 0), 0.3)
 
 	elseif action_id == hash("1") and action.pressed then
-		rendercam.activate_camera(go.get_id("camera"))
+		self.camIndex = 1
+		rendercam.activate_camera(cam_ids[self.camIndex])
 
 	elseif action_id == hash("2") and action.pressed then
-		rendercam.activate_camera(go.get_id("camera2"))
+		self.camIndex = 2
+		rendercam.activate_camera(cam_ids[self.camIndex])
 
 	elseif action_id == hash("3") and action.pressed then
-		rendercam.activate_camera(go.get_id("camera3"))
+		self.camIndex = 3
+		rendercam.activate_camera(cam_ids[self.camIndex])
 
 	elseif action_id == hash("4") and action.pressed then
-		rendercam.activate_camera(go.get_id("camera4"))
+		self.camIndex = 4
+		rendercam.activate_camera(cam_ids[self.camIndex])
 
 	elseif action_id == hash("escape") then
 		msg.post("@system:", "exit", {code = 0})

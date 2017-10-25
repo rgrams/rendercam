@@ -1,6 +1,7 @@
 [project]
 title = Rendercam
 version = 0.8
+dependencies = 
 
 [bootstrap]
 main_collection = /main/main.collectionc

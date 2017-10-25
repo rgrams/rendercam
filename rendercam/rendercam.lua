@@ -330,6 +330,18 @@ function M.screen_to_world_ray(x, y)
 	return vmath.vector3(np.x, np.y, np.z), vmath.vector3(fp.x, fp.y, fp.z)
 end
 
+-- Gets screen to world ray and intersects it with a plane
+function M.screen_to_world_plane(x, y, planeNormal, pointOnPlane)
+	local np, fp = M.screen_to_world_ray(x, y)
+	local denom = vmath.dot(planeNormal, fp - np)
+	if denom == 0 then
+		-- ray is perpendicular to plane normal, so there are either 0 or infinite intersections
+		return
+	end
+	local numer = vmath.dot(planeNormal, pointOnPlane - np)
+	return vmath.lerp(numer / denom, np, fp)
+end
+
 function M.world_to_screen(pos, adjust)
 	local m = M.proj * M.view
 	pos = vmath.vector4(pos.x, pos.y, pos.z, 1)

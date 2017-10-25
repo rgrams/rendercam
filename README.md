@@ -34,7 +34,7 @@ The distance in front of the camera where rendering will start, relative to the 
 The distance in front of the camera where rendering will end, relative to the camera's position. Should be greater than Near Z.
 
 #### View Distance <kbd>number</kbd>
-The distance in front of the camera where the game world is located. This is usually 0 for orthographic cameras, or the z position of a perspective camera for 2.5D games (if the game world is at Z=0). For most perspective cameras (non-fixed-FOV), this is the distance at which the view area is measured. The View Distance is subtracted from the camera Z position on init to get the world Z position used for screen-to-world position transforms. 
+The distance in front of the camera where the game world is located. This is usually 0 for orthographic cameras, or the z position of a perspective camera for 2.5D games (if the game world is at Z=0). For most perspective cameras (non-fixed-FOV), this is the distance at which the view area is measured. The View Distance is subtracted from the camera Z position on init to get the world Z position used for screen-to-world position transforms.
 
 #### FOV (field of view) <kbd>number</kbd>
 The field of view for perspective cameras, in degrees. This property is generally unused (and should be left at -1), as the FOV will be calculated based on other settings. If you want a camera with a fixed FOV, make sure "Use View Area" is un-checked, select the "Fixed Height" scale mode, and set FOV to your desired angle. The aspect ratio can be fixed or not.
@@ -174,7 +174,7 @@ _RETURNS_
 * __y__ <kbd>number</kbd> - Viewport Y.
 
 #### rendercam.screen_to_world_2d(x, y, [delta], [worldz])
-Transforms `x` and `y` from screen coordinates to world coordinates at a certain Z position---either a specified `worldz` or by default the current camera's "2d World Z". This function returns a position on an X/Y plane at the specified Z. For full 3D games it often makes more sense to cast a ray out from the camera to check what object is under a point on the screen. For that, use `rendercam.screen_to_world_ray()`.
+Transforms `x` and `y` from screen coordinates to world coordinates at a certain Z position—either a specified `worldz` or by default the current camera's "2d World Z". This function returns a position on a plane perpendicular to the camera angle, so it's only accurate for 2D-oriented cameras (facing along the Z axis). It works for 2D-oriented perspective cameras, but will have some small imprecision based on the size of the view depth (farZ - nearZ). For 3D cameras, use `rendercam.screen_to_world_plane` or `rendercam.screen_to_world_ray`.
 
 _PARAMETERS_
 * __x__ <kbd>number</kbd> - Screen X
@@ -195,6 +195,18 @@ _PARAMETERS_
 _RETURNS_
 * __start__ <kbd>vector3</kbd> - Start point on the camera near plane, in world coordinates.
 * __end__ <kbd>vector3</kbd> - End point on the camera far plane, in world coordinates.
+
+#### rendercam.screen_to_world_plane(x, y, planeNormal, pointOnPlane)
+Gets the screen-to-world ray and intersects it with a world-space plane. The equivalent of `rendercam.screen_to_world_2d` for 3D cameras. Note: this will return `nil` if the camera angle is exactly parallel to the plane (perpendicular to the normal).
+
+_PARAMETERS_
+* __x__ <kbd>number</kbd> - Screen X
+* __y__ <kbd>number</kbd> - Screen Y
+* __planeNormal__ <kbd>vector3</kbd> - Normal vector of the plane
+* __pointOnPlane__ <kbd>vector3</kbd> - A point on the plane
+
+_RETURNS_
+* __pos__ <kbd>vector3 | nil</kbd> - World position or `nil` if the camera angle is parallel to the plane. 
 
 #### rendercam.world_to_screen(pos, [adjust])
 Transforms the supplied world position into screen (viewport) coordinates. Can take an optional `adjust` parameter to calculate an accurate screen coordinate for a gui node with any adjust mode: Fit, Zoom, or Stretch.

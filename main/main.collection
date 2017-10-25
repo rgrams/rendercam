@@ -1,6 +1,6 @@
 name: "main"
 instances {
-  id: "camera"
+  id: "camera1"
   prototype: "/rendercam/camera.go"
   position {
     x: 0.0
