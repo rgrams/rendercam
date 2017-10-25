@@ -1,6 +1,8 @@
 # Rendercam
 A universal render script & camera package for all the common camera types: perspective or orthographic, fixed aspect ratio or unfixed aspect ratio, plus four options for how the view changes for different resolutions and window sizes, and more. Also does screen-to-world and world-to-screen transforms for any camera type; camera switching, zooming, panning, shaking, recoil, and lerped following.
 
+---
+
 ## Installation
 
 Install Rendercam in your project by adding it as a [library dependency](https://www.defold.com/manuals/libraries/). Open your game.project file and in the "Dependencies" field under "Project", add:
@@ -75,32 +77,32 @@ To use the other features of Rendercam you need to call module functions from a 
 local rendercam = require "rendercam.rendercam"
 ```
 
-#### rendercam.activate_camera(cam_id)
+### rendercam.activate_camera(cam_id)
 Activate a different camera.
 
 _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object.
 
-#### rendercam.zoom(z, [cam_id])
+### rendercam.zoom(z, [cam_id])
 Zoom the camera. If the camera is orthographic, this adds `z * rendercam.ortho_zoom_mult` to the camera's ortho scale. If the camera is perspective, this moves the camera forward by `z`. You can set `rendercam.ortho_zoom_mult` to adjust the ortho zoom speed, or use `rendercam.get_ortho_scale` and `rendercam.set_ortho_scale` for full control.
 
 _PARAMETERS_
 * __z__ <kbd>number</kbd> - Amount to zoom.
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
-#### rendercam.get_ortho_scale([cam_id])
+### rendercam.get_ortho_scale([cam_id])
 Gets the current ortho scale of the camera. (doesn't work for perspective cameras obviously).
 
 _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
-#### rendercam.set_ortho_scale(s, [cam_id])
+### rendercam.set_ortho_scale(s, [cam_id])
 Sets the current ortho scale of the camera. (doesn't work for perspective cameras obviously).
 
 _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
-#### rendercam.pan(dx, dy, [cam_id])
+### rendercam.pan(dx, dy, [cam_id])
 Moves the camera in it's local X/Y plane.
 
 _PARAMETERS_
@@ -108,7 +110,7 @@ _PARAMETERS_
 * __dy__ <kbd>number</kbd> - Distance to move the camera along its local Y axis.
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
-#### rendercam.shake(dist, dur, [cam_id])
+### rendercam.shake(dist, dur, [cam_id])
 Shakes the camera in its local X/Y plane. The intensity of the shake will fall off linearly over its duration.
 
 _PARAMETERS_
@@ -116,7 +118,7 @@ _PARAMETERS_
 * __dur__ <kbd>number</kbd> - Duration of the shake in seconds.
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
-#### rendercam.recoil(vec, dur, [cam_id])
+### rendercam.recoil(vec, dur, [cam_id])
 Recoils the camera by the supplied vector, local to the camera's rotation. The recoil will fall off quadratically (t^2) over its duration.
 
 _PARAMETERS_
@@ -124,13 +126,13 @@ _PARAMETERS_
 * __dur__ <kbd>number</kbd> - Duration of the recoil in seconds.
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
-#### rendercam.stop_shaking([cam_id])
+### rendercam.stop_shaking([cam_id])
 Cancel's all current shakes and recoils for this camera.
 
 _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
-#### rendercam.follow(target_id, [allowMultiFollow], [cam_id])
+### rendercam.follow(target_id, [allowMultiFollow], [cam_id])
 Makes the camera follow a game object. Lerps by default (see `rendercam.follow_lerp_func` below). If you want the camera to rigidly follow a game object it is better to just make the camera a child of that object. You can tell a camera to follow multiple game objects, in which case it will move toward the average of their positions. Note that the camera follow function only affects the camera's X and Y coordinates, so it only makes sense for 2D-oriented games.
 
 _PARAMETERS_
@@ -138,14 +140,14 @@ _PARAMETERS_
 * __allowMultiFollow__ <kbd>bool</kbd> - If true, will add `target_id` to the list of objects to follow instead of replacing all previous targets.
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
-#### rendercam.unfollow(target_id, [cam_id])
+### rendercam.unfollow(target_id, [cam_id])
 Makes the camera stop following a game object. If the camera was following multiple objects, this will remove `target_id` from the list, otherwise it will stop the camera from following anything.
 
 _PARAMETERS_
 * __target_id__ <kbd>hash</kbd> - ID of the object to unfollow.
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
-#### rendercam.follow_lerp_func(curPos, targetPos, dt)
+### rendercam.follow_lerp_func(curPos, targetPos, dt)
 ```
 function M.follow_lerp_func(curPos, targetPos, dt)
     return vmath.lerp(dt * M.follow_lerp_speed, curPos, targetPos)
@@ -161,7 +163,7 @@ _PARAMETERS_
 
 ## Transform Functions
 
-#### rendercam.screen_to_viewport(x, y, [delta])
+### rendercam.screen_to_viewport(x, y, [delta])
 Transforms `x` and `y` from screen coordinates to viewport coordinates. This only does something when you are using a fixed aspect ratio camera. Otherwise the viewport and the window are the same size. Called internally by `rendercam.screen_to_world_ray` and `rendercam.screen_to_world_2d`.
 
 _PARAMETERS_
@@ -173,7 +175,7 @@ _RETURNS_
 * __x__ <kbd>number</kbd> - Viewport X.
 * __y__ <kbd>number</kbd> - Viewport Y.
 
-#### rendercam.screen_to_world_2d(x, y, [delta], [worldz])
+### rendercam.screen_to_world_2d(x, y, [delta], [worldz])
 Transforms `x` and `y` from screen coordinates to world coordinates at a certain Z position—either a specified `worldz` or by default the current camera's "2d World Z". This function returns a position on a plane perpendicular to the camera angle, so it's only accurate for 2D-oriented cameras (facing along the Z axis). It works for 2D-oriented perspective cameras, but will have some small imprecision based on the size of the view depth (farZ - nearZ). For 3D cameras, use `rendercam.screen_to_world_plane` or `rendercam.screen_to_world_ray`.
 
 _PARAMETERS_
@@ -185,7 +187,7 @@ _PARAMETERS_
 _RETURNS_
 * __pos__ <kbd>vector3</kbd> - World position.
 
-#### rendercam.screen_to_world_ray(x, y)
+### rendercam.screen_to_world_ray(x, y)
 Takes `x` and `y` screen coordinates and returns two points describing the start and end of a ray from the camera's near plane to its far plane, through that point on the screen. You can use these points to cast a ray to check for collisions "underneath" the mouse cursor, or any other screen point.
 
 _PARAMETERS_
@@ -196,7 +198,7 @@ _RETURNS_
 * __start__ <kbd>vector3</kbd> - Start point on the camera near plane, in world coordinates.
 * __end__ <kbd>vector3</kbd> - End point on the camera far plane, in world coordinates.
 
-#### rendercam.screen_to_world_plane(x, y, planeNormal, pointOnPlane)
+### rendercam.screen_to_world_plane(x, y, planeNormal, pointOnPlane)
 Gets the screen-to-world ray and intersects it with a world-space plane. The equivalent of `rendercam.screen_to_world_2d` for 3D cameras. Note: this will return `nil` if the camera angle is exactly parallel to the plane (perpendicular to the normal).
 
 _PARAMETERS_
@@ -208,7 +210,7 @@ _PARAMETERS_
 _RETURNS_
 * __pos__ <kbd>vector3 | nil</kbd> - World position or `nil` if the camera angle is parallel to the plane. 
 
-#### rendercam.world_to_screen(pos, [adjust])
+### rendercam.world_to_screen(pos, [adjust])
 Transforms the supplied world position into screen (viewport) coordinates. Can take an optional `adjust` parameter to calculate an accurate screen coordinate for a gui node with any adjust mode: Fit, Zoom, or Stretch.
 
 _PARAMETERS_
