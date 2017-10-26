@@ -7,7 +7,7 @@ attribute mediump vec3 normal;
 uniform mediump mat4 mtx_view;
 uniform mediump mat4 mtx_proj;
 uniform mediump mat4 mtx_normal;
-uniform mediump vec4 light;
+uniform lowp vec4 light;
 
 varying mediump vec4 var_position;
 varying mediump vec3 var_normal;
