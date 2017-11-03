@@ -1,6 +1,10 @@
 
 local M = {}
 
+-- Check if 'shared_state' setting is on
+if sys.get_config("script.shared_state") ~= "1" then
+	error("ERROR - rendercam - 'shared_state' setting in game.project must be enabled for rendercam to work.", 0)
+end
 
 local SCALEMODE_EXPANDVIEW = hash("expandView")
 local SCALEMODE_FIXEDAREA = hash("fixedArea")
@@ -214,6 +218,7 @@ end
 function M.calculate_view() -- called from render script on update
 	-- The view matrix is just the camera object transform. (Translation & rotation. Scale is ignored)
 	--		It changes as the camera is translated and rotated, but has nothing to do with aspect ratio or anything else.
+	if not curCam then error("ERROR - rendercam - NO ACTIVE CAMERA!") end
 	M.view = vmath.matrix4_look_at(curCam.wpos, curCam.wpos + curCam.wforwardVec, curCam.wupVec)
 	return M.view
 end

@@ -19,6 +19,8 @@ After installation, it just takes two simple steps to get Rendercam up and runni
 1. Select the Rendercam render script in your game.project file. Under "bootstrap", edit the "Render" field and select "/rendercam/rendercam.render".
 2. Add a Rendercam camera to your scene. Add "camera.go" from the rendercam folder to your main collection. It can be a child of another game object, or not, but make sure it's z-position is zero (this is for the default camera settings only).
 
+> Note: the "shared_state" setting must also be enabled in your game.project file for Rendercam to work, but it is enabled by default. 
+
 ## Camera Settings
 
 To change your camera settings, expand the camera game object in the outline and select it's script component. In the properties panel you will have a bunch of different options.
