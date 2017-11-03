@@ -235,38 +235,40 @@ function M.update_window_size(x, y)
 end
 
 function M.update_window(newX, newY)
-	newX = newX or M.window.x
-	newY = newY or M.window.y
+	if curCam then
+		newX = newX or M.window.x
+		newY = newY or M.window.y
 
-	local x, y = get_target_worldViewSize(curCam, curCam.viewArea.x, curCam.viewArea.y, M.window.x, M.window.y, newX, newY)
-	curCam.viewArea.x = x;  curCam.viewArea.y = y
-	curCam.aspectRatio = x / y
-	M.update_window_size(newX, newY)
+		local x, y = get_target_worldViewSize(curCam, curCam.viewArea.x, curCam.viewArea.y, M.window.x, M.window.y, newX, newY)
+		curCam.viewArea.x = x;  curCam.viewArea.y = y
+		curCam.aspectRatio = x / y
+		M.update_window_size(newX, newY)
 
-	if curCam.fixedAspectRatio then -- if fixed aspect ratio, calculate viewport cropping
-		local scale = math.min(M.window.x / curCam.aspectRatio, M.window.y / 1)
-		M.viewport.width = curCam.aspectRatio * scale
-		M.viewport.height = scale
+		if curCam.fixedAspectRatio then -- if fixed aspect ratio, calculate viewport cropping
+			local scale = math.min(M.window.x / curCam.aspectRatio, M.window.y / 1)
+			M.viewport.width = curCam.aspectRatio * scale
+			M.viewport.height = scale
 
-		-- Viewport offset: bar on edge of screen from fixed aspect ratio
-		M.viewport.x = (M.window.x - M.viewport.width) * 0.5
-		M.viewport.y = (M.window.y - M.viewport.height) * 0.5
+			-- Viewport offset: bar on edge of screen from fixed aspect ratio
+			M.viewport.x = (M.window.x - M.viewport.width) * 0.5
+			M.viewport.y = (M.window.y - M.viewport.height) * 0.5
 
-		-- For screen-to-viewport coordinate conversion
-		M.viewport.scale.x = M.viewport.width / newX
-		M.viewport.scale.y = M.viewport.height / newY
-	else
-		M.viewport.x = 0;  M.viewport.y = 0
-		M.viewport.width = newX;  M.viewport.height = newY
+			-- For screen-to-viewport coordinate conversion
+			M.viewport.scale.x = M.viewport.width / newX
+			M.viewport.scale.y = M.viewport.height / newY
+		else
+			M.viewport.x = 0;  M.viewport.y = 0
+			M.viewport.width = newX;  M.viewport.height = newY
+		end
+
+		if curCam.orthographic then
+			curCam.halfViewArea.x = x/2;  curCam.halfViewArea.y = y/2
+		else
+			curCam.fov = get_fov(curCam.viewArea.z, curCam.viewArea.y * 0.5)
+		end
+
+		calculate_gui_adjust_scales()
 	end
-
-	if curCam.orthographic then
-		curCam.halfViewArea.x = x/2;  curCam.halfViewArea.y = y/2
-	else
-		curCam.fov = get_fov(curCam.viewArea.z, curCam.viewArea.y * 0.5)
-	end
-
-	calculate_gui_adjust_scales()
 end
 
 -- ---------------------------------------------------------------------------------
