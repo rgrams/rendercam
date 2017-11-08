@@ -75,7 +75,7 @@ Like "Fixed Width", but switched. The camera will always showe the same height o
 
 ## Camera Functions
 To use the other features of Rendercam you need to call module functions from a script. First, require the rendercam module in your script:
-```
+```lua
 local rendercam = require "rendercam.rendercam"
 ```
 
@@ -150,7 +150,7 @@ _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
 ### rendercam.follow_lerp_func(curPos, targetPos, dt)
-```
+```lua
 function M.follow_lerp_func(curPos, targetPos, dt)
     return vmath.lerp(dt * M.follow_lerp_speed, curPos, targetPos)
 end
@@ -181,7 +181,7 @@ Sometimes you may have scripts or shaders that need to be updated when the windo
 Register a listener function to be called when the window is updated. To use this, first define a function in your script that you want called, then add it to the list with `rendercam.add_window_listener`.
 
 Example:
-```
+```lua
 local function on_window_update(window, viewport, aspect, fov)
 	-- do stuff:
 	print(viewport.width, viewport.height)
@@ -200,7 +200,7 @@ _PARAMETERS_
 Remove a function from the list of window update listeners. If you added a listener function, make sure you remove it before the script is destroyed.
 
 To continue the above example:
-```
+```lua
 function final(self)
 	rendercam.remove_window_listener(on_window_update)
 end
