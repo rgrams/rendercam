@@ -163,6 +163,52 @@ _PARAMETERS_
 * __targetPos__ <kbd>vector3</kbd> - The average position of all follow targets---the exact position of the target if there is only one.
 * __dt__ <kbd>number</kbd> - Delta time for this frame.
 
+## Window Update Listeners
+
+Sometimes you may have scripts or shaders that need to be updated when the window or camera is changed. The following module functions let you add and remove functions from a list of functions that will be called whenever the window is resized or the camera is switched. Every function will be passed the following arguments:
+
+* __window__ <kbd>vector3</kbd> - The same as `rendercam.window`. The new size of the window.
+* __viewport__ <kbd>table</kbd> - The same as `rendercam.viewport`. Contains:
+	* __x__ <kbd>number</kbd> - The viewport X offset (black bar width) for fixed aspect ratio cameras.
+	* __y__ <kbd>number</kbd> - The viewport Y offset (black bar height) for fixed aspect ratio cameras.
+	* __width__ <kbd>number</kbd> - The viewport width.
+	* __height__ <kbd>number</kbd> - The viewport height.
+* __aspect__ <kbd>number</kbd> - The aspect ratio of the camera.
+* __fov__ <kbd>number</kbd> - The field of view of the camera in radians. Should be -1 for orthographic cameras.
+
+### rendercam.add_window_listener(func)
+
+Register a listener function to be called when the window is updated. To use this, first define a function in your script that you want called, then add it to the list with `rendercam.add_window_listener`.
+
+Example:
+```
+local function on_window_update(window, viewport, aspect, fov)
+	-- do stuff:
+	print(viewport.width, viewport.height)
+end
+
+function init(self)
+	rendercam.add_window_listener(on_window_update)
+end
+```
+
+_PARAMETERS_
+* __func__ <kbd>function</kbd> - The listener function.
+
+### rendercam.remove_window_listener(func)
+
+Remove a function from the list of window update listeners. If you added a listener function, make sure you remove it before the script is destroyed.
+
+To continue the above example:
+```
+function final(self)
+	rendercam.remove_window_listener(on_window_update)
+end
+```
+
+_PARAMETERS_
+* __func__ <kbd>function</kbd> - The listener function.
+
 ## Transform Functions
 
 ### rendercam.screen_to_viewport(x, y, [delta])

@@ -212,7 +212,25 @@ function M.follow_lerp_func(curPos, targetPos, dt)
 end
 
 -- ---------------------------------------------------------------------------------
---| 					PUBLIC FUNCTIONS II: RENDER SCRIPT							|
+--| 			   PUBLIC FUNCTIONS II: WINDOW UPDATE LISTENERS						|
+-- ---------------------------------------------------------------------------------
+
+local listeners = {}
+
+function M.add_window_listener(func)
+	table.insert(listeners, func)
+end
+
+function M.remove_window_listener(func)
+	for i, v in ipairs(listeners) do
+		if v == func then
+			table.remove(listeners, i)
+		end
+	end
+end
+
+-- ---------------------------------------------------------------------------------
+--| 					PUBLIC FUNCTIONS III: RENDER SCRIPT							|
 -- ---------------------------------------------------------------------------------
 
 function M.calculate_view() -- called from render script on update
@@ -273,11 +291,16 @@ function M.update_window(newX, newY)
 		end
 
 		calculate_gui_adjust_scales()
+
+		-- call window update listener functions
+		for i, v in ipairs(listeners) do
+			v(M.window, M.viewport, curCam.aspectRatio, curCam.fov)
+		end
 	end
 end
 
 -- ---------------------------------------------------------------------------------
---| 					PUBLIC FUNCTIONS III: TRANSFORMS							|
+--| 					  PUBLIC FUNCTIONS IV: TRANSFORMS							|
 -- ---------------------------------------------------------------------------------
 
 function M.screen_to_viewport(x, y, delta)
