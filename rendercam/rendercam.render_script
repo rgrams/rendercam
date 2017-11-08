@@ -10,7 +10,7 @@ local UPDATE_WINDOW = hash("update window")
 
 local function update_window(self)
 	rendercam.update_window(render.get_window_width(), render.get_window_height())
-	self.gui_proj = vmath.matrix4_orthographic(vp.x, vp.x + vp.width, vp.y, vp.y + vp.height, -1, 1)
+	self.gui_proj = vmath.matrix4_orthographic(0, rendercam.window.x, 0, rendercam.window.y, -1, 1)
 end
 
 function init(self)
@@ -55,6 +55,7 @@ function update(self)
     render.draw_debug3d()
 
 	-- GUI Rendering
+	render.set_viewport(0, 0, rendercam.window.x, rendercam.window.y)
     render.set_view(IDENTITY_MATRIX)
 	render.set_projection(self.gui_proj) -- gui_proj only calculated on update_window
 
