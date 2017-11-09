@@ -217,13 +217,13 @@ end
 
 local listeners = {}
 
-function M.add_window_listener(func)
-	table.insert(listeners, func)
+function M.add_window_listener(url)
+	table.insert(listeners, url)
 end
 
-function M.remove_window_listener(func)
+function M.remove_window_listener(url)
 	for i, v in ipairs(listeners) do
-		if v == func then
+		if v == url then
 			table.remove(listeners, i)
 		end
 	end
@@ -292,9 +292,9 @@ function M.update_window(newX, newY)
 
 		calculate_gui_adjust_scales()
 
-		-- call window update listener functions
+		-- send window update messages to listeners
 		for i, v in ipairs(listeners) do
-			v(M.window, M.viewport, curCam.aspectRatio, curCam.fov)
+			msg.post(v, "window_update", { window = M.window, viewport = M.viewport, aspect = curCam.aspectRatio, fov = curCam.fov })
 		end
 	end
 end

@@ -19,7 +19,7 @@ After installation, it just takes two simple steps to get Rendercam up and runni
 1. Select the Rendercam render script in your game.project file. Under "bootstrap", edit the "Render" field and select "/rendercam/rendercam.render".
 2. Add a Rendercam camera to your scene. Add "camera.go" from the rendercam folder to your main collection. It can be a child of another game object, or not, but make sure it's z-position is zero (this is for the default camera settings only).
 
-> Note: the "shared_state" setting must also be enabled in your game.project file for Rendercam to work, but it is enabled by default. 
+> Note: the "shared_state" setting must also be enabled in your game.project file for Rendercam to work, but it is enabled by default.
 
 ## Camera Settings
 
@@ -165,8 +165,11 @@ _PARAMETERS_
 
 ## Window Update Listeners
 
-Sometimes you may have scripts or shaders that need to be updated when the window or camera is changed. The following module functions let you add and remove functions from a list of functions that will be called whenever the window is resized or the camera is switched. Every function will be passed the following arguments:
+Sometimes you may have scripts or shaders that need to be updated when the window or camera is changed. The following module functions let you add and remove items from a list of URLs that will be sent a the following message whenever the window is resized or the camera is switched:
 
+### window_update
+
+_FIELDS_
 * __window__ <kbd>vector3</kbd> - The same as `rendercam.window`. The new size of the window.
 * __viewport__ <kbd>table</kbd> - The same as `rendercam.viewport`. Contains:
 	* __x__ <kbd>number</kbd> - The viewport X offset (black bar width) for fixed aspect ratio cameras.
@@ -176,38 +179,34 @@ Sometimes you may have scripts or shaders that need to be updated when the windo
 * __aspect__ <kbd>number</kbd> - The aspect ratio of the camera.
 * __fov__ <kbd>number</kbd> - The field of view of the camera in radians. Should be -1 for orthographic cameras.
 
-### rendercam.add_window_listener(func)
+### rendercam.add_window_listener(url)
 
-Register a listener function to be called when the window is updated. To use this, first define a function in your script that you want called, then add it to the list with `rendercam.add_window_listener`.
+Register a URL to be sent a message when the window is updated.
 
 Example:
 ```lua
-local function on_window_update(window, viewport, aspect, fov)
-	-- do stuff:
-	print(viewport.width, viewport.height)
-end
-
 function init(self)
-	rendercam.add_window_listener(on_window_update)
+	self.url = msg.url()
+	rendercam.add_window_listener(self.url)
 end
 ```
 
 _PARAMETERS_
-* __func__ <kbd>function</kbd> - The listener function.
+* __url__ <kbd>string | url</kbd> - The URL. Note: If using a string, this must be an absolute URL including the socket.
 
-### rendercam.remove_window_listener(func)
+### rendercam.remove_window_listener(url)
 
-Remove a function from the list of window update listeners. If you added a listener function, make sure you remove it before the script is destroyed.
+Remove a URL from the list of window update listeners. If you added a listener, make sure you remove it before the script is destroyed.
 
 To continue the above example:
 ```lua
 function final(self)
-	rendercam.remove_window_listener(on_window_update)
+	rendercam.remove_window_listener(self.url)
 end
 ```
 
 _PARAMETERS_
-* __func__ <kbd>function</kbd> - The listener function.
+* __url__ <kbd>string | url</kbd> - The URL. This must be the same address and type that you passed to 'add_window_listener'. If you added a string, you must remove a string.
 
 ## Transform Functions
 
@@ -256,7 +255,7 @@ _PARAMETERS_
 * __pointOnPlane__ <kbd>vector3</kbd> - A point on the plane
 
 _RETURNS_
-* __pos__ <kbd>vector3 | nil</kbd> - World position or `nil` if the camera angle is parallel to the plane. 
+* __pos__ <kbd>vector3 | nil</kbd> - World position or `nil` if the camera angle is parallel to the plane.
 
 ### rendercam.world_to_screen(pos, [adjust])
 Transforms the supplied world position into screen (viewport) coordinates. Can take an optional `adjust` parameter to calculate an accurate screen coordinate for a gui node with any adjust mode: Fit, Zoom, or Stretch.
