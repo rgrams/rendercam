@@ -165,7 +165,7 @@ _PARAMETERS_
 
 ## Window Update Listeners
 
-Sometimes you may have scripts or shaders that need to be updated when the window or camera is changed. The following module functions let you add and remove items from a list of URLs that will be sent a the following message whenever the window is resized or the camera is switched:
+Sometimes you may have scripts or shaders that need to be updated when the window or camera is changed. The following module functions let you add and remove items from a list of URLs that will be sent the following message whenever the window is resized or the camera is switched:
 
 ### window_update
 
