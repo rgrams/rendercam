@@ -372,6 +372,21 @@ function M.screen_to_world_plane(x, y, planeNormal, pointOnPlane)
 	return vmath.lerp(numer / denom, np, fp)
 end
 
+function M.screen_to_gui(x, y, adjust, isSize)
+	if not isSize then
+		x = x / M.guiAdjust[adjust].sx - M.guiAdjust[adjust].ox
+		y = y / M.guiAdjust[adjust].sy - M.guiAdjust[adjust].oy
+	else
+		x = x / M.guiAdjust[adjust].sx
+		y = y / M.guiAdjust[adjust].sy
+	end
+	return x, y
+end
+
+function M.screen_to_gui_pick(x, y)
+	return x / M.guiAdjust[2].sx, y / M.guiAdjust[2].sy
+end
+
 function M.world_to_screen(pos, adjust)
 	local m = M.proj * M.view
 	pos = vmath.vector4(pos.x, pos.y, pos.z, 1)

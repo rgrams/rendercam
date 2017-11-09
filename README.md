@@ -257,6 +257,40 @@ _PARAMETERS_
 _RETURNS_
 * __pos__ <kbd>vector3 | nil</kbd> - World position or `nil` if the camera angle is parallel to the plane.
 
+### rendercam.screen_to_gui(x, y, adjust, [isSize])
+Transforms `x` and `y` from screen coordinates to GUI coordinates. If the window size has changed and your GUI has "Adjust Reference" set to "Per Node", GUI coordinates will no longer match screen coordinates, and they will be different for each adjust mode.
+
+_PARAMETERS_
+* __x__ <kbd>number</kbd> - Screen X
+* __y__ <kbd>number</kbd> - Screen Y
+* __adjust__ <kbd>constant</kbd> - GUI adjust mode to use for calculation.
+    * You can use
+	    * gui.ADJUST_FIT
+		* gui.ADJUST_ZOOM
+		* gui.ADJUST_STRETCH
+	* Or
+	    * rendercam.GUI_ADJUST_FIT
+		* rendercam.GUI_ADJUST_ZOOM
+		* rendercam.GUI_ADJUST_STRETCH
+	* _Or_
+		* The result of `gui.get_adjust_mode`
+* __isSize__ <kbd>bool</kbd> - Optional argument. If the coordinates to be transformed are a node size rather than a position. False by default.
+
+_RETURNS_
+* __x__ <kbd>number</kbd> - GUI X
+* __y__ <kbd>number</kbd> - GUI Y
+
+### rendercam.screen_to_gui_pick(x, y)
+Transforms screen coordinates to coordinates that will work accurately with `gui.pick_node`. If the window size has changed, the coordinate system used by `gui.pick_node` will not match the screen coordinate system. If you are only picking nodes underneath a touch or the mouse cursor, you don't need this function, just use `action.x` and `action.y` in your `on_input` function. You _will_ need this function to use `gui.pick_node` with an arbitrary point on the screen (if the window has been changed from it's initial setting). The adjust mode of the GUI node does not matter.
+
+_PARAMETERS_
+* __x__ <kbd>number</kbd> - Screen X
+* __y__ <kbd>number</kbd> - Screen Y
+
+_RETURNS_
+* __x__ <kbd>number</kbd> - X
+* __y__ <kbd>number</kbd> - Y
+
 ### rendercam.world_to_screen(pos, [adjust])
 Transforms the supplied world position into screen (viewport) coordinates. Can take an optional `adjust` parameter to calculate an accurate screen coordinate for a gui node with any adjust mode: Fit, Zoom, or Stretch.
 
@@ -271,6 +305,8 @@ _PARAMETERS_
 	    * rendercam.GUI_ADJUST_FIT
 		* rendercam.GUI_ADJUST_ZOOM
 		* rendercam.GUI_ADJUST_STRETCH
+	* _Or_
+		* The result of `gui.get_adjust_mode`
 
 _RETURNS_
 * __pos__ <kbd>vector3</kbd> - Screen position
