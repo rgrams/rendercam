@@ -163,10 +163,11 @@ function on_message(self, message_id, message, sender)
 			if v.t <= 0 then table.remove(self.data.recoils, i) end
 		end
 
+		-- Camera Follow
 		if self.data.following then
 			self.followPos.x = 0;  self.followPos.y = 0;
 			for i, v in ipairs(self.data.follows) do
-				self.followPos = self.followPos + go.get_position(v)
+				self.followPos = self.followPos + go.get_world_position(v)
 			end
 			self.followPos = self.followPos * (1/#self.data.follows)
 			self.followPos = rendercam.follow_lerp_func(self.data.lpos, self.followPos, self.dt)
