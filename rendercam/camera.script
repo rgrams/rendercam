@@ -124,6 +124,10 @@ function init(self)
 	rendercam.camera_init(self.id, self.data)
 end
 
+function final(self)
+	rendercam.camera_final(self.id)
+end
+
 function update(self, dt)
 	self.dt = dt -- faster to store than to send in message
 	msg.post("#", "post-update")
