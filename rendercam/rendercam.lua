@@ -134,6 +134,7 @@ function M.camera_init(cam_id, data)
 end
 
 function M.camera_final(cam_id)
+	if cameras[cam_id] == curCam then print("WARNING: rendercam - The current camera was deleted! \n\t\tYou should activate a new camera before deleting the old one.") end
 	cameras[cam_id] = nil
 end
 
