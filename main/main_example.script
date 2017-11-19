@@ -18,7 +18,7 @@ local planePoint = vmath.vector3(0, 0, 0)
 function init(self)
 	msg.post(".", "acquire_input_focus")
 	self.orbitCamAngle = 0
-	rendercam.follow(go.get_id("character"), true, go.get_id("camera"))
+	rendercam.follow(go.get_id("character"), true, go.get_id("camera1"))
 
 	self.mouse_spos = vmath.vector3()
 	cam_ids = { go.get_id("camera1"), go.get_id("camera2"), go.get_id("camera3"), go.get_id("camera4") }
