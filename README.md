@@ -26,16 +26,16 @@ After installation, it just takes two simple steps to get Rendercam up and runni
 To change your camera settings, expand the camera game object in the outline and select it's script component. In the properties panel you will have a bunch of different options.
 
 #### Active <kbd>bool</kbd>
-Whether the camera is initially active or not. If you have multiple cameras you will want to uncheck this property on your secondary cameras to make sure the right camera is used.
+Whether the camera is initially active or not. If you have multiple cameras you will want to uncheck this property on your secondary cameras to make sure the right camera is used. You must always have an active camera.
 
 #### Orthographic <kbd>bool</kbd>
-Leave checked for an orthographic camera, uncheck for a perspective camera. Certain other options are only used if the camera is of one type or the other. FOV is only used by perspective cameras, Ortho Scale is only used by orthographic cameras, etc.
+Leave checked for an orthographic camera, uncheck for a perspective camera. Some other options below are only used if the camera is of one type or the other. For example: FOV is only used by perspective cameras, and Ortho Scale is only used by orthographic cameras.
 
 #### Near Z <kbd>number</kbd>
-The distance in front of the camera where rendering will start, relative to the camera's position. This can be any value for orthographic cameras, but must be greater than zero for perspective cameras.
+The distance in front of the camera where rendering will start, relative to the camera's position. This can be any value for orthographic cameras, but must be greater than zero for perspective cameras. -1 is the default for orthographic cameras, 1 is a decent value for perspective cameras.
 
 #### Far Z <kbd>number</kbd>
-The distance in front of the camera where rendering will end, relative to the camera's position. Should be greater than Near Z.
+The distance in front of the camera where rendering will end, relative to the camera's position. Should be greater than Near Z. 1 is the default for orthographic cameras, 1000 is a reasonable value for perspective cameras.
 
 #### View Distance <kbd>number</kbd>
 The distance in front of the camera where the game world is located. This is usually 0 for orthographic cameras, or the z position of a perspective camera for 2.5D games (if the game world is at Z=0). For most perspective cameras (non-fixed-FOV), this is the distance at which the view area is measured. The View Distance is subtracted from the camera Z position on init to get the world Z position used for screen-to-world position transforms.
@@ -44,7 +44,7 @@ The distance in front of the camera where the game world is located. This is usu
 The field of view for perspective cameras, in degrees. This property is generally unused (and should be left at -1), as the FOV will be calculated based on other settings. If you want a camera with a fixed FOV, make sure "Use View Area" is un-checked, select the "Fixed Height" scale mode, and set FOV to your desired angle. The aspect ratio can be fixed or not.
 
 #### Ortho Scale <kbd>number</kbd>
-The initial "zoom"/scale for orthographic cameras. At an ortho scale of 2 the camera will show an area of the world four times as large (x and y are both doubled) as it would at scale 1. Or 1/4 of the area at scale 0.5, etc. See the "View Area" property below to set the initial view are of your camera.
+The initial "zoom"/scale for orthographic cameras. At an ortho scale of 2 the camera will show an area of the world four times as large as it would at scale 1 (both x and y are doubled). Or 1/4 of the area at scale 0.5, etc. See the "View Area" property below to set the initial view area of your camera.
 
 #### Fixed Aspect Ratio <kbd>bool</kbd>
 If checked, black bars will be added to the top and bottom or sides of the viewport as necessary so it will always match the aspect ratio you specify via the "Aspect Ratio" property.
@@ -71,16 +71,17 @@ The camera will zoom in or out to show exactly the same _area_ of the game world
 The camera will always show the same width of game world, the height is adjusted to fit. If the window is stretched vertically, it will show more space on top and bottom.
 
 #### Fixed Height
-Like "Fixed Width", but switched. The camera will always showe the same height of the game world, and the width will vary with the window proportion. If you make the window tall and skinny, you'll see the same space up and down, but very little side to side.
+Like "Fixed Width", but switched. The camera will always show the same height of the game world, and the width will vary with the window proportion. If you make the window tall and skinny, you'll see the same distance up and down, but very little side to side.
 
 ## Camera Functions
 To use the other features of Rendercam you need to call module functions from a script. First, require the rendercam module in your script:
 ```lua
 local rendercam = require "rendercam.rendercam"
 ```
+A lot of Rendercam's functions have optional arguments. These are listed in brackets, `[like_this]`. For example, most of the camera functions have an optional `[cam_id]` argument. You can leave this out and the functions will operate on the current camera.
 
 ### rendercam.activate_camera(cam_id)
-Activate a different camera.
+Activate a different camera. If you have multiple cameras, use this to switch between them, otherwise you don't need it. Cameras with "Active" will activate themselves on init. 
 
 _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object.
