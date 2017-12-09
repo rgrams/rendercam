@@ -14,23 +14,28 @@ local SCALEMODE_FIXEDHEIGHT = hash("fixedHeight")
 M.ortho_zoom_mult = 0.01
 M.follow_lerp_speed = 3
 
-M.view = vmath.matrix4()
-M.proj = vmath.matrix4()
+M.view = vmath.matrix4() -- current view matrix
+M.proj = vmath.matrix4() -- current proj matrix
 
-M.window = vmath.vector3()
+-- Current window size
+M.window = vmath.vector3() -- only set in `M.update_window_size`, in `M.update_window`
+-- Viewport offset, size, and scale - only differs from M.window when using a fixed aspect ratio camera
 M.viewport = { x = 0, y = 0, width = M.window.x, height = M.window.y, scale = { x = 1, y = 1 } }
+-- Initial window size - set on init in render script
+M.configWin = vmath.vector3()
 
-M.configWin = vmath.vector3(M.window)
-M.configAspect = M.configWin.x / M.configWin.y
+-- GUI "transform" data - set in `calculate_gui_adjust_scales` and used for screen-to-gui transforms in multiple places
 --				Fit		(scale)		(offset)	Zoom						Stretch
 M.guiAdjust = { [0] = {sx=1, sy=1, ox=0, oy=0}, [1] = {sx=1, sy=1, ox=0, oy=0}, [2] = {sx=1, sy=1, ox=0, oy=0} }
 M.guiOffset = vmath.vector3()
+
+-- GUI Adjust modes - these match up with the gui library properties (gui.ADJUST_FIT, etc.)
 M.GUI_ADJUST_FIT = 0
 M.GUI_ADJUST_ZOOM = 1
 M.GUI_ADJUST_STRETCH = 2
 
-local cameras = {}
-local curCam = nil
+local cameras = {} -- master table of camera data tables. Elements added and removed on M.camera_init and M.camera_final
+local curCam = nil -- current camera data table
 
 
 -- ---------------------------------------------------------------------------------
