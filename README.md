@@ -26,7 +26,7 @@ After installation, it just takes two simple steps to get Rendercam up and runni
 To change your camera settings, expand the camera game object in the outline and select it's script component. In the properties panel you will have a bunch of different options.
 
 #### Active <kbd>bool</kbd>
-Whether the camera is initially active or not. If you have multiple cameras you will want to uncheck this property on your secondary cameras to make sure the right camera is used. You must always have an active camera.
+Whether the camera is initially active or not. If you have multiple cameras you will want to uncheck this property on your secondary cameras to make sure the right camera is used. If you have no active camera a fallback camera will be used for rendering and you will see a message in the console.
 
 #### Orthographic <kbd>bool</kbd>
 Leave checked for an orthographic camera, uncheck for a perspective camera. Some other options below are only used if the camera is of one type or the other. For example: FOV is only used by perspective cameras, and Ortho Scale is only used by orthographic cameras.
@@ -81,7 +81,7 @@ local rendercam = require "rendercam.rendercam"
 A lot of Rendercam's functions have optional arguments. These are listed in brackets, `[like_this]`. For example, most of the camera functions have an optional `[cam_id]` argument. You can leave this out and the functions will operate on the current camera.
 
 ### rendercam.activate_camera(cam_id)
-Activate a different camera. If you have multiple cameras, use this to switch between them, otherwise you don't need it. Cameras with "Active" will activate themselves on init. 
+Activate a different camera. If you have multiple cameras, use this to switch between them, otherwise you don't need it. Cameras with "Active" checked will activate themselves on init.
 
 _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object.
@@ -317,3 +317,18 @@ For a lot of projects you will want to write your own custom render script, to m
 
 ## GUI and Fixed Aspect Ratios
 If you're using a fixed aspect ratio camera, presumably at some point your viewport will be smaller than the actual window (you will have black bars). Unfortunately, if you want your GUI to stay inside the viewport, Defold's nice system of anchors and adjust modes aren't really set up to deal with that. All the automatic GUI adjustments are based on the size of the full window. The best option I've found is to set your game.project display resolution to match your aspect ratio and build your gui inside the guide box that the editor shows you, leaving all the nodes' X and Y anchors set to "None" (i.e. Center). This way, however the display size changes, the GUI nodes should stay at the correct positions inside the viewport.
+
+## Error Messages
+If you try to do something that Rendercam doesn't support, you will hopefully get a reasonably clear error message in the console. See below for further explanation of a few of them. If you get errors with Rendercam that you don't understand, please report them in the [forum thread](https://forum.defold.com/t/rendercam-universal-camera-library/12877) or a [Github issue](https://github.com/rgrams/rendercam/issues) so I can help you out and improve Rendercam.
+
+> "NOTE: rendercam - No active camera found this frame...using fallback camera. There will be no more warnings about this."
+
+This is not really an error message, just a notification to make sure you know what's going on. It means that for at least one frame you have left Rendercam without an active camera, so it's using the default fallback camera to render with. This will happen if your game content is all loaded through collection proxes (such as if you are using [Monarch](https://www.defold.com/community/projects/88415/)) because it takes a few frames to load the proxies. It will also happen if you forgot to put a camera in your collection, if you un-checked "active" on your camera's properties, or if you deactivated or deleted all your cameras from a script. This message will only print once, the first time it happens, so it won't spam your console if it's the intended behavior.
+
+> "WARNING: rendercam.activate_camera() - camera [cam_id] not found. "
+
+This means you call `rendercam.activate_camera(cam_id)` with an ID that doesn't match any existing camera. Make sure you are using [`go.get_id`](https://www.defold.com/ref/go/#go.get_id:-path-) with the correct path to get the camera's ID.
+
+> "rendercam - get_target_worldViewSize() - camera: [cam_id], scale mode not found."
+
+Hopefully no one will ever get this message. It means something is broken and your camera has an invalid scal mode set. Please let me know if this happens.

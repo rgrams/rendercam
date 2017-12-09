@@ -14,6 +14,18 @@ local SCALEMODE_FIXEDHEIGHT = hash("fixedHeight")
 M.ortho_zoom_mult = 0.01
 M.follow_lerp_speed = 3
 
+-- Data table for the fallback camera - used when no user camera is active
+local fallback_cam = {
+	should_print_warning = true, -- Used to print a warning on the first render update that the fallback cam is used
+	orthographic = true, scaleMode = SCALEMODE_EXPANDVIEW, orthoScale = 1, useViewArea = false,
+	viewArea = vmath.vector3(960, 640, 0), halfViewArea = vmath.vector3(480, 320, 0),
+	fixedAspectRatio = false, aspectRatio = 1.5, worldZ = 0, nearZ = -1, farZ = 1, abs_nearZ = -1,
+	abs_farZ = 1, lpos = vmath.vector3(), wpos = vmath.vector3(), wupVec = vmath.vector3(0, 1, 0),
+	wforwardVec = vmath.vector3(0, 0, -1), lupVec = vmath.vector3(0, 1, 0),
+	lforwardVec = vmath.vector3(0, 0, -1), lrightVec = vmath.vector3(1, 0, 0),
+	following = false, follows = {}, recoils = {}, shakes = {},
+}
+
 M.view = vmath.matrix4() -- current view matrix
 M.proj = vmath.matrix4() -- current proj matrix
 
@@ -35,7 +47,7 @@ M.GUI_ADJUST_ZOOM = 1
 M.GUI_ADJUST_STRETCH = 2
 
 local cameras = {} -- master table of camera data tables. Elements added and removed on M.camera_init and M.camera_final
-local curCam = nil -- current camera data table
+local curCam = fallback_cam -- current camera data table, defaults and resets to `fallback_cam` if no user camera is active
 
 
 -- ---------------------------------------------------------------------------------
@@ -139,6 +151,10 @@ function M.camera_init(cam_id, data)
 end
 
 function M.camera_final(cam_id)
+	if curCam == cameras[cam_id] then
+		curCam = fallback_cam
+		msg.post("@render:", "update window")
+	end
 	cameras[cam_id] = nil
 end
 
@@ -148,7 +164,7 @@ function M.zoom(z, cam_id)
 		cam.orthoScale = cam.orthoScale + z * M.ortho_zoom_mult
 	else
 		cam.lpos = cam.lpos - cam.lforwardVec * z
-		go.set_position(cam.lpos, cam.id)
+		go.set_position(cam.lpos, cam.id) -- don't need to check for fallback_cam because it's orthographic
 	end
 end
 
@@ -173,7 +189,7 @@ end
 function M.pan(dx, dy, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	cam.lpos = cam.lpos + cam.lrightVec * dx + cam.lupVec * dy
-	go.set_position(cam.lpos, cam.id)
+	if cam.id then go.set_position(cam.lpos, cam.id) end -- fallback_cam has no cam.id, it will ignore panning
 end
 
 function M.shake(dist, dur, cam_id)
@@ -241,7 +257,12 @@ end
 function M.calculate_view() -- called from render script on update
 	-- The view matrix is just the camera object transform. (Translation & rotation. Scale is ignored)
 	--		It changes as the camera is translated and rotated, but has nothing to do with aspect ratio or anything else.
-	if not curCam then error("ERROR - rendercam - NO ACTIVE CAMERA!") end
+
+	if curCam.should_print_warning then -- using fallback camera and haven't printed the warning yet
+		print("NOTE: rendercam - No active camera found this frame...using fallback camera. There will be no more warnings about this.")
+		fallback_cam.should_print_warning = false
+	end
+
 	M.view = vmath.matrix4_look_at(curCam.wpos, curCam.wpos + curCam.wforwardVec, curCam.wupVec)
 	return M.view
 end
