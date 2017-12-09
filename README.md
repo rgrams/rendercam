@@ -327,8 +327,8 @@ This is not really an error message, just a notification to make sure you know w
 
 > "WARNING: rendercam.activate_camera() - camera [cam_id] not found. "
 
-This means you call `rendercam.activate_camera(cam_id)` with an ID that doesn't match any existing camera. Make sure you are using [`go.get_id`](https://www.defold.com/ref/go/#go.get_id:-path-) with the correct path to get the camera's ID.
+This means you called `rendercam.activate_camera(cam_id)` with an ID that doesn't match any existing camera. Make sure you are using [`go.get_id`](https://www.defold.com/ref/go/#go.get_id:-path-) with the correct path to get the camera's ID.
 
 > "rendercam - get_target_worldViewSize() - camera: [cam_id], scale mode not found."
 
-Hopefully no one will ever get this message. It means something is broken and your camera has an invalid scal mode set. Please let me know if this happens.
+Hopefully no one will ever get this message. It means something is broken and your camera has an invalid scale mode set. Please let me know if this happens.
