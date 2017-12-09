@@ -131,12 +131,7 @@ function M.activate_camera(cam_id)
 		if cameras[cam_id] ~= curCam then
 			if curCam then curCam.active = false end
 			curCam = cameras[cam_id]
-			if curCam.useViewArea then
-				M.update_window_size(curCam.viewArea.x, curCam.viewArea.y) -- set window to viewArea so that'll be used as the old window
-				msg.post("@render:", "update window")
-			else
-				msg.post("@render:", "update window")
-			end
+			msg.post("@render:", "update window")
 		end
 	else
 		print("WARNING: rendercam.activate_camera() - camera ".. cam_id .. " not found. ")
@@ -280,7 +275,7 @@ end
 
 function M.update_window_size(x, y)
 	M.window.x = x;  M.window.y = y
-	M.viewport.width = x;  M.viewport.height = y
+	M.viewport.width = x;  M.viewport.height = y -- if using a fixed aspect ratio this will be immediately overwritten in M.update_window
 end
 
 function M.update_window(newX, newY)
@@ -322,6 +317,8 @@ function M.update_window(newX, newY)
 		for i, v in ipairs(listeners) do
 			msg.post(v, "window_update", { window = M.window, viewport = M.viewport, aspect = curCam.aspectRatio, fov = curCam.fov })
 		end
+
+		print(x, y)
 	end
 end
 
