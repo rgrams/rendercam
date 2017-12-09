@@ -317,8 +317,6 @@ function M.update_window(newX, newY)
 		for i, v in ipairs(listeners) do
 			msg.post(v, "window_update", { window = M.window, viewport = M.viewport, aspect = curCam.aspectRatio, fov = curCam.fov })
 		end
-
-		print(x, y)
 	end
 end
 
