@@ -24,7 +24,7 @@ M.viewport = { x = 0, y = 0, width = M.window.x, height = M.window.y, scale = { 
 -- Initial window size - set on init in render script
 M.configWin = vmath.vector3()
 
--- GUI "transform" data - set in `calculate_gui_adjust_scales` and used for screen-to-gui transforms in multiple places
+-- GUI "transform" data - set in `calculate_gui_adjust_data` and used for screen-to-gui transforms in multiple places
 --				Fit		(scale)		(offset)	Zoom						Stretch
 M.guiAdjust = { [0] = {sx=1, sy=1, ox=0, oy=0}, [1] = {sx=1, sy=1, ox=0, oy=0}, [2] = {sx=1, sy=1, ox=0, oy=0} }
 M.guiOffset = vmath.vector3()
@@ -86,22 +86,22 @@ local function get_fov(distance, y) -- must use Y, not X
 	return math.atan(y / distance) * 2
 end
 
-local function calculate_gui_adjust_scales()
-	local sx, sy = M.window.x / M.configWin.x, M.window.y / M.configWin.y
+local function calculate_gui_adjust_data(winX, winY, configX, configY)
+	local sx, sy = winX / configX, winY / configY
 
 	-- Fit
 	local adj = M.guiAdjust[M.GUI_ADJUST_FIT]
 	local scale = math.min(sx, sy)
 	adj.sx = scale;  adj.sy = scale
-	adj.ox = (M.window.x - M.configWin.x * adj.sx) * 0.5 / adj.sx
-	adj.oy = (M.window.y - M.configWin.y * adj.sy) * 0.5 / adj.sy
+	adj.ox = (winX - configX * adj.sx) * 0.5 / adj.sx
+	adj.oy = (winY - configY * adj.sy) * 0.5 / adj.sy
 
 	-- Zoom
 	adj = M.guiAdjust[M.GUI_ADJUST_ZOOM]
 	scale = math.max(sx, sy)
 	adj.sx = scale;  adj.sy = scale
-	adj.ox = (M.window.x - M.configWin.x * adj.sx) * 0.5 / adj.sx
-	adj.oy = (M.window.y - M.configWin.y * adj.sy) * 0.5 / adj.sy
+	adj.ox = (winX - configX * adj.sx) * 0.5 / adj.sx
+	adj.oy = (winY - configY * adj.sy) * 0.5 / adj.sy
 
 	-- Stretch
 	adj = M.guiAdjust[M.GUI_ADJUST_STRETCH]
@@ -295,7 +295,7 @@ function M.update_window(newX, newY)
 			curCam.fov = get_fov(curCam.viewArea.z, curCam.viewArea.y * 0.5)
 		end
 
-		calculate_gui_adjust_scales()
+		calculate_gui_adjust_data(M.window.x, M.window.y, M.configWin.x, M.configWin.y)
 
 		-- send window update messages to listeners
 		for i, v in ipairs(listeners) do
