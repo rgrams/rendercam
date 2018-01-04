@@ -130,13 +130,13 @@ _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
 ### rendercam.stop_shaking([cam_id])
-Cancel's all current shakes and recoils for this camera.
+Cancels all current shakes and recoils for this camera.
 
 _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
 ### rendercam.follow(target_id, [allowMultiFollow], [cam_id])
-Makes the camera follow a game object. Lerps by default (see `rendercam.follow_lerp_func` below). If you want the camera to rigidly follow a game object it is better to just make the camera a child of that object. You can tell a camera to follow multiple game objects, in which case it will move toward the average of their positions. Note that the camera follow function only affects the camera's X and Y coordinates, so it only makes sense for 2D-oriented games.
+Makes the camera follow a game object. Lerps by default (see `rendercam.follow_lerp_func` below). If you want the camera to rigidly follow a game object it is better to just make the camera a child of that object. Set `rendercam.follow_lerp_speed` to adjust the global camera follow speed (default: 3). You can tell a camera to follow multiple game objects, in which case it will move toward the average of their positions. Note that the camera follow function only affects the camera's X and Y coordinates, so it only makes sense for 2D-oriented games.
 
 _PARAMETERS_
 * __target_id__ <kbd>hash</kbd> - ID of the game object to follow.
@@ -157,7 +157,7 @@ function M.follow_lerp_func(curPos, targetPos, dt)
 end
 ```
 
-This is the default follow lerp function used by all cameras. Feel free to overwrite it if you need different behavior.
+This is the default follow lerp function used by all cameras. Feel free to overwrite it if you need different behavior. If you need more complex control or different behavior for each camera, you should ignore Rendercam's follow feature and move your cameras directly, as you would any other game object.
 
 _PARAMETERS_
 * __curPos__ <kbd>vector3</kbd> - The camera's current position, local to its parent.
