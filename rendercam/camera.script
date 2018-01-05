@@ -32,18 +32,7 @@ local FORWARDVEC = vmath.vector3(0, 0, -1)
 local UPVEC = vmath.vector3(0, 1, 0)
 local RIGHTVEC = vmath.vector3(1, 0, 0)
 
--- Offset for viewport limits
-local DISPLAYWIDTH = tonumber(sys.get_config("display.width"))
-local DISPLAYHEIGHT = tonumber(sys.get_config("display.height"))
-local DISPLAYOFFSET = vmath.vector3(DISPLAYWIDTH / 2, DISPLAYHEIGHT / 2, 0)
-
 function init(self)
-
-	-- Add listener for re-calculating offset on screen size changes.	
-	self.url = msg.url()
-	rendercam.add_window_listener(self.url)	
-
-
 	-- Get initial scale mode
 	for i, v in ipairs({ "expandView", "fixedArea", "fixedWidth", "fixedHeight" }) do
 		self[v] = self[v] and hash(v)
@@ -152,18 +141,9 @@ function update(self, dt)
 	msg.post("#", "post-update")
 end
 
-function on_message(self, message_id, message, sender)
-	if message_id == hash("window_update") then
-
-		DISPLAYWIDTH = message.viewport.width
-		DISPLAYHEIGHT = message.viewport.height
-		DISPLAYOFFSET = vmath.vector3(DISPLAYWIDTH / 2, DISPLAYHEIGHT / 2, 0)
-	end
-	
+function on_message(self, message_id, message, sender)	
 	if message_id == hash("post-update") then
 		-- have to update pos after update or it jitters like crazy
-
-		
 
 		-- Update transform stuff
 		self.data.lpos = go.get_position()
@@ -234,9 +214,9 @@ function on_message(self, message_id, message, sender)
 		if self.data.isViewportBounds then
 
 			local CrrtPos = rendercam.world_to_screen(self.data.lpos)		
-			local topRight = rendercam.world_to_screen(self.data.boundsTopRight)-  DISPLAYOFFSET
-			local bottomLeft = rendercam.world_to_screen(self.data.boundsBottomLeft) + DISPLAYOFFSET
-
+			local topRight = rendercam.world_to_screen(self.data.boundsTopRight)-  rendercam.DISPLAYOFFSET
+			local bottomLeft = rendercam.world_to_screen(self.data.boundsBottomLeft) + rendercam.DISPLAYOFFSET
+			
 			CrrtPos.x = math.max(CrrtPos.x, bottomLeft.x)
 			CrrtPos.x = math.min(CrrtPos.x,  topRight.x)
 			CrrtPos.y = math.max(CrrtPos.y, bottomLeft.y)
