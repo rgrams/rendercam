@@ -156,12 +156,7 @@ function on_message(self, message_id, message, sender)
 	if message_id == hash("post-update") then
 		-- have to update pos after update or it jitters like crazy
 
-		-- re-calculate Offset on screen size changes
-		if message_id == hash("window_update") then
-			DISPLAYWIDTH = message.viewport.width
-			DISPLAYHEIGHT = message.viewport.height
-			DISPLAYOFFSET = vmath.vector3(DISPLAYWIDTH / 2, DISPLAYHEIGHT / 2, 0)
-		end
+		
 
 		-- Update transform stuff
 		self.data.lpos = go.get_position()

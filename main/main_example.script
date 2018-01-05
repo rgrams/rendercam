@@ -35,7 +35,6 @@ function init(self)
 	-- Camera viewport limits with rectangle
 	rendercam.cameraBounds(self.rectBounds.x, self.rectBounds.w, self.rectBounds.z, self.rectBounds.y)
 
-	
 	self.mouse_spos = vmath.vector3()
 	cam_ids = { go.get_id("camera1"), go.get_id("camera2"), go.get_id("camera3"), go.get_id("camera4") }
 	self.camIndex = 1
