@@ -1,3 +1,20 @@
+Fork from [https://github.com/rgrams/rendercam](https://github.com/rgrams/rendercam) 
+Added experimental camera focus and viewport bounds
+
+### rendercam.focusZone(left, top, right, bottom)
+Camera focus zone rectangle
+
+_PARAMETERS_
+* left, top, right, bottom <kbd>int</kbd> - positions
+
+### rendercam.cameraBounds(left, top, right, bottom)
+Camera viewport limits with rectangle
+
+_PARAMETERS_
+* left, top, right, bottom <kbd>int</kbd> - positions
+
+---
+
 # Rendercam
 A universal render script & camera package for all the common camera types: perspective or orthographic, fixed aspect ratio or unfixed aspect ratio, plus four options for how the view changes for different resolutions and window sizes, and more. Also does screen-to-world and world-to-screen transforms for any camera type; camera switching, zooming, panning, shaking, recoil, and lerped following.
 
