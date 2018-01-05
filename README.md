@@ -5,13 +5,13 @@ Added experimental camera focus and viewport bounds
 Camera focus zone rectangle
 
 _PARAMETERS_
-* left, top, right, bottom <kbd>int</kbd> - positions
+* left, top, right, bottom <kbd>int</kbd> - rectangle
 
 ### rendercam.cameraBounds(left, top, right, bottom)
 Camera viewport limits with rectangle
 
 _PARAMETERS_
-* left, top, right, bottom <kbd>int</kbd> - positions
+* left, top, right, bottom <kbd>int</kbd> - rectangle
 
 ---
 
