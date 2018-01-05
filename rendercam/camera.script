@@ -141,7 +141,19 @@ function update(self, dt)
 	msg.post("#", "post-update")
 end
 
+<<<<<<< HEAD
 function on_message(self, message_id, message, sender)	
+=======
+function on_message(self, message_id, message, sender)
+	-- re-calculate offset on window size change
+	if message_id == hash("window_update") then
+
+		DISPLAYWIDTH = message.viewport.width
+		DISPLAYHEIGHT = message.viewport.height
+		DISPLAYOFFSET = vmath.vector3(DISPLAYWIDTH / 2, DISPLAYHEIGHT / 2, 0)
+	end
+	
+>>>>>>> origin/View-focus-bounds
 	if message_id == hash("post-update") then
 		-- have to update pos after update or it jitters like crazy
 
