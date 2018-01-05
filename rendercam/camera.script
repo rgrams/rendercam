@@ -32,8 +32,18 @@ local FORWARDVEC = vmath.vector3(0, 0, -1)
 local UPVEC = vmath.vector3(0, 1, 0)
 local RIGHTVEC = vmath.vector3(1, 0, 0)
 
+-- Offset for viewport limits
+local DISPLAYWIDTH = tonumber(sys.get_config("display.width"))
+local DISPLAYHEIGHT = tonumber(sys.get_config("display.height"))
+local DISPLAYOFFSET = vmath.vector3(DISPLAYWIDTH / 2, DISPLAYHEIGHT / 2, 0)
 
 function init(self)
+
+	-- Add listener for re-calculating offset on screen size changes.	
+	self.url = msg.url()
+	rendercam.add_window_listener(self.url)	
+
+
 	-- Get initial scale mode
 	for i, v in ipairs({ "expandView", "fixedArea", "fixedWidth", "fixedHeight" }) do
 		self[v] = self[v] and hash(v)
@@ -122,7 +132,13 @@ function init(self)
 		shakes = {},
 		recoils = {},
 		follows = {},
-		following = false
+		following = false,
+		isViewportBounds = false,
+		viewportBounds = vmath.vector4(0, 0, 0,0),
+		boundsTopRight = vmath.vector3(0, 0, 0),
+		boundsBottomLeft = vmath.vector3(0, 0, 0),
+		isCameraFocusZone = false, 
+		cameraFocusZoneBounds= vmath.vector4(0, 0, 0,0)
 	}
 	rendercam.camera_init(self.id, self.data)
 end
@@ -139,6 +155,13 @@ end
 function on_message(self, message_id, message, sender)
 	if message_id == hash("post-update") then
 		-- have to update pos after update or it jitters like crazy
+
+		-- re-calculate Offset on screen size changes
+		if message_id == hash("window_update") then
+			DISPLAYWIDTH = message.viewport.width
+			DISPLAYHEIGHT = message.viewport.height
+			DISPLAYOFFSET = vmath.vector3(DISPLAYWIDTH / 2, DISPLAYHEIGHT / 2, 0)
+		end
 
 		-- Update transform stuff
 		self.data.lpos = go.get_position()
@@ -176,11 +199,51 @@ function on_message(self, message_id, message, sender)
 			for i, v in ipairs(self.data.follows) do
 				self.followPos = self.followPos + go.get_world_position(v)
 			end
-			self.followPos = self.followPos * (1/#self.data.follows)
-			self.followPos = rendercam.follow_lerp_func(self.data.lpos, self.followPos, self.dt)
-			self.data.lpos.x = self.followPos.x;  self.data.lpos.y = self.followPos.y
-		end
 
+			-- Camera Focus Zone
+			local targetPos
+			if self.data.isCameraFocusZone then
+				targetPos = vmath.vector3(go.get_world_position())
+
+				local leftEdge = self.data.lpos.x - self.data.cameraFocusZoneBounds.x
+				local rightEdge = self.data.lpos.x + self.data.cameraFocusZoneBounds.z
+				local topEdge = self.data.lpos.y + self.data.cameraFocusZoneBounds.y
+				local bottomEdge = self.data.lpos.y - self.data.cameraFocusZoneBounds.w
+				if self.followPos.x < leftEdge then
+					targetPos.x = targetPos.x - (leftEdge - self.followPos.x)
+				elseif self.followPos.x > rightEdge then
+					targetPos.x = targetPos.x + (self.followPos.x - rightEdge)
+				end
+				if self.followPos.y > topEdge then
+					targetPos.y = targetPos.y + (self.followPos.y - topEdge)
+				elseif self.followPos.y < bottomEdge then
+					targetPos.y = targetPos.y - (bottomEdge - self.followPos.y)
+				end
+			else
+				targetPos = self.followPos
+			end
+
+			targetPos = targetPos * (1/#self.data.follows)		
+			targetPos = rendercam.follow_lerp_func(self.data.lpos, targetPos, self.dt)
+			self.data.lpos.x = targetPos.x;  self.data.lpos.y = targetPos.y
+		end
+		
+		-- Viewport rect bounds
+		if self.data.isViewportBounds then
+
+			local CrrtPos = rendercam.world_to_screen(self.data.lpos)		
+			local topRight = rendercam.world_to_screen(self.data.boundsTopRight)-  DISPLAYOFFSET
+			local bottomLeft = rendercam.world_to_screen(self.data.boundsBottomLeft) + DISPLAYOFFSET
+
+			CrrtPos.x = math.max(CrrtPos.x, bottomLeft.x)
+			CrrtPos.x = math.min(CrrtPos.x,  topRight.x)
+			CrrtPos.y = math.max(CrrtPos.y, bottomLeft.y)
+			CrrtPos.y = math.min(CrrtPos.y,  topRight.y)			
+			local newPos = rendercam.screen_to_world_2d(CrrtPos.x, CrrtPos.y)
+			self.data.lpos.x = newPos.x
+			self.data.lpos.y = newPos.y
+		end
+		
 		if #self.data.recoils + #self.data.shakes + #self.data.follows > 0 then
 			self.data.lpos = self.data.lpos + self.shake
 			go.set_position(self.data.lpos)

@@ -24,6 +24,8 @@ local fallback_cam = {
 	wforwardVec = vmath.vector3(0, 0, -1), lupVec = vmath.vector3(0, 1, 0),
 	lforwardVec = vmath.vector3(0, 0, -1), lrightVec = vmath.vector3(1, 0, 0),
 	following = false, follows = {}, recoils = {}, shakes = {},
+	isViewportBounds = false, viewportBounds = vmath.vector4(0, 0, 0,0), boundsTopRight= vmath.vector3(0,0,0), boundsBottomLeft=vmath.vector3(0,0,0),
+	isCameraFocusZone = false, cameraFocusZoneBounds= vmath.vector4(0, 0, 0,0),
 }
 
 M.view = vmath.matrix4() -- current view matrix
@@ -211,6 +213,27 @@ function M.follow(target_id, allowMultiFollow, cam_id)
 		cam.follows = { target_id }
 	end
 	cam.following = true
+end
+
+-- Camera and viewport bounds
+function M.cameraBounds(left, top, right, bottom)
+	if left and top and right and bottom then			
+		curCam.viewportBounds = vmath.vector4(left,top,right, bottom)
+		curCam.boundsBottomLeft = vmath.vector3(left, bottom, 0)
+		curCam.boundsTopRight = vmath.vector3(right, top, 0)
+		curCam.isViewportBounds = true
+	else
+		print("Missing value: left, top, right, bottom")
+	end
+end
+function M.focusZone(left, top, right, bottom)
+	if left and top and right and bottom then			
+		curCam.cameraFocusZoneBounds = vmath.vector4(left,top,right, bottom)
+		curCam.isCameraFocusZone = true
+
+	else
+		print("Missing value: left, top, right, bottom")
+	end
 end
 
 function M.unfollow(target_id, cam_id)
