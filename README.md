@@ -1,19 +1,3 @@
-Fork from [https://github.com/rgrams/rendercam](https://github.com/rgrams/rendercam) 
-Added experimental camera focus and viewport bounds
-
-### rendercam.focusZone(left, top, right, bottom)
-Camera focus zone rectangle. Similar to [this](https://www.gamasutra.com/blogs/JochenHeizmann/20171127/310386/Camera_Logic_in_a_2D_Platformer.php), but much more simple
-
-_PARAMETERS_
-* left, top, right, bottom <kbd>int</kbd> - rectangle
-
-### rendercam.cameraBounds(left, top, right, bottom)
-Camera viewport limits with rectangle. 
-
-_PARAMETERS_
-* left, top, right, bottom <kbd>int</kbd> - rectangle
-
----
 
 # Rendercam
 A universal render script & camera package for all the common camera types: perspective or orthographic, fixed aspect ratio or unfixed aspect ratio, plus four options for how the view changes for different resolutions and window sizes, and more. Also does screen-to-world and world-to-screen transforms for any camera type; camera switching, zooming, panning, shaking, recoil, and lerped following.
@@ -130,6 +114,13 @@ _PARAMETERS_
 * __dy__ <kbd>number</kbd> - Distance to move the camera along its local Y axis.
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
+### rendercam.set_bounds(left, right, top, bottom, [cam_id])
+Sets limits on the camera's position in its local X/Y plane. The camera will not be allowed to move outside the specified rectangle bounds (except movement due to camera shake and recoil).
+
+_PARAMETERS_
+* __left, right, top, bottom__ <kbd>number</kbd> - The boundaries of the limit rectangle, in coordinates local to the camera.
+* __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
+
 ### rendercam.shake(dist, dur, [cam_id])
 Shakes the camera in its local X/Y plane. The intensity of the shake will fall off linearly over its duration.
 
@@ -180,6 +171,13 @@ _PARAMETERS_
 * __curPos__ <kbd>vector3</kbd> - The camera's current position, local to its parent.
 * __targetPos__ <kbd>vector3</kbd> - The average position of all follow targets---the exact position of the target if there is only one.
 * __dt__ <kbd>number</kbd> - Delta time for this frame.
+
+### rendercam.set_follow_deadzone(left, right, top, bottom, [cam_id])
+Set a deadzone for the camera's following: it will only change position of the followed object moves outside this area. To disable an existing deadzone, call this function with `left, right, top`, and `bottom` values of `0`.
+
+_PARAMETERS_
+* __left, right, top, bottom__ <kbd>number</kbd> - The boundaries of the deadzone rectangle, in coordinates local to the camera.
+* __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
 ## Window Update Listeners
 

@@ -22,18 +22,18 @@ function init(self)
 	rendercam.follow(go.get_id("character"), true, go.get_id("camera1"))
 
 	-- Tile map size calculation
-	local tileSize = 64 
+	local tileSize = 64
 	local x, y, w, h = tilemap.get_bounds("/tilemap#test-tilemap")
 	x = x - 1
 	y = y - 1
 	local pos = go.get_position("/tilemap#test-tilemap")
 	self.rectBounds = vmath.vector4(pos.x + (x * tileSize), pos.y + (y * tileSize), pos.x + ((x + w) * tileSize), pos.y + ((y + h) * tileSize))
-	
+
 	-- Camera focus zone rectangle
-	rendercam.focusZone(100, 100, 100, 100)
+	rendercam.set_follow_deadzone(100, 100, 100, 100)
 
 	-- Camera viewport limits with rectangle
-	rendercam.cameraBounds(self.rectBounds.x, self.rectBounds.w, self.rectBounds.z, self.rectBounds.y)
+	rendercam.set_bounds(self.rectBounds.x, self.rectBounds.w, self.rectBounds.z, self.rectBounds.y)
 
 	self.mouse_spos = vmath.vector3()
 	cam_ids = { go.get_id("camera1"), go.get_id("camera2"), go.get_id("camera3"), go.get_id("camera4") }

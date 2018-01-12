@@ -126,8 +126,8 @@ function init(self)
 		viewportBounds = vmath.vector4(0, 0, 0,0),
 		boundsTopRight = vmath.vector3(0, 0, 0),
 		boundsBottomLeft = vmath.vector3(0, 0, 0),
-		isCameraFocusZone = false, 
-		cameraFocusZoneBounds= vmath.vector4(0, 0, 0,0)
+		hasFollowDeadzone = false,
+		followDeadzone= vmath.vector4(0, 0, 0, 0)
 	}
 	rendercam.camera_init(self.id, self.data)
 end
@@ -178,20 +178,22 @@ function on_message(self, message_id, message, sender)
 
 		-- Camera Follow
 		if self.data.following then
-			self.followPos.x = 0;  self.followPos.y = 0;
+			self.followPos.x = 0;  self.followPos.y = 0; -- avoiding creating a new vector every frame
+			-- get average position of all follow targets
 			for i, v in ipairs(self.data.follows) do
 				self.followPos = self.followPos + go.get_world_position(v)
 			end
+			self.followPos = self.followPos * (1/#self.data.follows)
 
 			-- Camera Focus Zone
 			local targetPos
-			if self.data.isCameraFocusZone then
-				targetPos = vmath.vector3(go.get_world_position())
+			if self.data.hasFollowDeadzone then
+				targetPos = go.get_world_position()
 
-				local leftEdge = self.data.lpos.x - self.data.cameraFocusZoneBounds.x
-				local rightEdge = self.data.lpos.x + self.data.cameraFocusZoneBounds.z
-				local topEdge = self.data.lpos.y + self.data.cameraFocusZoneBounds.y
-				local bottomEdge = self.data.lpos.y - self.data.cameraFocusZoneBounds.w
+				local leftEdge = self.data.lpos.x - self.data.followDeadzone.x
+				local rightEdge = self.data.lpos.x + self.data.followDeadzone.z
+				local topEdge = self.data.lpos.y + self.data.followDeadzone.y
+				local bottomEdge = self.data.lpos.y - self.data.followDeadzone.w
 				if self.followPos.x < leftEdge then
 					targetPos.x = targetPos.x - (leftEdge - self.followPos.x)
 				elseif self.followPos.x > rightEdge then
@@ -206,27 +208,26 @@ function on_message(self, message_id, message, sender)
 				targetPos = self.followPos
 			end
 
-			targetPos = targetPos * (1/#self.data.follows)		
 			targetPos = rendercam.follow_lerp_func(self.data.lpos, targetPos, self.dt)
 			self.data.lpos.x = targetPos.x;  self.data.lpos.y = targetPos.y
 		end
-		
+
 		-- Viewport rect bounds
 		if self.data.isViewportBounds then
 
-			local CrrtPos = rendercam.world_to_screen(self.data.lpos)		
+			local CrrtPos = rendercam.world_to_screen(self.data.lpos)
 			local topRight = rendercam.world_to_screen(self.data.boundsTopRight)-  rendercam.DISPLAYOFFSET
 			local bottomLeft = rendercam.world_to_screen(self.data.boundsBottomLeft) + rendercam.DISPLAYOFFSET
-			
+
 			CrrtPos.x = math.max(CrrtPos.x, bottomLeft.x)
 			CrrtPos.x = math.min(CrrtPos.x,  topRight.x)
 			CrrtPos.y = math.max(CrrtPos.y, bottomLeft.y)
-			CrrtPos.y = math.min(CrrtPos.y,  topRight.y)			
+			CrrtPos.y = math.min(CrrtPos.y,  topRight.y)
 			local newPos = rendercam.screen_to_world_2d(CrrtPos.x, CrrtPos.y)
 			self.data.lpos.x = newPos.x
 			self.data.lpos.y = newPos.y
 		end
-		
+
 		if #self.data.recoils + #self.data.shakes + #self.data.follows > 0 then
 			self.data.lpos = self.data.lpos + self.shake
 			go.set_position(self.data.lpos)

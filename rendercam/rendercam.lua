@@ -190,6 +190,18 @@ function M.pan(dx, dy, cam_id)
 	if cam.id then go.set_position(cam.lpos, cam.id) end -- fallback_cam has no cam.id, it will ignore panning
 end
 
+function M.set_bounds(left, top, right, bottom, cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	if left and top and right and bottom then
+		cam.viewportBounds = vmath.vector4(left, top, right, bottom)
+		cam.boundsBottomLeft = vmath.vector3(left, bottom, 0)
+		cam.boundsTopRight = vmath.vector3(right, top, 0)
+		cam.isViewportBounds = true
+	else
+		print("WARNING - rendercam.set_bounds() - Missing a valid argument. Requires left, right, top, and bottom")
+	end
+end
+
 function M.shake(dist, dur, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	table.insert(cam.shakes, { dist = dist, dur = dur, t = dur })
@@ -216,27 +228,6 @@ function M.follow(target_id, allowMultiFollow, cam_id)
 	cam.following = true
 end
 
--- Camera and viewport bounds
-function M.cameraBounds(left, top, right, bottom)
-	if left and top and right and bottom then			
-		curCam.viewportBounds = vmath.vector4(left,top,right, bottom)
-		curCam.boundsBottomLeft = vmath.vector3(left, bottom, 0)
-		curCam.boundsTopRight = vmath.vector3(right, top, 0)
-		curCam.isViewportBounds = true
-	else
-		print("Missing value: left, top, right, bottom")
-	end
-end
-function M.focusZone(left, top, right, bottom)
-	if left and top and right and bottom then			
-		curCam.cameraFocusZoneBounds = vmath.vector4(left,top,right, bottom)
-		curCam.isCameraFocusZone = true
-
-	else
-		print("Missing value: left, top, right, bottom")
-	end
-end
-
 function M.unfollow(target_id, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	for i, v in ipairs(cam.follows) do
@@ -249,6 +240,20 @@ end
 
 function M.follow_lerp_func(curPos, targetPos, dt)
 	return vmath.lerp(dt * M.follow_lerp_speed, curPos, targetPos)
+end
+
+function M.set_follow_deadzone(left, top, right, bottom, cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	if left and top and right and bottom then
+		cam.followDeadzone = vmath.vector4(left, top, right, bottom)
+		if vmath.length(cam.followDeadzone) == 0 then
+			cam.hasFollowDeadzone = false
+		else
+			cam.hasFollowDeadzone = true
+		end
+	else
+		print("WARNING - rendercam.set_follow_deadzone() - Missing a valid argument. Requires left, right, top, and bottom")
+	end
 end
 
 -- ---------------------------------------------------------------------------------
@@ -336,7 +341,7 @@ function M.update_window(newX, newY)
 		end
 		
 		M.DISPLAYOFFSET = vmath.vector3( M.viewport.width / 2, M.viewport.height / 2, 0)
-	
+
 		calculate_gui_adjust_data(M.window.x, M.window.y, M.configWin.x, M.configWin.y)
 
 		-- send window update messages to listeners
