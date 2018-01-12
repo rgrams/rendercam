@@ -11,6 +11,7 @@ local SCALEMODE_FIXEDAREA = hash("fixedArea")
 local SCALEMODE_FIXEDWIDTH = hash("fixedWidth")
 local SCALEMODE_FIXEDHEIGHT = hash("fixedHeight")
 
+M.DISPLAYOFFSET = vmath.vector3()
 M.ortho_zoom_mult = 0.01
 M.follow_lerp_speed = 3
 
@@ -24,6 +25,8 @@ local fallback_cam = {
 	wforwardVec = vmath.vector3(0, 0, -1), lupVec = vmath.vector3(0, 1, 0),
 	lforwardVec = vmath.vector3(0, 0, -1), lrightVec = vmath.vector3(1, 0, 0),
 	following = false, follows = {}, recoils = {}, shakes = {},
+	isViewportBounds = false, viewportBounds = vmath.vector4(0, 0, 0,0), boundsTopRight= vmath.vector3(0,0,0), boundsBottomLeft=vmath.vector3(0,0,0),
+	isCameraFocusZone = false, cameraFocusZoneBounds= vmath.vector4(0, 0, 0,0),
 }
 
 M.view = vmath.matrix4() -- current view matrix
@@ -213,6 +216,27 @@ function M.follow(target_id, allowMultiFollow, cam_id)
 	cam.following = true
 end
 
+-- Camera and viewport bounds
+function M.cameraBounds(left, top, right, bottom)
+	if left and top and right and bottom then			
+		curCam.viewportBounds = vmath.vector4(left,top,right, bottom)
+		curCam.boundsBottomLeft = vmath.vector3(left, bottom, 0)
+		curCam.boundsTopRight = vmath.vector3(right, top, 0)
+		curCam.isViewportBounds = true
+	else
+		print("Missing value: left, top, right, bottom")
+	end
+end
+function M.focusZone(left, top, right, bottom)
+	if left and top and right and bottom then			
+		curCam.cameraFocusZoneBounds = vmath.vector4(left,top,right, bottom)
+		curCam.isCameraFocusZone = true
+
+	else
+		print("Missing value: left, top, right, bottom")
+	end
+end
+
 function M.unfollow(target_id, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	for i, v in ipairs(cam.follows) do
@@ -310,7 +334,9 @@ function M.update_window(newX, newY)
 		else
 			curCam.fov = get_fov(curCam.viewArea.z, curCam.viewArea.y * 0.5)
 		end
-
+		
+		M.DISPLAYOFFSET = vmath.vector3( M.viewport.width / 2, M.viewport.height / 2, 0)
+	
 		calculate_gui_adjust_data(M.window.x, M.window.y, M.configWin.x, M.configWin.y)
 
 		-- send window update messages to listeners
