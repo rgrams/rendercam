@@ -230,10 +230,16 @@ end
 
 function M.unfollow(target_id, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
-	for i, v in ipairs(cam.follows) do
-		if v == target_id then
-			table.remove(cam.follows, i)
-			if #cam.follows == 0 then cam.following = false end
+	if #cam.follows == 0 then
+		return
+	elseif not target_id and #cam.follows == 1 then
+		table.remove(cam.follows, 1)
+	else
+		for i, v in ipairs(cam.follows) do
+			if v == target_id then
+				table.remove(cam.follows, i)
+				if #cam.follows == 0 then cam.following = false end
+			end
 		end
 	end
 end
@@ -339,7 +345,7 @@ function M.update_window(newX, newY)
 		else
 			curCam.fov = get_fov(curCam.viewArea.z, curCam.viewArea.y * 0.5)
 		end
-		
+
 		M.DISPLAYOFFSET = vmath.vector3( M.viewport.width / 2, M.viewport.height / 2, 0)
 
 		calculate_gui_adjust_data(M.window.x, M.window.y, M.configWin.x, M.configWin.y)

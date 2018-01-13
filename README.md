@@ -151,11 +151,11 @@ _PARAMETERS_
 * __allowMultiFollow__ <kbd>bool</kbd> - If true, will add `target_id` to the list of objects to follow instead of replacing all previous targets.
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
-### rendercam.unfollow(target_id, [cam_id])
+### rendercam.unfollow([target_id], [cam_id])
 Makes the camera stop following a game object. If the camera was following multiple objects, this will remove `target_id` from the list, otherwise it will stop the camera from following anything.
 
 _PARAMETERS_
-* __target_id__ <kbd>hash</kbd> - ID of the object to unfollow.
+* __target_id__ <kbd>hash</kbd> - ID of the object to unfollow. If the camera is only following one object, you can leave out this argument.
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
 ### rendercam.follow_lerp_func(curPos, targetPos, dt)
