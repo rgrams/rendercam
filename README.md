@@ -144,7 +144,7 @@ _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
 ### rendercam.follow(target_id, [allowMultiFollow], [cam_id])
-Makes the camera follow a game object. Lerps by default (see `rendercam.follow_lerp_func` below). If you want the camera to rigidly follow a game object it is better to just make the camera a child of that object. Set `rendercam.follow_lerp_speed` to adjust the global camera follow speed (default: 3). You can tell a camera to follow multiple game objects, in which case it will move toward the average of their positions. Note that the camera follow function only affects the camera's X and Y coordinates, so it only makes sense for 2D-oriented games.
+Makes the camera follow a game object. Lerps by default (see `rendercam.follow_lerp_func` below). If you want the camera to rigidly follow a game object it is better to just make the camera a child of that object. Set `rendercam.follow_lerp_speed` to adjust the global camera follow speed (default: 3). You can tell a camera to follow multiple game objects, in which case it will move toward the average of their positions. Note that the camera follow function only affects the camera's X and Y coordinates, so it only makes sense for 2D-oriented games. For this feature to work as expected, the camera should not be the child of a game object that is scaled, rotated, or translated. 
 
 _PARAMETERS_
 * __target_id__ <kbd>hash</kbd> - ID of the game object to follow.

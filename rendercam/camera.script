@@ -185,16 +185,18 @@ function on_message(self, message_id, message, sender)
 			end
 			self.followPos = self.followPos * (1/#self.data.follows)
 
-			-- Camera Focus Zone
+			-- Follow Deadzone
 			local targetPos
 			if self.data.hasFollowDeadzone then
-				targetPos = go.get_world_position()
+				-- begin with targetPos == current pos, adjust it if followPos is outside the deadzone
+				targetPos = vmath.vector3(self.data.lpos)
 
 				local leftEdge = self.data.lpos.x - self.data.followDeadzone.x
 				local rightEdge = self.data.lpos.x + self.data.followDeadzone.z
 				local topEdge = self.data.lpos.y + self.data.followDeadzone.y
 				local bottomEdge = self.data.lpos.y - self.data.followDeadzone.w
 				if self.followPos.x < leftEdge then
+					-- if followPos is outside the deadzone, shift targetPos by followPos's offset from the edge of the deadzone
 					targetPos.x = targetPos.x - (leftEdge - self.followPos.x)
 				elseif self.followPos.x > rightEdge then
 					targetPos.x = targetPos.x + (self.followPos.x - rightEdge)
