@@ -8,7 +8,7 @@ local hovercolor = vmath.vector4(1, 1, 1, 0.25)
 
 
 function init(self)
-	msg.post(".", "acquire_input_focus")
+	-- input focus already acquired by main_example.script, which is on the same game object
 	node = gui.get_node("node")
 	adjust = gui.get_adjust_mode(node)
 end
