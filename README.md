@@ -81,7 +81,7 @@ local rendercam = require "rendercam.rendercam"
 ```
 A lot of Rendercam's functions have optional arguments. These are listed in brackets, `[like_this]`. For example, most of the camera functions have an optional `[cam_id]` argument. You can leave this out and the functions will operate on the current camera.
 
-With Rendercam's camera following feature, the delayed nature of messages can be useful, so you can also send a `"follow"` message to a camera instead of calling `rendercam.follow()`. [See below](https://github.com/rgrams/rendercam/#follow-target_id-allowMultiFollow) for details.
+With Rendercam's camera following feature, the delayed nature of messages can be useful, so you can also send a `"follow"` message to a camera instead of calling `rendercam.follow()`. [See below](https://github.com/rgrams/rendercam/tree/dev#follow--target_id-allowmultifollow-) for details.
 
 ### rendercam.activate_camera(cam_id)
 Activate a different camera. If you have multiple cameras, use this to switch between them, otherwise you don't need it. Cameras with "Active" checked will activate themselves on init.
