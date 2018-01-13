@@ -74,12 +74,14 @@ The camera will always show the same width of game world, the height is adjusted
 #### Fixed Height
 Like "Fixed Width", but switched. The camera will always show the same height of the game world, and the width will vary with the window proportion. If you make the window tall and skinny, you'll see the same distance up and down, but very little side to side.
 
-## Camera Functions
+## Camera Functions & Messages
 To use the other features of Rendercam you need to call module functions from a script. First, require the rendercam module in your script:
 ```lua
 local rendercam = require "rendercam.rendercam"
 ```
 A lot of Rendercam's functions have optional arguments. These are listed in brackets, `[like_this]`. For example, most of the camera functions have an optional `[cam_id]` argument. You can leave this out and the functions will operate on the current camera.
+
+With Rendercam's camera following feature, the delayed nature of messages can be useful, so you can also send a `"follow"` message to a camera instead of calling `rendercam.follow()`. [See below](https://github.com/rgrams/rendercam/#follow-target_id-allowMultiFollow) for details.
 
 ### rendercam.activate_camera(cam_id)
 Activate a different camera. If you have multiple cameras, use this to switch between them, otherwise you don't need it. Cameras with "Active" checked will activate themselves on init.
@@ -144,12 +146,19 @@ _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
 ### rendercam.follow(target_id, [allowMultiFollow], [cam_id])
-Makes the camera follow a game object. Lerps by default (see `rendercam.follow_lerp_func` below). If you want the camera to rigidly follow a game object it is better to just make the camera a child of that object. Set `rendercam.follow_lerp_speed` to adjust the global camera follow speed (default: 3). You can tell a camera to follow multiple game objects, in which case it will move toward the average of their positions. Note that the camera follow function only affects the camera's X and Y coordinates, so it only makes sense for 2D-oriented games. For this feature to work as expected, the camera should not be the child of a game object that is scaled, rotated, or translated. 
+Makes the camera follow a game object. Lerps by default (see `rendercam.follow_lerp_func` below). If you want the camera to rigidly follow a game object it is better to just make the camera a child of that object. Set `rendercam.follow_lerp_speed` to adjust the global camera follow speed (default: 3). You can tell a camera to follow multiple game objects, in which case it will move toward the average of their positions. Note that the camera follow function only affects the camera's X and Y coordinates, so it only makes sense for 2D-oriented games. For this feature to work as expected, the camera should not be the child of a game object that is scaled, rotated, or translated.
 
 _PARAMETERS_
 * __target_id__ <kbd>hash</kbd> - ID of the game object to follow.
 * __allowMultiFollow__ <kbd>bool</kbd> - If true, will add `target_id` to the list of objects to follow instead of replacing all previous targets.
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
+
+### "follow", { target_id=..., allowMultiFollow=... }
+The message equivalent of `rendercam.follow()`. If you want a camera to follow a game object as soon as the collection it is in has loaded (on `init`), send this message to it instead of using `rendercam.follow()`. This is because the order in which `init` functions are called in a collection is semi-random, but the camera must have run its `init` function before `rendercam.follow()` will work on it. The message is guaranteed to be received after all `init` functions have run.
+
+_FIELDS_
+* __target_id__ <kbd>hash</kbd> - ID of the game object to follow.
+* __allowMultiFollow__ <kbd>bool</kbd> - If true, will add `target_id` to the list of objects to follow instead of replacing all previous targets.
 
 ### rendercam.unfollow([target_id], [cam_id])
 Makes the camera stop following a game object. If the camera was following multiple objects, this will remove `target_id` from the list, otherwise it will stop the camera from following anything.

@@ -19,7 +19,7 @@ function init(self)
 	msg.post(".", "acquire_input_focus")
 	self.orbitCamAngle = 0
 
-	rendercam.follow(go.get_id("character"), true, go.get_id("camera1"))
+	msg.post("camera1", "follow", { target_id = go.get_id("character"), allowMultiFollow = true })
 
 	-- Tile map size calculation
 	local tileSize = 64

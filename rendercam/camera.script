@@ -1,8 +1,8 @@
 
--- The camera script is fairly light (so far, anyway).
-
+-- RENDERCAM CAMERA SCRIPT
 -- 1. It holds the properties so the user can set them in the editor.
--- 2. It updates the camera's position and rotation with the rendercam module.
+-- 2. It handles most of the mechanics of shaking, recoil, and following.
+-- 3. It updates the camera's position and rotation with the rendercam module.
 
 local rendercam = require "rendercam.rendercam"
 
@@ -31,6 +31,7 @@ local TWO_PI = math.pi * 2
 local FORWARDVEC = vmath.vector3(0, 0, -1)
 local UPVEC = vmath.vector3(0, 1, 0)
 local RIGHTVEC = vmath.vector3(1, 0, 0)
+
 
 function init(self)
 	-- Get initial scale mode
@@ -218,7 +219,7 @@ function on_message(self, message_id, message, sender)
 		if self.data.isViewportBounds then
 
 			local CrrtPos = rendercam.world_to_screen(self.data.lpos)
-			local topRight = rendercam.world_to_screen(self.data.boundsTopRight)-  rendercam.DISPLAYOFFSET
+			local topRight = rendercam.world_to_screen(self.data.boundsTopRight) - rendercam.DISPLAYOFFSET
 			local bottomLeft = rendercam.world_to_screen(self.data.boundsBottomLeft) + rendercam.DISPLAYOFFSET
 
 			CrrtPos.x = math.max(CrrtPos.x, bottomLeft.x)
@@ -243,6 +244,9 @@ function on_message(self, message_id, message, sender)
 		-- Absolute/world near and far positions for screen-to-world transform
 		self.data.abs_nearZ = self.data.wpos.z - self.data.nearZ
 		self.data.abs_farZ = self.data.wpos.z - self.data.farZ
+
+	elseif message_id == hash("follow") then
+		rendercam.follow(message.target_id, message.allowMultiFollow, self.id)
 	end
 end
 
