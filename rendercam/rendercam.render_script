@@ -53,7 +53,11 @@ function update(self)
     render.enable_state(render.STATE_DEPTH_TEST)
     render.set_depth_mask(true)
     render.draw(self.model_pred)
-    render.draw_debug3d()
+
+	-- Physics debug and draw_line rendering
+	render.disable_state(render.STATE_DEPTH_TEST)
+	render.disable_state(render.STATE_CULL_FACE)
+	render.draw_debug3d()
 
 	-- GUI Rendering
 	render.set_viewport(0, 0, rendercam.window.x, rendercam.window.y)
