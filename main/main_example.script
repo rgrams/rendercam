@@ -27,13 +27,13 @@ function init(self)
 	x = x - 1
 	y = y - 1
 	local pos = go.get_position("/tilemap#test-tilemap")
-	self.rectBounds = vmath.vector4(pos.x + (x * tileSize), pos.y + (y * tileSize), pos.x + ((x + w) * tileSize), pos.y + ((y + h) * tileSize))
+	self.rectBounds = vmath.vector4(pos.x + (x * tileSize), pos.x + ((x + w) * tileSize), pos.y + ((y + h) * tileSize), pos.y + (y * tileSize))
 
 	-- Camera focus zone rectangle
 	rendercam.set_follow_deadzone(100, 100, 100, 100)
 
 	-- Camera viewport limits with rectangle
-	rendercam.set_bounds(self.rectBounds.x, self.rectBounds.w, self.rectBounds.z, self.rectBounds.y)
+	rendercam.set_bounds(self.rectBounds.x, self.rectBounds.y, self.rectBounds.z, self.rectBounds.w)
 
 	self.mouse_spos = vmath.vector3()
 	cam_ids = { go.get_id("camera1"), go.get_id("camera2"), go.get_id("camera3"), go.get_id("camera4") }
