@@ -127,7 +127,7 @@ function init(self)
 		follows = {},
 		following = false,
 		isViewportBounds = false,
-		viewportBounds = vmath.vector4(0, 0, 0,0),
+		viewportBounds = vmath.vector4(0, 0, 0, 0),
 		boundsTopRight = vmath.vector3(0, 0, 0),
 		boundsBottomLeft = vmath.vector3(0, 0, 0),
 		hasFollowDeadzone = false,
@@ -200,8 +200,8 @@ function on_message(self, message_id, message, sender)
 				targetPos = vmath.vector3(self.data.lpos)
 
 				local leftEdge = self.data.lpos.x - self.data.followDeadzone.x
-				local rightEdge = self.data.lpos.x + self.data.followDeadzone.z
-				local topEdge = self.data.lpos.y + self.data.followDeadzone.y
+				local rightEdge = self.data.lpos.x + self.data.followDeadzone.y
+				local topEdge = self.data.lpos.y + self.data.followDeadzone.z
 				local bottomEdge = self.data.lpos.y - self.data.followDeadzone.w
 				if self.followPos.x < leftEdge then
 					-- if followPos is outside the deadzone, shift targetPos by followPos's offset from the edge of the deadzone

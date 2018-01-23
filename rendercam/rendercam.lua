@@ -196,10 +196,10 @@ function M.pan(dx, dy, cam_id)
 	if cam.id then go.set_position(cam.lpos, cam.id) end -- fallback_cam has no cam.id, it will ignore panning
 end
 
-function M.set_bounds(left, top, right, bottom, cam_id)
+function M.set_bounds(left, right, top, bottom, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
-	if left and top and right and bottom then
-		cam.viewportBounds = vmath.vector4(left, top, right, bottom)
+	if left and right and top and bottom then
+		cam.viewportBounds = vmath.vector4(left, right, top, bottom)
 		cam.boundsBottomLeft = vmath.vector3(left, bottom, 0)
 		cam.boundsTopRight = vmath.vector3(right, top, 0)
 		cam.isViewportBounds = true
@@ -254,10 +254,10 @@ function M.follow_lerp_func(curPos, targetPos, dt)
 	return vmath.lerp(0.5^(dt * M.follow_lerp_speed), targetPos, curPos)
 end
 
-function M.set_follow_deadzone(left, top, right, bottom, cam_id)
+function M.set_follow_deadzone(left, right, top, bottom, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
-	if left and top and right and bottom then
-		cam.followDeadzone = vmath.vector4(left, top, right, bottom)
+	if left and right and top and bottom then
+		cam.followDeadzone = vmath.vector4(left, right, top, bottom)
 		if vmath.length(cam.followDeadzone) == 0 then
 			cam.hasFollowDeadzone = false
 		else
