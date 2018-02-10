@@ -22,6 +22,12 @@ After installation, it just takes two simple steps to get Rendercam up and runni
 
 > Note: the "shared_state" setting must also be enabled in your game.project file for Rendercam to work, but it is enabled by default.
 
+## Camera Name Conflicts
+
+Rendercam identifies cameras by their URL "path" or "ID". Normally this means you don't have to worry about name collisions. However, if you use collection proxies, it's possible to have two cameras with identical IDs, so you will need to rename one of them. If you have a camera named "camera" in your main collection, and another, also named "camera", in a collection you load via proxy, this will cause a name conflict with Rendercam.
+
+If either of the cameras is inside a secondary collection with a different name, there will be no conflict, it's only an issue if they are both in the base level of their collections (or in identically-named sub-collections).
+
 ## Camera Settings
 
 To change your camera settings, expand the camera game object in the outline and select it's script component. In the properties panel you will have a bunch of different options.
@@ -352,6 +358,11 @@ This is not really an error message, just a notification to make sure you know w
 > "WARNING: rendercam.activate_camera() - camera [cam_id] not found. "
 
 This means you called `rendercam.activate_camera(cam_id)` with an ID that doesn't match any existing camera. Make sure you are using [`go.get_id`](https://www.defold.com/ref/go/#go.get_id:-path-) with the correct path to get the camera's ID.
+
+>"ERROR: rendercam.camera_init() - Camera name conflict with ID: [cam_id]".
+> New camera will overwrite the old! Your cameras must have unique IDs."
+
+This means you have two cameras with identical IDs, you just need to rename one of them. This should only happen if you are using collection proxies, see the section on "Camera Name Conflicts" near the top of this readme.
 
 > "rendercam - get_target_worldViewSize() - camera: [cam_id], scale mode not found."
 
