@@ -50,8 +50,8 @@ The distance in front of the camera where the game world is located. This is usu
 #### FOV (field of view) <kbd>number</kbd>
 The field of view for perspective cameras, in degrees. This property is generally unused (and should be left at -1), as the FOV will be calculated based on other settings. If you want a camera with a fixed FOV, make sure "Use View Area" is un-checked, select the "Fixed Height" scale mode, and set FOV to your desired angle. The aspect ratio can be fixed or not.
 
-#### Ortho Scale <kbd>number</kbd>
-The initial "zoom"/scale for orthographic cameras. At an ortho scale of 2 the camera will show an area of the world four times as large as it would at scale 1 (both x and y are doubled). Or 1/4 of the area at scale 0.5, etc. See the "View Area" property below to set the initial view area of your camera.
+#### Zoom <kbd>number</kbd>
+Zoom factor for orthographic cameras. Higher values are for zooming "in", lower values for zooming "out". A zoom of 2 means objects will appear twice as large on-screen, etc. I recommend you do not change this value in the editor, instead, see the "View Area" property below to set the initial view area of your camera. Use `rendercam.zoom_in()`, `rendercam.get_zoom()`, and `rendercam.set_zoom()` to change camera zoom at runtime, or `go.animate` the "zoom" property of the camera's script component. This property is for orthographic cameras only, for perspective cameras, simply alter the camera's Z position to zoom.
 
 #### Fixed Aspect Ratio <kbd>bool</kbd>
 If checked, black bars will be added to the top and bottom or sides of the viewport as necessary so it will always match the aspect ratio you specify via the "Aspect Ratio" property.
@@ -95,23 +95,27 @@ Activate a different camera. If you have multiple cameras, use this to switch be
 _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object.
 
-### rendercam.zoom(z, [cam_id])
-Zoom the camera. If the camera is orthographic, this adds `z * rendercam.ortho_zoom_mult` to the camera's ortho scale. If the camera is perspective, this moves the camera forward by `z`. You can set `rendercam.ortho_zoom_mult` to adjust the ortho zoom speed, or use `rendercam.get_ortho_scale` and `rendercam.set_ortho_scale` for full control.
+### rendercam.zoom_in(z, [cam_id])
+Zoom the camera in or out. If the camera is orthographic, this adds `z * rendercam.ortho_zoom_mult` to the camera's ortho scale. If the camera is perspective, this moves the camera forward by `z`. You can set `rendercam.ortho_zoom_speed` to adjust the global ortho zoom speed, or use `rendercam.get_zoom` and `rendercam.set_zoom` for full control.
 
 _PARAMETERS_
-* __z__ <kbd>number</kbd> - Amount to zoom.
+* __z__ <kbd>number</kbd> - Amount to zoom in by. (use a negative value to zoom out)
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
-### rendercam.get_ortho_scale([cam_id])
-Gets the current ortho scale of the camera. (doesn't work for perspective cameras obviously).
+### rendercam.get_zoom([cam_id])
+Gets the current zoom of the camera. (orthographic cameras only)
 
 _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
-### rendercam.set_ortho_scale(s, [cam_id])
-Sets the current ortho scale of the camera. (doesn't work for perspective cameras obviously).
+_RETURNS_
+* __z__ <kbd>number</kbd> - The camera's zoom factor.
+
+### rendercam.set_zoom(z, [cam_id])
+Sets the zoom of the camera. (orthographic cameras only)
 
 _PARAMETERS_
+* __z__ <kbd>number</kbd> - Zoom factor.
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
 ### rendercam.pan(dx, dy, [cam_id])

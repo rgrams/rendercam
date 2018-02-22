@@ -77,10 +77,10 @@ function on_input(self, action_id, action)
 		end
 
 	elseif action_id == hash("mouse wheel up") then
-		rendercam.zoom(-zstep)
+		rendercam.zoom_in(-zstep)
 
 	elseif action_id == hash("mouse wheel down") then
-		rendercam.zoom(zstep)
+		rendercam.zoom_in(zstep)
 
 	elseif action_id == hash("middle click") then
 		if action.pressed then

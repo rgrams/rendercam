@@ -12,7 +12,7 @@ local SCALEMODE_FIXEDWIDTH = hash("fixedWidth")
 local SCALEMODE_FIXEDHEIGHT = hash("fixedHeight")
 
 M.DISPLAYOFFSET = vmath.vector3()
-M.ortho_zoom_mult = 0.01
+M.ortho_zoom_speed = 0.01
 M.follow_lerp_speed = 3
 
 -- Data table for the fallback camera - used when no user camera is active
@@ -159,31 +159,33 @@ function M.camera_final(cam_id)
 	cameras[cam_id] = nil
 end
 
-function M.zoom(z, cam_id)
+function M.zoom_in(z, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	if cam.orthographic then
-		cam.orthoScale = cam.orthoScale + z * M.ortho_zoom_mult
+		cam.orthoScale = cam.orthoScale + z * M.ortho_zoom_speed
+		go.set(cam.script, "zoom", 1/cam.orthoScale)
 	else
 		cam.lpos = cam.lpos - cam.lforwardVec * z
 		go.set_position(cam.lpos, cam.id) -- don't need to check for fallback_cam because it's orthographic
 	end
 end
 
-function M.get_ortho_scale(cam_id)
+function M.get_zoom(cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	if cam.orthographic then
-		return cam.orthoScale
+		return go.get(cam.script, "zoom")
 	else
-		print("ERROR: rendercam.get_ortho_scale() - this camera is not orthographic")
+		print("ERROR: rendercam.get_zoom() - 'zoom' is only for orthographic cameras, set Z position to zoom perspective cameras.")
 	end
 end
 
-function M.set_ortho_scale(s, cam_id)
+function M.set_zoom(z, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	if cam.orthographic then
-		cam.orthoScale = s
+		go.set(cam.script, "zoom", z)
+		cam.orthoScale = 1/z
 	else
-		print("ERROR: rendercam.set_ortho_scale() - this camera is not orthographic")
+		print("ERROR: rendercam.set_zoom() - 'zoom' is only for orthographic cameras, set Z position to zoom perspective cameras.")
 	end
 end
 
