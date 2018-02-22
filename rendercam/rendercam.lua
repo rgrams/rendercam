@@ -250,7 +250,7 @@ function M.unfollow(target_id, cam_id)
 end
 
 function M.follow_lerp_func(curPos, targetPos, dt)
-	return vmath.lerp(dt * M.follow_lerp_speed, curPos, targetPos)
+	return vmath.lerp(0.5^(dt * M.follow_lerp_speed), targetPos, curPos)
 end
 
 function M.set_follow_deadzone(left, top, right, bottom, cam_id)
