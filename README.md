@@ -180,7 +180,7 @@ _PARAMETERS_
 ### rendercam.follow_lerp_func(curPos, targetPos, dt)
 ```lua
 function M.follow_lerp_func(curPos, targetPos, dt)
-    return vmath.lerp(dt * M.follow_lerp_speed, curPos, targetPos)
+    return vmath.lerp(0.5^(dt * M.follow_lerp_speed), targetPos, curPos)
 end
 ```
 
