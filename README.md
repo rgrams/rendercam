@@ -96,7 +96,7 @@ _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object.
 
 ### rendercam.zoom_in(z, [cam_id])
-Zoom the camera in or out. If the camera is orthographic, this adds `z * rendercam.ortho_zoom_mult` to the camera's ortho scale. If the camera is perspective, this moves the camera forward by `z`. You can set `rendercam.ortho_zoom_speed` to adjust the global ortho zoom speed, or use `rendercam.get_zoom` and `rendercam.set_zoom` for full control.
+Zoom the camera in or out. If the camera is orthographic, this adds `z * rendercam.ortho_zoom_speed` to the camera's ortho scale. If the camera is perspective, this moves the camera forward by `z`. You can set `rendercam.ortho_zoom_speed` to adjust the global ortho zoom speed, or use `rendercam.get_zoom` and `rendercam.set_zoom` for full control.
 
 _PARAMETERS_
 * __z__ <kbd>number</kbd> - Amount to zoom in by. (use a negative value to zoom out)
