@@ -14,6 +14,7 @@ local SCALEMODE_FIXEDHEIGHT = hash("fixedHeight")
 M.DISPLAYOFFSET = vmath.vector3()
 M.ortho_zoom_mult = 0.01
 M.follow_lerp_speed = 3
+M.viewport_align = vmath.vector3(0.5, 0.5, 0)
 
 -- Data table for the fallback camera - used when no user camera is active
 local fallback_cam = {
@@ -332,8 +333,8 @@ function M.update_window(newX, newY)
 			M.viewport.height = scale
 
 			-- Viewport offset: bar on edge of screen from fixed aspect ratio
-			M.viewport.x = (M.window.x - M.viewport.width) * 0.5
-			M.viewport.y = (M.window.y - M.viewport.height) * 0.5
+			M.viewport.x = (M.window.x - M.viewport.width) * M.viewport_align.x
+			M.viewport.y = (M.window.y - M.viewport.height) * M.viewport_align.y
 
 			-- For screen-to-viewport coordinate conversion
 			M.viewport.scale.x = M.viewport.width / newX
