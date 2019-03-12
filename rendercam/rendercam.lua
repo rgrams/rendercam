@@ -190,6 +190,24 @@ function M.pan(dx, dy, cam_id)
 	if cam.id then go.set_position(cam.lpos, cam.id) end -- fallback_cam has no cam.id, it will ignore panning
 end
 
+function M.set_position_2D(lx, ly, cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	cam.lpos.x = lx
+	cam.lpos.y = ly
+	if cam.id then go.set_position(cam.lpos, cam.id) end -- fallback_cam has no cam.id, it will ignore panning
+end
+
+function M.set_position(lpos, cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	cam.lpos = lpos
+	if cam.id then go.set_position(cam.lpos, cam.id) end -- fallback_cam has no cam.id, it will ignore panning
+end
+
+function M.get_position(cam_id)
+	local cam = cam_id and cameras[cam_id] or curCam
+	return cam.lpos
+end
+
 function M.shake(dist, dur, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
 	table.insert(cam.shakes, { dist = dist, dur = dur, t = dur })
