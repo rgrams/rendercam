@@ -32,7 +32,7 @@ If either of the cameras is inside a secondary collection with a different name,
 To change your camera settings, expand the camera game object in the outline and select it's script component. In the properties panel you will have a bunch of different options.
 
 #### Active <kbd>bool</kbd>
-Whether the camera is initially active or not. If you have multiple cameras you will want to uncheck this property on your secondary cameras to make sure the right camera is used. If you have no active camera a fallback camera will be used for rendering and you will see a message in the console.
+Whether the camera is initially active or not. If you have multiple cameras you may want to uncheck this property on your secondary cameras to make sure the right camera is used. If you have no active camera a fallback camera will be used for rendering and you will see a message in the console.
 
 #### Orthographic <kbd>bool</kbd>
 Leave checked for an orthographic camera, uncheck for a perspective camera. Some other options below are only used if the camera is of one type or the other. For example: FOV is only used by perspective cameras, and Ortho Scale is only used by orthographic cameras.
@@ -44,7 +44,7 @@ The distance in front of the camera where rendering will start, relative to the 
 The distance in front of the camera where rendering will end, relative to the camera's position. Should be greater than Near Z. 1 is the default for orthographic cameras, 1000 is a reasonable value for perspective cameras.
 
 #### View Distance <kbd>number</kbd>
-The distance in front of the camera where the game world is located. This is usually 0 for orthographic cameras, or the z position of a perspective camera for 2.5D games (if the game world is at Z=0). For most perspective cameras (non-fixed-FOV), this is the distance at which the view area is measured. The View Distance is subtracted from the camera Z position on init to get the world Z position used for screen-to-world position transforms.
+The distance in front of the camera where the game world is located. This is usually 0 for orthographic cameras, or the Z position of a perspective camera for 2.5D games (if the game world is at Z=0). For most perspective cameras (non-fixed FOV), this is the distance at which the view area is measured. The View Distance is subtracted from the camera Z position on init to get the world Z position used for screen-to-world position transforms.
 
 #### FOV (field of view) <kbd>number</kbd>
 The field of view for perspective cameras, in degrees. This property is generally unused (and should be left at -1), as the FOV will be calculated based on other settings. If you want a camera with a fixed FOV, make sure "Use View Area" is un-checked, select the "Fixed Height" scale mode, and set FOV to your desired angle. The aspect ratio can be fixed or not.
@@ -59,10 +59,10 @@ If checked, black bars will be added to the top and bottom or sides of the viewp
 The aspect ratio to be used if "Fixed Aspect Ratio" is checked. Use X and Y to enter your desired proportion---i.e. X=16, Y=9 for a 16:9 aspect. A vector is used to enter the ratio so it can be an accurate fraction. The numbers themselves don't matter, just the proportion between them. You can use 1280, 1024 instead of 5, 4, and so on.
 
 #### Use View Area <kbd>bool</kbd>
-If checked, the "View Area" setting will be used to calculate the initial area of the world that the camera will show. If not checked, the window resolution specified in your game.project file will be used, _unless_ you're using a perspective camera and have set "FOV" greater than zero, in which case the camera will start with that FOV instead of calculating a specific area of world.
+If checked, the "View Area" setting will be used to calculate the initial area of the world that the camera will show. If not checked, the _current_ window resolution will be used _unless_ you're using a perspective camera and have set "FOV" greater than zero, in which case the camera will start with that FOV instead of calculating a specific area of world. Note that without "Use View Area" checked, the camera will zoom differently on mobile devices with different screen resolutions or if you create a new camera after changing the window size on desktop. 
 
 #### View Area <kbd>vector3</kbd>
-The dimensions in world space that the camera will show, if "Use View Area" is checked. They will be measured at "2d World Z" (usually 0). If using a fixed aspect ratio, the view area Y value will be overwritten based on the X value if they don't match the specified aspect ratio.
+The dimensions in world space that the camera will show, if "Use View Area" is checked. They will be measured at the camera's "View Distance" in front of the camera (by default, at Z=0). If using a fixed aspect ratio, the view area Y value will be overwritten based on the X value if they don't match the specified aspect ratio.
 
 ### View Scale Modes:
 The last four checkbox settings determine the scale mode used to calculate how the view changes anytime the window resolution is changed (including on init if your camera settings don't match your display settings in game.project). Only the first mode checked will be used (and a default is used if none are checked). Note that Fixed Area, Fixed Width, and Fixed Height all work exactly the same if you're using a fixed aspect ratio (since the aspect ratio locks the viewport dimensions together).
