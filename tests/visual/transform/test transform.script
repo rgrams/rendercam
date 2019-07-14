@@ -50,7 +50,6 @@ function update_child(self, pos, runPerfTests)
 	if runPerfTests then
 		perf_test(transform.get_to_world_matrix, "get to-world matrix", wp, wr, ws)
 		perf_test(transform.v3_by_matrix, "multiply v3 by matrix", v3_2, m)
-		perf_test(transform.v4_by_matrix, "multiply v4 by matrix", v4_2, m)
 		perf_test(function(m) return vmath.inv(m) end, "invert matrix", m)
 		perf_test(function(m) return vmath.ortho_inv(m) end, "ortho invert matrix", m)
 		perf_test(transform.world_to_local, "world to local", v3, wp, wr, ws)
