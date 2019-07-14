@@ -127,10 +127,10 @@ _PARAMETERS_
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
 ### rendercam.set_bounds(left, right, top, bottom, [cam_id])
-Sets limits on the camera's position in its local X/Y plane. The camera will not be allowed to move outside the specified rectangle bounds (except movement due to camera shake and recoil).
+Sets limits on the camera's position in its local X/Y plane. The camera will not be allowed to move outside the specified rectangle bounds (except movement due to camera shake and recoil). Call again with all `nil` arguments (just leave them out unless you are specifying a `cam_id`) to clear the camera's bounds.
 
 _PARAMETERS_
-* __left, right, top, bottom__ <kbd>number</kbd> - The boundaries of the limit rectangle, in coordinates local to the camera.
+* __left, right, top, bottom__ <kbd>number | nil</kbd> - The boundaries of the limit rectangle, in coordinates local to the camera.
 * __cam_id__ <kbd>hash</kbd> - ID of the camera game object. Uses the current camera by default.
 
 ### rendercam.shake(dist, dur, [cam_id])

@@ -26,7 +26,6 @@ local fallback_cam = {
 	wforwardVec = vmath.vector3(0, 0, -1), lupVec = vmath.vector3(0, 1, 0),
 	lforwardVec = vmath.vector3(0, 0, -1), lrightVec = vmath.vector3(1, 0, 0),
 	following = false, follows = {}, recoils = {}, shakes = {},
-	isViewportBounds = false, viewportBounds = vmath.vector4(0, 0, 0,0), boundsTopRight= vmath.vector3(0,0,0), boundsBottomLeft=vmath.vector3(0,0,0),
 	isCameraFocusZone = false, cameraFocusZoneBounds= vmath.vector4(0, 0, 0,0),
 }
 
@@ -198,13 +197,15 @@ end
 
 function M.set_bounds(left, right, top, bottom, cam_id)
 	local cam = cam_id and cameras[cam_id] or curCam
-	if left and right and top and bottom then
-		cam.viewportBounds = vmath.vector4(left, right, top, bottom)
-		cam.boundsBottomLeft = vmath.vector3(left, bottom, 0)
-		cam.boundsTopRight = vmath.vector3(right, top, 0)
-		cam.isViewportBounds = true
+	if left == nil and right == nil and top == nil and bottom == nil then
+		cam.viewportBounds = nil
+	elseif left and right and top and bottom then
+		cam.viewportBounds = {
+			topRight = vmath.vector3(right, top, 0),
+			bottomLeft = vmath.vector3(left, bottom, 0),
+		}
 	else
-		print("WARNING - rendercam.set_bounds() - Missing a valid argument. Requires left, right, top, and bottom")
+		print("ERROR - rendercam.set_bounds() - Missing a valid argument. Requires left, right, top, and bottom.")
 	end
 end
 

@@ -126,10 +126,6 @@ function init(self)
 		recoils = {},
 		follows = {},
 		following = false,
-		isViewportBounds = false,
-		viewportBounds = vmath.vector4(0, 0, 0, 0),
-		boundsTopRight = vmath.vector3(0, 0, 0),
-		boundsBottomLeft = vmath.vector3(0, 0, 0),
 		hasFollowDeadzone = false,
 		followDeadzone= vmath.vector4(0, 0, 0, 0)
 	}
@@ -144,7 +140,6 @@ function update(self, dt)
 	self.dt = dt -- faster to store than to send in message
 	msg.post("#", "post-update")
 end
-
 
 function on_message(self, message_id, message, sender)
 	if message_id == hash("post-update") then
@@ -223,11 +218,11 @@ function on_message(self, message_id, message, sender)
 		end
 
 		-- Viewport rect bounds
-		if self.data.isViewportBounds then
-
+		if self.data.viewportBounds then
+			local bounds = self.data.viewportBounds
 			local CrrtPos = rendercam.world_to_screen(self.data.lpos)
-			local topRight = rendercam.world_to_screen(self.data.boundsTopRight) - rendercam.DISPLAYOFFSET
-			local bottomLeft = rendercam.world_to_screen(self.data.boundsBottomLeft) + rendercam.DISPLAYOFFSET
+			local topRight = rendercam.world_to_screen(bounds.topRight) - rendercam.DISPLAYOFFSET
+			local bottomLeft = rendercam.world_to_screen(bounds.bottomLeft) + rendercam.DISPLAYOFFSET
 
 			CrrtPos.x = math.max(CrrtPos.x, bottomLeft.x)
 			CrrtPos.x = math.min(CrrtPos.x,  topRight.x)
