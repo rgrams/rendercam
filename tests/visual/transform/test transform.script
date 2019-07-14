@@ -40,7 +40,7 @@ function update_child(self, pos, runPerfTests)
 
 	local v3 = vmath.vector3(pos.x, pos.y, pos.z)
 	local wp = go.get_world_position("parent")
-	local wr = vmath.normalize(go.get_world_rotation("parent"))
+	local wr = go.get_world_rotation("parent")
 	local ws = go.get_world_scale("parent")
 
 	local m = transform.get_to_world_matrix(wp, wr, ws)

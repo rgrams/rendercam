@@ -1,0 +1,8 @@
+
+go.property("enabled", true)
+
+function init(self)
+	if self.enabled then
+		require "tests.unit.all"
+	end
+end
