@@ -1,0 +1,82 @@
+
+local rendercam = require "rendercam.rendercam"
+local transform = require "rendercam.transform"
+local perf_test = require "tests.lib.perf-test"
+
+local function v4_to_v3(v4)
+	return vmath.vector3(v4.x, v4.y, v4.z)
+end
+
+local function v3_to_v4(v3)
+	return vmath.vector4(v3.x, v3.y, v3.z, 1)
+end
+
+local function emptyFunc()
+	return 1
+end
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	self.t = 0
+	self.ox, self.oy = 1, 0
+
+	go.animate("parent-parent", "scale", go.PLAYBACK_LOOP_PINGPONG, vmath.vector3(1.5), go.EASING_INOUTSINE, 8)
+	go.animate("parent", "scale.x", go.PLAYBACK_LOOP_PINGPONG, 2, go.EASING_INOUTSINE, 11)
+end
+
+local update_child
+
+function update(self, dt)
+	local rot = go.get_rotation("parent-parent")
+	rot = rot * vmath.quat_rotation_z(dt*0.1)
+	go.set_rotation(rot, "parent-parent")
+
+	local rot = go.get_rotation("parent")
+	rot = rot * vmath.quat_rotation_z(-dt*0.25)
+	go.set_rotation(rot, "parent")
+end
+
+function update_child(self, pos, runPerfTests)
+
+	local v3 = vmath.vector3(pos.x, pos.y, pos.z)
+	local wp = go.get_world_position("parent")
+	local wr = vmath.normalize(go.get_world_rotation("parent"))
+	local ws = go.get_world_scale("parent")
+
+	local m = transform.get_to_world_matrix(wp, wr, ws)
+	local v3_2 = vmath.vector3(v3)
+	local v4_2 = vmath.vector4(pos.x, pos.y, pos.z, 1)
+
+	if runPerfTests then
+		perf_test(transform.get_to_world_matrix, "get to-world matrix", wp, wr, ws)
+		perf_test(transform.v3_by_matrix, "multiply v3 by matrix", v3_2, m)
+		perf_test(transform.v4_by_matrix, "multiply v4 by matrix", v4_2, m)
+		perf_test(function(m) return vmath.inv(m) end, "invert matrix", m)
+		perf_test(function(m) return vmath.ortho_inv(m) end, "ortho invert matrix", m)
+		perf_test(transform.world_to_local, "world to local", v3, wp, wr, ws)
+		perf_test(transform.local_to_world, "local to world", go.get_position("child"), wp, wr, ws)
+		perf_test(v3_to_v4, "v3 to v4", vmath.vector3())
+		perf_test(v4_to_v3, "v4 to v3", vmath.vector4())
+		perf_test(emptyFunc, "empty function")
+	end
+
+	local v3 = vmath.vector3(pos.x, pos.y, pos.z)
+	local localPos = transform.world_to_local(v3, wp, wr, ws)
+
+	go.set_position(localPos, "child")
+
+	local wpos = transform.local_to_world(go.get_position("child"), wp, wr, ws)
+	go.set_position(wpos, "world pos")
+end
+
+function on_input(self, action_id, action)
+	if action_id == hash("escape") then
+		sys.exit(0)
+	elseif action_id == hash("left click") and action.pressed then
+		local mwPos = rendercam.screen_to_world_2d(action.screen_x, action.screen_y)
+		update_child(self, mwPos)
+	elseif action_id == hash("right click") and action.pressed then
+		local mwPos = rendercam.screen_to_world_2d(action.screen_x, action.screen_y)
+		update_child(self, mwPos, true) -- Run perf tests.
+	end
+end

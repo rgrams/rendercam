@@ -58,3 +58,7 @@ mouse_trigger {
   input: MOUSE_BUTTON_MIDDLE
   action: "middle click"
 }
+mouse_trigger {
+  input: MOUSE_BUTTON_RIGHT
+  action: "right click"
+}
