@@ -31,6 +31,8 @@ local TWO_PI = math.pi * 2
 local FORWARDVEC = vmath.vector3(0, 0, -1)
 local UPVEC = vmath.vector3(0, 1, 0)
 local RIGHTVEC = vmath.vector3(1, 0, 0)
+local POST_UPDATE = hash("post-update")
+local FOLLOW = hash("follow")
 
 
 function init(self)
@@ -142,7 +144,7 @@ function update(self, dt)
 end
 
 function on_message(self, message_id, message, sender)
-	if message_id == hash("post-update") then
+	if message_id == POST_UPDATE then
 		-- have to update pos after update or it jitters like crazy
 
 		if self.orthographic then
@@ -247,7 +249,7 @@ function on_message(self, message_id, message, sender)
 		self.data.abs_nearZ = self.data.wpos.z - self.data.nearZ
 		self.data.abs_farZ = self.data.wpos.z - self.data.farZ
 
-	elseif message_id == hash("follow") then
+	elseif message_id == FOLLOW then
 		rendercam.follow(message.target_id, message.allowMultiFollow, self.id)
 	end
 end
