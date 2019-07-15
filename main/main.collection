@@ -192,6 +192,11 @@ instances {
   component_properties {
     id: "script"
     properties {
+      id: "parent"
+      value: "orbit pivot"
+      type: PROPERTY_TYPE_URL
+    }
+    properties {
       id: "active"
       value: "false"
       type: PROPERTY_TYPE_BOOLEAN
@@ -254,6 +259,11 @@ instances {
   }
   component_properties {
     id: "script"
+    properties {
+      id: "parent"
+      value: "orbit pivot 2"
+      type: PROPERTY_TYPE_URL
+    }
     properties {
       id: "active"
       value: "false"
