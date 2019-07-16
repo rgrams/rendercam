@@ -134,7 +134,11 @@ function M.activate_camera(cam_id)
 		if cameras[cam_id] ~= curCam then
 			if curCam then curCam.active = false end
 			curCam = cameras[cam_id]
-			msg.post("@render:", "update window")
+			M.update_window()
+			-- Update view and proj so transform functions will immediately work with the new camera.
+			M.calculate_view()
+			M.calculate_proj()
+			curCam.active = true
 		end
 	else
 		print("WARNING: rendercam.activate_camera() - camera ".. cam_id .. " not found. ")
@@ -154,7 +158,10 @@ end
 function M.camera_final(cam_id)
 	if curCam == cameras[cam_id] then
 		curCam = fallback_cam
-		msg.post("@render:", "update window")
+		M.update_window()
+		M.calculate_view()
+		M.calculate_proj()
+		curCam.active = true
 	end
 	cameras[cam_id] = nil
 end

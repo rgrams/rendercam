@@ -216,11 +216,14 @@ function on_message(self, message_id, message, sender)
 			end
 
 			targetPos = rendercam.follow_lerp_func(data.wpos, targetPos, self.dt)
+
 			data.wpos.x = targetPos.x;  data.wpos.y = targetPos.y
 		end
 
 		-- View bounds.
-		if data.viewportBounds then
+		if data.viewportBounds and data.active then
+			-- Won't work if this camera is not active because world_to_screen
+			-- (and every other transform function) uses the current camera's data.
 			local bounds = data.viewportBounds
 			local CrrtPos = rendercam.world_to_screen(data.wpos)
 			local topRight = rendercam.world_to_screen(bounds.topRight) - rendercam.DISPLAYOFFSET

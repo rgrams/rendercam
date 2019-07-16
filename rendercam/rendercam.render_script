@@ -76,7 +76,5 @@ function on_message(self, message_id, message)
 		self.clear_color = message.color
 	elseif message_id == WINDOW_RESIZED then -- sent by engine
 		update_window(self)
-	elseif message_id == UPDATE_WINDOW then -- sent by rendercam when a camera is activated ("window_resized" engine message requires data)
-		update_window(self)
 	end
 end
