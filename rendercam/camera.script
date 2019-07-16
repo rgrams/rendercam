@@ -136,6 +136,13 @@ function init(self)
 		followDeadzone= vmath.vector4(0, 0, 0, 0)
 	}
 	rendercam.camera_init(self.id, self.data)
+
+	-- If the "parent" property is not set, do a little check to see if it should be (only works in some circumstances.)
+	if self.parent == self.url then
+		if self.lpos ~= self.wpos or self.lrot ~= self.wrot then
+			error("Rendercam - Camera '" .. tostring(self.url) .. "' is the child of a transformed game object, but its 'parent' property is not set.")
+		end
+	end
 end
 
 function final(self)
