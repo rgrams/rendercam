@@ -7,6 +7,7 @@ M.COLORS = {
 	red = vmath.vector4(1, 0, 0, 1),
 	cyan = vmath.vector4(0, 1, 1, 1),
 	yellow = vmath.vector4(1, 1, 0, 1),
+	orange = vmath.vector4(1, 0.5, 0, 1),
 	green = vmath.vector4(0, 1, 0, 1),
 	blue = vmath.vector4(0, 0.5, 1, 1),
 	pink = vmath.vector4(1, 0.5, 1, 1),

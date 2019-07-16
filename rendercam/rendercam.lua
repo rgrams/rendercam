@@ -11,6 +11,10 @@ local SCALEMODE_FIXEDAREA = hash("fixedArea")
 local SCALEMODE_FIXEDWIDTH = hash("fixedWidth")
 local SCALEMODE_FIXEDHEIGHT = hash("fixedHeight")
 
+M.debug = {
+	bounds = true
+}
+
 M.DISPLAYOFFSET = vmath.vector3()
 M.ortho_zoom_speed = 0.01
 M.follow_lerp_speed = 3

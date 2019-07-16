@@ -7,6 +7,7 @@
 local rendercam = require "rendercam.rendercam"
 local transform = require "rendercam.transform"
 local debugdraw = require "rendercam.debug-draw"
+local debug = rendercam.debug
 
 go.property("parent", msg.url())
 go.property("active", true)
@@ -160,44 +161,50 @@ local function enforce_bounds(self)
 	local b = self.data.viewportBounds
 	local vp = rendercam.viewport
 
-	debugdraw.rect(b.lt, b.rt, b.top, b.bot)
-	debugdraw.rect(b.lt+20, b.rt-20, b.top-20, b.bot+20, "cyan")
-
-	-- get viewport corner positions in world space
+	-- Get viewport corner positions in world space.
 	local tl = rendercam.screen_to_world_2d(vp.x, vp.y + vp.height)
 	local tr = rendercam.screen_to_world_2d(vp.x + vp.width, vp.y + vp.height)
 	local bl = rendercam.screen_to_world_2d(vp.x, vp.y)
 	local br = rendercam.screen_to_world_2d(vp.x + vp.width, vp.y)
 
-	-- get world-aligned viewport bounding box
+	-- Get world-aligned viewport bounding box.
 	local w_lt = math.min(tl.x, tr.x, bl.x, br.x)
 	local w_rt = math.max(tl.x, tr.x, bl.x, br.x)
 	local w_top = math.max(tl.y, tr.y, bl.y, br.y)
 	local w_bot = math.min(tl.y, tr.y, bl.y, br.y)
 	local w_w, w_h = w_rt - w_lt, w_top - w_bot -- world width, height
 
-	local x, y -- final x, y pos
+	if debug.bounds then -- Draw bounds rect + an inner border rect so you can actually see it.
+		debugdraw.rect(b.lt, b.rt, b.top, b.bot)
+		debugdraw.rect(b.lt+20, b.rt-20, b.top-20, b.bot+20, "orange")
+		debugdraw.box(tl.x, tl.y, 15, 15, "yellow") -- Draw viewport corner world positions.
+		debugdraw.box(tr.x, tr.y, 15, 15, "yellow")
+		debugdraw.box(br.x, br.y, 15, 15, "yellow")
+		debugdraw.box(bl.x, bl.y, 15, 15, "yellow")
+	end
+
+	local finalX, finalY
 	if w_w > b.width then
-		x = b.centerX
-		debugdraw.line(b.lt, b.centerY, b.rt, b.centerY, "red")
-		debugdraw.line(b.centerX-5, b.centerY-10, b.centerX+5, b.centerY+10, "red")
+		finalX = b.centerX
 	else
-		x = w_lt < b.lt and (w_lt-b.lt) or w_rt > b.rt and (w_rt-b.rt) or 0
-		if w_lt < b.lt then  print("out left", x)  end
-		if w_rt > b.rt then  print("out right", x)  end
-		x = self.data.wpos.x - x
+		finalX = w_lt < b.lt and (w_lt-b.lt) or w_rt > b.rt and (w_rt-b.rt) or 0
+		finalX = self.data.wpos.x - finalX
 	end
 	if w_h > b.height then
-		y = b.centerY
-		debugdraw.line(b.centerX, b.top, b.centerX, b.bot, "red")
-		debugdraw.line(b.centerX-10, b.centerY+5, b.centerX+10, b.centerY-5, "red")
+		finalY = b.centerY
 	else
-		y = w_top > b.top and (w_top-b.top) or w_bot < b.bot and (w_bot-b.bot) or 0
-		if w_top > b.top then  print("out top", y)  end
-		if w_bot < b.bot then  print("out bot", y)  end
-		y = self.data.wpos.y - y
+		finalY = w_top > b.top and (w_top-b.top) or w_bot < b.bot and (w_bot-b.bot) or 0
+		finalY = self.data.wpos.y - finalY
 	end
-	self.data.wpos.x = x;  self.data.wpos.y = y
+
+	if debug.bounds then -- Draw diamond & line showing offset outside of bounds.
+		if finalX ~= self.data.wpos.x or finalY ~= self.data.wpos.y then
+			debugdraw.circle(self.data.wpos.x, self.data.wpos.y, 10, "yellow", 4)
+			debugdraw.line(self.data.wpos.x, self.data.wpos.y, finalX, finalY, "yellow")
+		end
+	end
+
+	self.data.wpos.x = finalX;  self.data.wpos.y = finalY
 end
 
 function on_message(self, message_id, message, sender)
