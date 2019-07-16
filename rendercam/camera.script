@@ -265,7 +265,7 @@ function on_message(self, message_id, message, sender)
 			local wp = go.get_world_position(self.parent)
 			local wr = go.get_world_rotation(self.parent)
 			local ws = go.get_world_scale(self.parent)
-			data.lpos = transform.world_to_local(data.lpos, wp, wr, ws)
+			data.lpos = transform.world_to_local(vmath.vector3(data.wpos), wp, wr, ws)
 		else
 			data.lpos = data.wpos
 		end
