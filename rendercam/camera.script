@@ -40,16 +40,16 @@ local FOLLOW = hash("follow")
 
 function init(self)
 	-- Get initial scale mode
-	for i, v in ipairs({ "expandView", "fixedArea", "fixedWidth", "fixedHeight" }) do
+	for i,v in ipairs({ "expandView", "fixedArea", "fixedWidth", "fixedHeight" }) do
 		self[v] = self[v] and hash(v)
 	end
 	self.scaleMode = self.expandView or self.fixedArea or self.fixedWidth or self.fixedHeight -- get first checked
-	if not self.scaleMode then self.scaleMode = hash("fixedArea") end
+	if not self.scaleMode then  self.scaleMode = hash("fixedArea")  end
 
 	-- Make sure nearZ and farZ are valid values (if a perspective camera)
 	if not self.orthographic then
-		if self.nearZ <= 0 then self.nearZ = 0.1 end
-		if self.farZ < 0 then self.farZ = 0.1 end
+		if self.nearZ <= 0 then  self.nearZ = 0.1  end
+		if self.farZ < 0 then  self.farZ = 0.1  end
 	end
 
 	-- Turn aspect ratio from x, y into a single number
@@ -94,7 +94,7 @@ function init(self)
 	if self.fov > 0 then
 		self.fov = math.rad(self.fov) -- FOV is set in degrees
 		if not self.orthographic and not self.useViewArea then -- don't use FOV if using view area
-			if self.viewArea.z == 0 then self.viewArea.z = 1 end -- view distance doesn't matter for fixed FOV, it just can't be zero.
+			if self.viewArea.z == 0 then  self.viewArea.z = 1  end -- view distance doesn't matter for fixed FOV, it just can't be zero.
 			self.viewArea.y = (self.viewArea.z * math.tan(self.fov * 0.5)) * 2
 			if self.fixedAspectRatio then
 				self.viewArea.x = self.viewArea.y * self.aspectRatio
@@ -167,7 +167,6 @@ function on_message(self, message_id, message, sender)
 		data.wforwardVec = vmath.rotate(self.wrot, FORWARDVEC)
 		data.wupVec = vmath.rotate(self.wrot, UPVEC)
 		-- Local:
-		data.lpos = go.get_position()
 		self.lrot = go.get_rotation()
 		data.lforwardVec = vmath.rotate(self.lrot, FORWARDVEC)
 		data.lupVec = vmath.rotate(self.lrot, UPVEC)
@@ -184,9 +183,9 @@ function on_message(self, message_id, message, sender)
 
 		-- Camera Follow.
 		if data.following then
-			self.followPos.x = 0;  self.followPos.y = 0; -- Avoid creating a new vector every frame.
+			self.followPos.x = 0;  self.followPos.y = 0 -- Avoid creating a new vector every frame.
 			-- Get average world position of all follow targets.
-			for i, v in ipairs(data.follows) do
+			for i,v in ipairs(data.follows) do
 				self.followPos = self.followPos + go.get_world_position(v)
 			end
 			self.followPos = self.followPos * (1/#data.follows)
@@ -245,7 +244,7 @@ function on_message(self, message_id, message, sender)
 			self.shake = self.shake + data.lrightVec * math.sin(angle) * d -- Local shake pos.
 			self.shake = self.shake + data.lupVec * math.cos(angle) * d
 			v.t = v.t - self.dt
-			if v.t <= 0 then table.remove(data.shakes, i) end
+			if v.t <= 0 then  table.remove(data.shakes, i)  end
 		end
 		if #data.shakes > 0 then
 			-- Convert shake from a local offset from the camera to an absolute world position.
@@ -264,9 +263,9 @@ function on_message(self, message_id, message, sender)
 			d = d*d -- Square falloff.
 			self.recoil = self.recoil + v.vec * d -- Recoil is a world-spoce offset.
 			v.t = v.t - self.dt
-			if v.t <= 0 then table.remove(data.recoils, i) end
+			if v.t <= 0 then  table.remove(data.recoils, i)  end
 		end
-		if #data.recoils > 0 then  data.wpos = data.wpos + self.recoil  end
+		if #data.recoils > 0 then   data.wpos = data.wpos + self.recoil   end
 
 		if self.parent ~= self.url then
 			local wp = go.get_world_position(self.parent)
