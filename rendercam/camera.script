@@ -6,6 +6,7 @@
 
 local rendercam = require "rendercam.rendercam"
 local transform = require "rendercam.transform"
+local debugdraw = require "rendercam.debug-draw"
 
 go.property("parent", msg.url())
 go.property("active", true)
@@ -154,6 +155,51 @@ function update(self, dt)
 	msg.post("#", "post-update")
 end
 
+local function enforce_bounds(self)
+	rendercam.calculate_view() -- To have no jitter, need up-to-date view matrix for transforms.
+	local b = self.data.viewportBounds
+	local vp = rendercam.viewport
+
+	debugdraw.rect(b.lt, b.rt, b.top, b.bot)
+	debugdraw.rect(b.lt+20, b.rt-20, b.top-20, b.bot+20, "cyan")
+
+	-- get viewport corner positions in world space
+	local tl = rendercam.screen_to_world_2d(vp.x, vp.y + vp.height)
+	local tr = rendercam.screen_to_world_2d(vp.x + vp.width, vp.y + vp.height)
+	local bl = rendercam.screen_to_world_2d(vp.x, vp.y)
+	local br = rendercam.screen_to_world_2d(vp.x + vp.width, vp.y)
+
+	-- get world-aligned viewport bounding box
+	local w_lt = math.min(tl.x, tr.x, bl.x, br.x)
+	local w_rt = math.max(tl.x, tr.x, bl.x, br.x)
+	local w_top = math.max(tl.y, tr.y, bl.y, br.y)
+	local w_bot = math.min(tl.y, tr.y, bl.y, br.y)
+	local w_w, w_h = w_rt - w_lt, w_top - w_bot -- world width, height
+
+	local x, y -- final x, y pos
+	if w_w > b.width then
+		x = b.centerX
+		debugdraw.line(b.lt, b.centerY, b.rt, b.centerY, "red")
+		debugdraw.line(b.centerX-5, b.centerY-10, b.centerX+5, b.centerY+10, "red")
+	else
+		x = w_lt < b.lt and (w_lt-b.lt) or w_rt > b.rt and (w_rt-b.rt) or 0
+		if w_lt < b.lt then  print("out left", x)  end
+		if w_rt > b.rt then  print("out right", x)  end
+		x = self.data.wpos.x - x
+	end
+	if w_h > b.height then
+		y = b.centerY
+		debugdraw.line(b.centerX, b.top, b.centerX, b.bot, "red")
+		debugdraw.line(b.centerX-10, b.centerY+5, b.centerX+10, b.centerY-5, "red")
+	else
+		y = w_top > b.top and (w_top-b.top) or w_bot < b.bot and (w_bot-b.bot) or 0
+		if w_top > b.top then  print("out top", y)  end
+		if w_bot < b.bot then  print("out bot", y)  end
+		y = self.data.wpos.y - y
+	end
+	self.data.wpos.x = x;  self.data.wpos.y = y
+end
+
 function on_message(self, message_id, message, sender)
 	if message_id == POST_UPDATE then -- Have to update pos after update or it jitters like crazy
 		local data = self.data
@@ -222,20 +268,9 @@ function on_message(self, message_id, message, sender)
 
 		-- View bounds.
 		if data.viewportBounds and data.active then
-			-- Won't work if this camera is not active because world_to_screen
-			-- (and every other transform function) uses the current camera's data.
-			local bounds = data.viewportBounds
-			local CrrtPos = rendercam.world_to_screen(data.wpos)
-			local topRight = rendercam.world_to_screen(bounds.topRight) - rendercam.DISPLAYOFFSET
-			local bottomLeft = rendercam.world_to_screen(bounds.bottomLeft) + rendercam.DISPLAYOFFSET
-
-			CrrtPos.x = math.max(CrrtPos.x, bottomLeft.x)
-			CrrtPos.x = math.min(CrrtPos.x,  topRight.x)
-			CrrtPos.y = math.max(CrrtPos.y, bottomLeft.y)
-			CrrtPos.y = math.min(CrrtPos.y,  topRight.y)
-			local newPos = rendercam.screen_to_world_2d(CrrtPos.x, CrrtPos.y)
-			data.wpos.x = newPos.x
-			data.wpos.y = newPos.y
+			-- Can't enforce bounds if this camera is not active because screen_to_world_2d
+			-- (and every other transform function) uses the current camera's matrices.
+			enforce_bounds(self)
 		end
 
 		-- Camera Shake.

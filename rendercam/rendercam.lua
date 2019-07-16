@@ -208,6 +208,10 @@ function M.set_bounds(left, right, top, bottom, cam_id)
 		cam.viewportBounds = nil
 	elseif left and right and top and bottom then
 		cam.viewportBounds = {
+			lt = left, rt = right, top = top, bot = bottom,
+			width = right - left, height = top - bottom,
+			centerX = left + (right - left)/2,
+			centerY = bottom + (top - bottom)/2,
 			topRight = vmath.vector3(right, top, 0),
 			bottomLeft = vmath.vector3(left, bottom, 0),
 		}
