@@ -1,0 +1,15 @@
+
+local rendercam = require 'rendercam.rendercam'
+
+local bounds = { lt = -1170, rt = 500, top = 200, bot = -200 }
+
+function init(self)
+	msg.post("#", "post init") -- Can't set bounds on init - camera might not be init yet...
+	rendercam.debug.bounds = true
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("post init") then
+		rendercam.set_bounds(bounds.lt, bounds.rt, bounds.top, bounds.bot)
+	end
+end

@@ -42,6 +42,14 @@ key_trigger {
   input: KEY_4
   action: "4"
 }
+key_trigger {
+  input: KEY_LSHIFT
+  action: "shift"
+}
+key_trigger {
+  input: KEY_RSHIFT
+  action: "shift"
+}
 mouse_trigger {
   input: MOUSE_BUTTON_LEFT
   action: "left click"
