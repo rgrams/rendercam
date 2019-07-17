@@ -36,9 +36,10 @@ local FORWARDVEC = vmath.vector3(0, 0, -1)
 local UPVEC = vmath.vector3(0, 1, 0)
 local RIGHTVEC = vmath.vector3(1, 0, 0)
 local ZEROVEC = vmath.vector3()
+
 local POST_UPDATE = hash("post-update")
 local FOLLOW = hash("follow")
-
+local SET_BOUNDS = hash("set_bounds")
 
 function init(self)
 	-- Get initial scale mode
@@ -328,6 +329,8 @@ function on_message(self, message_id, message, sender)
 
 	elseif message_id == FOLLOW then
 		rendercam.follow(message.target_id, message.allowMultiFollow, self.id)
+	elseif message_id == SET_BOUNDS then
+		rendercam.set_bounds(message.left, message.right, message.top, message.bottom, self.id)
 	end
 end
 
