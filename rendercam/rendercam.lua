@@ -133,19 +133,27 @@ end
 --| 					PUBLIC FUNCTIONS I: CAMERA STUFF							|
 -- ---------------------------------------------------------------------------------
 
+local function validate_cam_id(cam_id, func_name)
+	-- Returns the current cam if the id is nil, or looks for a camera with the supplied ID.
+	local cam = not cam_id and curCam or cameras[cam_id]
+	if not cam then
+		-- Calling an error will stop the execution of the calling function,
+		-- so there's no need to check if the return value is nil or not.
+		error("rendercam." .. func_name .. "() - No camera with the ID: '" .. tostring(cam_id) .. "' exists.")
+	end
+	return cam
+end
+
 function M.activate_camera(cam_id)
-	if cameras[cam_id] then
-		if cameras[cam_id] ~= curCam then
-			if curCam then curCam.active = false end
-			curCam = cameras[cam_id]
-			M.update_window()
-			-- Update view and proj so transform functions will immediately work with the new camera.
-			M.calculate_view()
-			M.calculate_proj()
-			curCam.active = true
-		end
-	else
-		print("WARNING: rendercam.activate_camera() - camera ".. cam_id .. " not found. ")
+	local cam = validate_cam_id(cam_id, "activate_camera")
+	if cam ~= curCam then
+		if curCam then curCam.active = false end
+		curCam = cam
+		M.update_window()
+		-- Update view and proj so transform functions will immediately work with the new camera.
+		M.calculate_view()
+		M.calculate_proj()
+		curCam.active = true
 	end
 end
 
@@ -171,7 +179,7 @@ function M.camera_final(cam_id)
 end
 
 function M.zoom_in(z, cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
+	local cam = validate_cam_id(cam_id, "zoom_in")
 	if cam.orthographic then
 		cam.orthoScale = cam.orthoScale + z * M.ortho_zoom_speed
 		go.set(cam.script, "zoom", 1/cam.orthoScale)
@@ -182,7 +190,7 @@ function M.zoom_in(z, cam_id)
 end
 
 function M.get_zoom(cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
+	local cam = validate_cam_id(cam_id, "get_zoom")
 	if cam.orthographic then
 		return go.get(cam.script, "zoom")
 	else
@@ -191,7 +199,7 @@ function M.get_zoom(cam_id)
 end
 
 function M.set_zoom(z, cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
+	local cam = validate_cam_id(cam_id, "set_zoom")
 	if cam.orthographic then
 		go.set(cam.script, "zoom", z)
 		cam.orthoScale = 1/z
@@ -201,13 +209,13 @@ function M.set_zoom(z, cam_id)
 end
 
 function M.pan(dx, dy, cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
+	local cam = validate_cam_id(cam_id, "pan")
 	cam.lpos = cam.lpos + cam.lrightVec * dx + cam.lupVec * dy
 	if cam.id then go.set_position(cam.lpos, cam.id) end -- fallback_cam has no cam.id, it will ignore panning
 end
 
 function M.set_bounds(left, right, top, bottom, cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
+	local cam = validate_cam_id(cam_id, "set_bounds")
 	if left == nil and right == nil and top == nil and bottom == nil then
 		cam.viewportBounds = nil
 	elseif left and right and top and bottom then
@@ -220,28 +228,28 @@ function M.set_bounds(left, right, top, bottom, cam_id)
 			bottomLeft = vmath.vector3(left, bottom, 0),
 		}
 	else
-		print("ERROR - rendercam.set_bounds() - Missing a valid argument. Requires left, right, top, and bottom.")
+		error("rendercam.set_bounds() - Missing a valid argument. Requires left, right, top, and bottom.")
 	end
 end
 
 function M.shake(dist, dur, cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
+	local cam = validate_cam_id(cam_id, "shake")
 	table.insert(cam.shakes, { dist = dist, dur = dur, t = dur })
 end
 
 function M.recoil(vec, dur, cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
+	local cam = validate_cam_id(cam_id, "recoil")
 	table.insert(cam.recoils, { vec = vec, dur = dur, t = dur })
 end
 
 function M.stop_shaking(cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
+	local cam = validate_cam_id(cam_id, "stop_shaking")
 	cam.shakes = {}
 	cam.recoils = {}
 end
 
 function M.follow(target_id, allowMultiFollow, cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
+	local cam = validate_cam_id(cam_id, "follow")
 	if allowMultiFollow then
 		table.insert(cam.follows, target_id)
 	else
@@ -251,7 +259,7 @@ function M.follow(target_id, allowMultiFollow, cam_id)
 end
 
 function M.unfollow(target_id, cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
+	local cam = validate_cam_id(cam_id, "unfollow")
 	if #cam.follows == 0 then
 		return
 	elseif not target_id and #cam.follows == 1 then
@@ -271,7 +279,7 @@ function M.follow_lerp_func(curPos, targetPos, dt)
 end
 
 function M.set_follow_deadzone(left, right, top, bottom, cam_id)
-	local cam = cam_id and cameras[cam_id] or curCam
+	local cam = validate_cam_id(cam_id, "set_follow_deadzone")
 	if left and right and top and bottom then
 		cam.followDeadzone = vmath.vector4(left, right, top, bottom)
 		if vmath.length(cam.followDeadzone) == 0 then
