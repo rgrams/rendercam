@@ -3,7 +3,7 @@ local M = {}
 
 -- Check if 'shared_state' setting is on
 if sys.get_config("script.shared_state") ~= "1" then
-	error("ERROR - rendercam - 'shared_state' setting in game.project must be enabled for rendercam to work.", 0)
+	error("rendercam - 'shared_state' setting in game.project must be enabled for rendercam to work.", 0)
 end
 
 local SCALEMODE_EXPANDVIEW = hash("expandView")
@@ -158,7 +158,7 @@ end
 
 function M.camera_init(cam_id, data)
 	if cameras[cam_id] then
-		print("ERROR: rendercam.camera_init() - Camera name conflict with ID: " .. cam_id .. ". \n\tNew camera will overwrite the old! Your cameras must have unique IDs.")
+		error("rendercam.camera_init() - Camera name conflict with ID: " .. cam_id .. ". \n\tNew camera will overwrite the old! Your cameras must have unique IDs.")
 	end
 	cameras[cam_id] = data
 	if data.active then
@@ -193,7 +193,7 @@ function M.get_zoom(cam_id)
 	if cam.orthographic then
 		return go.get(cam.script, "zoom")
 	else
-		print("ERROR: rendercam.get_zoom() - 'zoom' is only for orthographic cameras, set Z position to zoom perspective cameras.")
+		print("WARNING: rendercam.get_zoom() - 'zoom' is only used for orthographic cameras, set Z position to zoom perspective cameras.")
 	end
 end
 
@@ -203,7 +203,7 @@ function M.set_zoom(z, cam_id)
 		go.set(cam.script, "zoom", z)
 		cam.orthoScale = 1/z
 	else
-		print("ERROR: rendercam.set_zoom() - 'zoom' is only for orthographic cameras, set Z position to zoom perspective cameras.")
+		print("WARNING: rendercam.set_zoom() - 'zoom' is only used for orthographic cameras, set Z position to zoom perspective cameras.")
 	end
 end
 
@@ -287,7 +287,7 @@ function M.set_follow_deadzone(left, right, top, bottom, cam_id)
 			cam.hasFollowDeadzone = true
 		end
 	else
-		print("WARNING - rendercam.set_follow_deadzone() - Missing a valid argument. Requires left, right, top, and bottom")
+		error("rendercam.set_follow_deadzone() - Missing a valid argument. Requires left, right, top, and bottom")
 	end
 end
 
