@@ -15,7 +15,6 @@ M.debug = {
 	bounds = true
 }
 
-M.DISPLAYOFFSET = vmath.vector3()
 M.ortho_zoom_speed = 0.01
 M.follow_lerp_speed = 3
 M.viewport_align = vmath.vector3(0.5, 0.5, 0)
@@ -375,8 +374,6 @@ function M.update_window(newX, newY)
 		else
 			curCam.fov = get_fov(curCam.viewArea.z, curCam.viewArea.y * 0.5)
 		end
-
-		M.DISPLAYOFFSET = vmath.vector3( M.viewport.width / 2, M.viewport.height / 2, 0)
 
 		calculate_gui_adjust_data(M.window.x, M.window.y, M.configWin.x, M.configWin.y)
 
