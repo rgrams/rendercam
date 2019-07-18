@@ -8,6 +8,7 @@ local rendercam = require "rendercam.rendercam"
 local transform = require "rendercam.transform"
 local debugdraw = require "rendercam.debug-draw"
 local rdebug = rendercam.debug
+local simplex = require "rendercam.simplex2d"
 
 go.property("parent", msg.url())
 go.property("active", true)
@@ -283,14 +284,23 @@ function on_message(self, message_id, message, sender)
 
 		-- Camera Shake.
 		self.shake.x = 0;  self.shake.y = 0;  self.shake.z = 0
-		for i=#data.shakes, 1, -1 do -- iterate backwards so I can remove arbitrary elements without problems
-			local v = data.shakes[i]
-			local d = math.random() * v.dist * v.t / v.dur -- linear falloff
-			local angle = math.random() * TWO_PI
-			self.shake = self.shake + data.lrightVec * math.sin(angle) * d -- Local shake pos.
-			self.shake = self.shake + data.lupVec * math.cos(angle) * d
-			v.t = v.t - self.dt
-			if v.t <= 0 then  table.remove(data.shakes, i)  end
+		for i=#data.shakes,1,-1 do -- Iterate backwards so elements can be removed without problems.
+			local sh = data.shakes[i]
+			local falloffMult = sh.t / sh.dur
+			local x, y
+			if sh.freq then -- Simplex shake.
+				local d = sh.dist * falloffMult
+				x = simplex(sh.seed1, sh.t * sh.freq) * d
+				y = simplex(sh.seed2, sh.t * sh.freq) * d
+			else -- Standard random shake.
+				local d = math.random() * sh.dist * falloffMult
+				local angle = math.random() * TWO_PI
+				x = math.cos(angle) * d;  y = math.sin(angle) * d
+			end
+			self.shake = self.shake + data.lrightVec * x -- Local shake pos.
+			self.shake = self.shake + data.lupVec * y
+			sh.t = sh.t - self.dt
+			if sh.t <= 0 then  table.remove(data.shakes, i)  end
 		end
 		if self.shake.x ~= 0 or self.shake.y ~= 0 or self.shake.z ~= 0 then
 			-- Convert shake from a local offset from the camera to an absolute world position.

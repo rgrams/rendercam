@@ -100,7 +100,7 @@ function on_input(self, action_id, action)
 		rendercam.zoom_in(mouseWheelZoomIncrement)
 	elseif action_id == hash("space") and action.pressed then
 		local sh = shakes[self.shakeIndex]
-		rendercam.shake(sh.dist, sh.dur)
+		rendercam.shake(sh.dist, sh.dur, sh.freq)
 		self.shakeIndex = self.shakeIndex % #shakes + 1
 	elseif action_id == hash("enter") and action.pressed then
 		local rec = recoils[self.recoilIndex]

@@ -1,0 +1,53 @@
+
+local rendercam = require "rendercam.rendercam"
+local debugdraw = require "rendercam.debug-draw"
+local simplex = require "rendercam.simplex2d"
+
+function init(self)
+	self.lt, self.rt, self.top, self.bot = 0, 0, 0, 0
+	math.randomseed(socket.gettime())
+	math.random();  math.random();  math.random()
+
+	local shakes = {
+		{ dist = 50, dur = 6, freq = 2 },
+	}
+	msg.post("#basic test inputs", "set shake data", shakes)
+
+	-- Make sure the simplex2d module is putting out -1 to 1 values.
+
+	local total = 0
+	local totalAbs = 0
+	local iter = 100000
+	local smin, smax = 0, 0
+	for i=1,iter do
+		local v = simplex(math.random()*math.random(-1000, 1000), math.random(-1000, 1000))
+		total = total + v
+		totalAbs = totalAbs + math.abs(v)
+		if v < smin then  smin = v  end
+		if v > smax then  smax = v  end
+		if v < -1 or v > 1 then
+			print(v)
+		end
+	end
+	print("Average simplex value: ", total/iter)
+	print("Average absolute simplex value: ", totalAbs/iter)
+	print("\tMin: ", smin)
+	print("\tMax: ", smax)
+end
+
+function update(self, dt)
+	-- Draw a bounding box showing the max bounds of the current shake.
+	local p1 = go.get_position("camera1")
+	local p2 = go.get_position("camera2")
+	self.lt = math.min(self.lt, p1.x, p2.x)
+	self.rt = math.max(self.rt, p1.x, p2.x)
+	self.top = math.max(self.top, p1.y, p2.y)
+	self.bot = math.min(self.bot, p1.y, p2.y)
+	debugdraw.rect(self.lt, self.rt, self.top, self.bot, "blue")
+end
+
+function on_input(self, action_id, action)
+	if action_id == hash("space") and action.pressed then
+		self.lt, self.rt, self.top, self.bot = 0, 0, 0, 0
+	end
+end

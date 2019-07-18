@@ -236,9 +236,15 @@ function M.set_bounds(left, right, top, bottom, cam_id)
 	end
 end
 
-function M.shake(dist, dur, cam_id)
+function M.shake(dist, dur, freq, cam_id)
 	local cam = validate_cam_id(cam_id, "shake")
-	table.insert(cam.shakes, { dist = dist, dur = dur, t = dur })
+	local t = { dist = dist, dur = dur, t = dur }
+	if freq then -- Simplex shake.
+		t.freq = freq
+		t.seed1 = math.random() * 1000
+		t.seed2 = t.seed1 + 1
+	end
+	table.insert(cam.shakes, t)
 end
 
 function M.recoil(vec, dur, cam_id)
