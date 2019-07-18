@@ -143,6 +143,10 @@ local function validate_cam_id(cam_id, func_name)
 	return cam
 end
 
+function M.get_current_camera()
+	return curCam
+end
+
 function M.activate_camera(cam_id)
 	local cam = validate_cam_id(cam_id, "activate_camera")
 	if cam ~= curCam then
