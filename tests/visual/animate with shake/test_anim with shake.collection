@@ -1,7 +1,8 @@
 name: "default"
 instances {
-  id: "camera2"
+  id: "basic cam"
   prototype: "/rendercam/camera.go"
+  children: "go3"
   position {
     x: 0.0
     y: 0.0
@@ -20,26 +21,6 @@ instances {
       value: "false"
       type: PROPERTY_TYPE_BOOLEAN
     }
-    properties {
-      id: "fixedAspectRatio"
-      value: "true"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-    properties {
-      id: "aspectRatio"
-      value: "16.0, 5.0, 0.0"
-      type: PROPERTY_TYPE_VECTOR3
-    }
-    properties {
-      id: "useViewArea"
-      value: "true"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-    properties {
-      id: "viewArea"
-      value: "400.0, 300.0, 0.0"
-      type: PROPERTY_TYPE_VECTOR3
-    }
   }
   scale3 {
     x: 1.0
@@ -48,7 +29,7 @@ instances {
   }
 }
 instances {
-  id: "camera"
+  id: "animated cam"
   prototype: "/rendercam/camera.go"
   children: "go"
   position {
@@ -69,8 +50,9 @@ instances {
   }
 }
 instances {
-  id: "camera3"
+  id: "animated parent cam"
   prototype: "/rendercam/camera.go"
+  children: "go2"
   position {
     x: 0.0
     y: 0.0
@@ -101,6 +83,35 @@ instances {
     z: 1.0
   }
 }
+instances {
+  id: "constant pos cam"
+  prototype: "/rendercam/camera.go"
+  children: "go1"
+  position {
+    x: -300.0
+    y: -100.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  component_properties {
+    id: "script"
+    properties {
+      id: "active"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
 scale_along_z: 0
 embedded_instances {
   id: "test"
@@ -119,13 +130,23 @@ embedded_instances {
   "    w: 1.0\n"
   "  }\n"
   "  properties {\n"
+  "    id: \"camera1\"\n"
+  "    value: \"animated cam\"\n"
+  "    type: PROPERTY_TYPE_URL\n"
+  "  }\n"
+  "  properties {\n"
   "    id: \"camera2\"\n"
-  "    value: \"/camera2\"\n"
+  "    value: \"basic cam\"\n"
   "    type: PROPERTY_TYPE_URL\n"
   "  }\n"
   "  properties {\n"
   "    id: \"camera3\"\n"
-  "    value: \"/camera3\"\n"
+  "    value: \"animated parent cam\"\n"
+  "    type: PROPERTY_TYPE_URL\n"
+  "  }\n"
+  "  properties {\n"
+  "    id: \"camera4\"\n"
+  "    value: \"constant pos cam\"\n"
   "    type: PROPERTY_TYPE_URL\n"
   "  }\n"
   "}\n"
@@ -219,28 +240,8 @@ embedded_instances {
 }
 embedded_instances {
   id: "anim parent"
-  children: "camera3"
-  data: "embedded_components {\n"
-  "  id: \"sprite\"\n"
-  "  type: \"sprite\"\n"
-  "  data: \"tile_set: \\\"/main/images/images.atlas\\\"\\n"
-  "default_animation: \\\"TEX_Cross_37\\\"\\n"
-  "material: \\\"/builtins/materials/sprite.material\\\"\\n"
-  "blend_mode: BLEND_MODE_ALPHA\\n"
-  "\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  ""
+  children: "animated parent cam"
+  data: ""
   position {
     x: -300.0
     y: -100.0
@@ -276,8 +277,236 @@ embedded_instances {
   "  rotation {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
+  "    z: 0.38268343\n"
+  "    w: 0.9238795\n"
+  "  }\n"
+  "}\n"
+  "embedded_components {\n"
+  "  id: \"label\"\n"
+  "  type: \"label\"\n"
+  "  data: \"size {\\n"
+  "  x: 128.0\\n"
+  "  y: 32.0\\n"
+  "  z: 0.0\\n"
+  "  w: 0.0\\n"
+  "}\\n"
+  "scale {\\n"
+  "  x: 1.0\\n"
+  "  y: 1.0\\n"
+  "  z: 1.0\\n"
+  "  w: 0.0\\n"
+  "}\\n"
+  "color {\\n"
+  "  x: 1.0\\n"
+  "  y: 1.0\\n"
+  "  z: 1.0\\n"
+  "  w: 1.0\\n"
+  "}\\n"
+  "outline {\\n"
+  "  x: 0.0\\n"
+  "  y: 0.0\\n"
+  "  z: 0.0\\n"
+  "  w: 1.0\\n"
+  "}\\n"
+  "shadow {\\n"
+  "  x: 0.0\\n"
+  "  y: 0.0\\n"
+  "  z: 0.0\\n"
+  "  w: 1.0\\n"
+  "}\\n"
+  "leading: 1.0\\n"
+  "tracking: 0.0\\n"
+  "pivot: PIVOT_CENTER\\n"
+  "blend_mode: BLEND_MODE_ALPHA\\n"
+  "line_break: false\\n"
+  "text: \\\"animated camera\\\"\\n"
+  "font: \\\"/builtins/fonts/system_font.font\\\"\\n"
+  "material: \\\"/builtins/fonts/label.material\\\"\\n"
+  "\"\n"
+  "  position {\n"
+  "    x: 87.465\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
   "    z: 0.0\n"
   "    w: 1.0\n"
+  "  }\n"
+  "}\n"
+  ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+embedded_instances {
+  id: "go1"
+  data: "embedded_components {\n"
+  "  id: \"sprite\"\n"
+  "  type: \"sprite\"\n"
+  "  data: \"tile_set: \\\"/main/images/images.atlas\\\"\\n"
+  "default_animation: \\\"TEX_Cross_37\\\"\\n"
+  "material: \\\"/builtins/materials/sprite.material\\\"\\n"
+  "blend_mode: BLEND_MODE_ALPHA\\n"
+  "\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
+  ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+embedded_instances {
+  id: "go2"
+  data: "embedded_components {\n"
+  "  id: \"sprite\"\n"
+  "  type: \"sprite\"\n"
+  "  data: \"tile_set: \\\"/main/images/images.atlas\\\"\\n"
+  "default_animation: \\\"TEX_Cross_37\\\"\\n"
+  "material: \\\"/builtins/materials/sprite.material\\\"\\n"
+  "blend_mode: BLEND_MODE_ALPHA\\n"
+  "\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.087155744\n"
+  "    w: 0.9961947\n"
+  "  }\n"
+  "}\n"
+  "embedded_components {\n"
+  "  id: \"label\"\n"
+  "  type: \"label\"\n"
+  "  data: \"size {\\n"
+  "  x: 128.0\\n"
+  "  y: 32.0\\n"
+  "  z: 0.0\\n"
+  "  w: 0.0\\n"
+  "}\\n"
+  "scale {\\n"
+  "  x: 1.0\\n"
+  "  y: 1.0\\n"
+  "  z: 1.0\\n"
+  "  w: 0.0\\n"
+  "}\\n"
+  "color {\\n"
+  "  x: 1.0\\n"
+  "  y: 1.0\\n"
+  "  z: 1.0\\n"
+  "  w: 1.0\\n"
+  "}\\n"
+  "outline {\\n"
+  "  x: 0.0\\n"
+  "  y: 0.0\\n"
+  "  z: 0.0\\n"
+  "  w: 1.0\\n"
+  "}\\n"
+  "shadow {\\n"
+  "  x: 0.0\\n"
+  "  y: 0.0\\n"
+  "  z: 0.0\\n"
+  "  w: 1.0\\n"
+  "}\\n"
+  "leading: 1.0\\n"
+  "tracking: 0.0\\n"
+  "pivot: PIVOT_CENTER\\n"
+  "blend_mode: BLEND_MODE_ALPHA\\n"
+  "line_break: false\\n"
+  "text: \\\"animated parent\\\"\\n"
+  "font: \\\"/builtins/fonts/system_font.font\\\"\\n"
+  "material: \\\"/builtins/fonts/label.material\\\"\\n"
+  "\"\n"
+  "  position {\n"
+  "    x: -85.683\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
+  ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+embedded_instances {
+  id: "go3"
+  data: "embedded_components {\n"
+  "  id: \"sprite\"\n"
+  "  type: \"sprite\"\n"
+  "  data: \"tile_set: \\\"/main/images/images.atlas\\\"\\n"
+  "default_animation: \\\"TEX_Cross_37\\\"\\n"
+  "material: \\\"/builtins/materials/sprite.material\\\"\\n"
+  "blend_mode: BLEND_MODE_ALPHA\\n"
+  "\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: -0.3007058\n"
+  "    w: 0.95371693\n"
   "  }\n"
   "}\n"
   ""

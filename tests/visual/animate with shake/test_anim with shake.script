@@ -1,9 +1,15 @@
 
 local rendercam = require 'rendercam.rendercam'
 
+local constantPos = vmath.vector3()
+
 function init(self)
-	go.animate("/camera", "position.x", go.PLAYBACK_LOOP_PINGPONG, 300, go.EASING_INOUTCUBIC, 4)
-	go.animate("/camera", "position.y", go.PLAYBACK_LOOP_PINGPONG, 100, go.EASING_INOUTCUBIC, 3)
+	go.animate("animated cam", "position.x", go.PLAYBACK_LOOP_PINGPONG, 300, go.EASING_INOUTCUBIC, 4)
+	go.animate("animated cam", "position.y", go.PLAYBACK_LOOP_PINGPONG, 100, go.EASING_INOUTCUBIC, 3)
 	go.animate("anim parent", "position.x", go.PLAYBACK_LOOP_PINGPONG, 300, go.EASING_INOUTCUBIC, 4)
 	go.animate("anim parent", "position.y", go.PLAYBACK_LOOP_PINGPONG, 100, go.EASING_INOUTCUBIC, 3)
+end
+
+function update(self, dt)
+	go.set_position(constantPos, "constant pos cam")
 end
