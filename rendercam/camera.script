@@ -292,7 +292,7 @@ function on_message(self, message_id, message, sender)
 			v.t = v.t - self.dt
 			if v.t <= 0 then  table.remove(data.shakes, i)  end
 		end
-		if #data.shakes > 0 then
+		if self.shake.x ~= 0 or self.shake.y ~= 0 or self.shake.z ~= 0 then
 			-- Convert shake from a local offset from the camera to an absolute world position.
 			self.shake = transform.local_to_world(self.shake, data.wpos, self.wrot, self.wscale)
 			-- Convert shake to a world offset so we can subtract it next frame.
@@ -311,7 +311,9 @@ function on_message(self, message_id, message, sender)
 			v.t = v.t - self.dt
 			if v.t <= 0 then  table.remove(data.recoils, i)  end
 		end
-		if #data.recoils > 0 then   data.wpos = data.wpos + self.recoil   end
+		if self.recoil.x ~= 0 or self.recoil.y ~= 0 or self.recoil.z ~= 0 then
+			data.wpos = data.wpos + self.recoil
+		end
 
 		if self.parent ~= self.url then
 			local wp = go.get_world_position(self.parent)
