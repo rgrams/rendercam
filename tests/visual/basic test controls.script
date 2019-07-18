@@ -27,6 +27,7 @@ local shakes = {
 local recoils = {
 	{ vec = vmath.vector3(-20, 0, 0), dur = 0.3 },
 	{ vec = vmath.vector3(5, 15, 0), dur = 2.0 },
+	{ vec = vmath.vector3(0, -125, 0), dur = 2.0 },
 }
 
 function init(self)
