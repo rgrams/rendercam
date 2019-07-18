@@ -1,5 +1,6 @@
 
 local rendercam = require "rendercam.rendercam"
+local rdebug = rendercam.debug
 local vp = rendercam.viewport
 
 local IDENTITY_MATRIX = vmath.matrix4()
@@ -69,6 +70,13 @@ function update(self)
 	render.draw(self.gui_pred)
 	render.draw(self.text_pred) -- Includes debug text from "draw_text" messages.
 	render.disable_state(render.STATE_STENCIL_TEST)
+
+	if rdebug.show_camera_name then
+		local curCam = rendercam.get_current_camera()
+		local txt = string.sub(tostring(curCam.id), 8, -2) -- Cut off "hash: [" and "]".
+		local x, y = 5, rendercam.window.y - 5
+		msg.post("@render:", "draw_text", {text = txt, position = vmath.vector3(x, y, 0)})
+	end
 end
 
 function on_message(self, message_id, message)
