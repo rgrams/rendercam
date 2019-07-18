@@ -7,7 +7,7 @@
 local rendercam = require "rendercam.rendercam"
 local transform = require "rendercam.transform"
 local debugdraw = require "rendercam.debug-draw"
-local debug = rendercam.debug
+local rdebug = rendercam.debug
 
 go.property("parent", msg.url())
 go.property("active", true)
@@ -175,7 +175,7 @@ local function enforce_bounds(self)
 	local w_bot = math.min(tl.y, tr.y, bl.y, br.y)
 	local w_w, w_h = w_rt - w_lt, w_top - w_bot -- world width, height
 
-	if debug.bounds then -- Draw bounds rect + an inner border rect so you can actually see it.
+	if rdebug.bounds then -- Draw bounds rect + an inner border rect so you can actually see it.
 		debugdraw.rect(b.lt, b.rt, b.top, b.bot)
 		debugdraw.rect(b.lt+20, b.rt-20, b.top-20, b.bot+20, "orange")
 		debugdraw.box(tl.x, tl.y, 15, 15, "yellow") -- Draw viewport corner world positions.
@@ -198,7 +198,7 @@ local function enforce_bounds(self)
 		finalY = self.data.wpos.y - finalY
 	end
 
-	if debug.bounds then -- Draw diamond & line showing offset outside of bounds.
+	if rdebug.bounds then -- Draw diamond & line showing offset outside of bounds.
 		if finalX ~= self.data.wpos.x or finalY ~= self.data.wpos.y then
 			debugdraw.circle(self.data.wpos.x, self.data.wpos.y, 10, "yellow", 4)
 			debugdraw.line(self.data.wpos.x, self.data.wpos.y, finalX, finalY, "yellow")
