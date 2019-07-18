@@ -18,6 +18,7 @@ local DEFAULT_CIRCLE_SEGMENTS = 16
 local TWO_PI = math.pi * 2
 local V1, V2 = vmath.vector3(), vmath.vector3()
 local MSGDATA = {}
+local TEXTMSGDATA = {}
 local cos, sin = math.cos, math.sin
 
 local function rotate_xy(x, y, a)
@@ -74,6 +75,13 @@ function M.circle(cx, cy, r, c, segments)
 		M.line(x1, y1, x2, y2, c)
 		x1, y1 = x2, y2
 	end
+end
+
+function M.text(text, x, y)
+	V1.x, V1.y = x, y
+	TEXTMSGDATA.text = text
+	TEXTMSGDATA.position = V1
+	msg.post("@render:", "draw_text", TEXTMSGDATA)
 end
 
 return M
