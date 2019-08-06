@@ -49,6 +49,9 @@ M.GUI_ADJUST_STRETCH = 2
 local cameras = {} -- master table of camera data tables. Elements added and removed on M.camera_init and M.camera_final
 local curCam = fallback_cam -- current camera data table, defaults and resets to `fallback_cam` if no user camera is active
 
+-- Vectors used in calculations for public transform functions
+local nv = vmath.vector4(0, 0, -1, 1)
+local fv = vmath.vector4(0, 0, 1, 1)
 
 -- ---------------------------------------------------------------------------------
 --| 							PRIVATE FUNCTIONS									|
@@ -353,14 +356,44 @@ function M.screen_to_world_2d(x, y, delta, worldz)
 
 	if delta then x1 = x1 + 1;  y1 = y1 + 1 end
 
-	local np = m * vmath.vector4(x1, y1, -1, 1)
-	local fp = m * vmath.vector4(x1, y1, 1, 1)
+	nv.x, nv.y = x1, y1
+	fv.x, fv.y = x1, y1
+	local np = m * nv
+	local fp = m * fv
 	np = np * (1/np.w)
 	fp = fp * (1/fp.w)
 
 	local t = ( worldz - curCam.abs_nearZ) / (curCam.abs_farZ - curCam.abs_nearZ) -- normalize desired Z to 0-1 from abs_nearZ to abs_farZ
 	local worldpos = vmath.lerp(t, np, fp)
 	return vmath.vector3(worldpos.x, worldpos.y, worldpos.z) -- convert vector4 to vector3
+end
+
+-- Same as M.screen_to_world_2d but returns raw x,y values instead of a new vector
+function M.screen_to_world_2d_raw(x, y, delta, worldz)
+	worldz = worldz or curCam.worldZ
+
+	if curCam.fixedAspectRatio then
+		x, y = M.screen_to_viewport(x, y, delta)
+	end
+
+	local m = not delta and vmath.inv(M.proj * M.view) or vmath.inv(M.proj)
+
+	-- Remap coordinates to range -1 to 1
+	x1 = (x - M.window.x * 0.5) / M.window.x * 2
+	y1 = (y - M.window.y * 0.5) / M.window.y * 2
+
+	if delta then x1 = x1 + 1;  y1 = y1 + 1 end
+
+	nv.x, nv.y = x1, y1
+	fv.x, fv.y = x1, y1
+	local np = m * nv
+	local fp = m * fv
+	np = np * (1/np.w)
+	fp = fp * (1/fp.w)
+
+	local t = ( worldz - curCam.abs_nearZ) / (curCam.abs_farZ - curCam.abs_nearZ) -- normalize desired Z to 0-1 from abs_nearZ to abs_farZ
+	local worldpos = vmath.lerp(t, np, fp)
+	return worldpos.x, worldpos.y
 end
 
 -- Returns start and end points for a ray from the camera through the supplied screen coordinates
@@ -376,12 +409,36 @@ function M.screen_to_world_ray(x, y)
 	local x1 = (x - M.window.x * 0.5) / M.window.x * 2
 	local y1 = (y - M.window.y * 0.5) / M.window.y * 2
 
-	local np = m * vmath.vector4(x1, y1, -1, 1)
-	local fp = m * vmath.vector4(x1, y1, 1, 1)
+	nv.x, nv.y = x1, y1
+	fv.x, fv.y = x1, y1
+	local np = m * nv
+	local fp = m * fv
 	np = np * (1/np.w)
 	fp = fp * (1/fp.w)
 
 	return vmath.vector3(np.x, np.y, np.z), vmath.vector3(fp.x, fp.y, fp.z)
+end
+
+-- Same as M.screen_to_world_ray but returns raw x1,y1,z1,x2,y2,z2 values instead of a new vector
+function M.screen_to_world_ray_raw(x, y)
+	if curCam.fixedAspectRatio then -- convert screen coordinates to viewport coordinates
+		x, y = M.screen_to_viewport(x, y)
+	end
+
+	local m = vmath.inv(M.proj * M.view)
+
+	-- Remap coordinates to range -1 to 1
+	local x1 = (x - M.window.x * 0.5) / M.window.x * 2
+	local y1 = (y - M.window.y * 0.5) / M.window.y * 2
+
+	nv.x, nv.y = x1, y1
+	fv.x, fv.y = x1, y1
+	local np = m * nv
+	local fp = m * fv
+	np = np * (1/np.w)
+	fp = fp * (1/fp.w)
+
+	return np.x, np.y, np.z, fp.x, fp.y, fp.z
 end
 
 -- Gets screen to world ray and intersects it with a plane
@@ -428,5 +485,22 @@ function M.world_to_screen(pos, adjust)
 	return vmath.vector3(pos.x, pos.y, 0)
 end
 
+-- Same as M.world_to_screen but returns raw x,y values instead of a new vector
+function M.world_to_screen_raw(pos, adjust)
+	local m = M.proj * M.view
+	pos = vmath.vector4(pos.x, pos.y, pos.z, 1)
+
+	pos = m * pos
+	pos = pos * (1/pos.w)
+	pos.x = (pos.x / 2 + 0.5) * M.viewport.width + M.viewport.x
+	pos.y = (pos.y / 2 + 0.5) * M.viewport.height + M.viewport.y
+
+	if adjust then
+		pos.x = pos.x / M.guiAdjust[adjust].sx - M.guiAdjust[adjust].ox
+		pos.y = pos.y / M.guiAdjust[adjust].sy - M.guiAdjust[adjust].oy
+	end
+
+	return pos.x, pos.y
+end
 
 return M

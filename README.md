@@ -241,6 +241,13 @@ _PARAMETERS_
 _RETURNS_
 * __pos__ <kbd>vector3</kbd> - World position.
 
+### rendercam.screen_to_world_2d_raw(x, y, [delta], [worldz])
+Same as above, but returns x and y values instead of a new vector for a minor performance improvement. (New vectors create more garbage that needs to be collected.)
+
+_RETURNS_
+* __x__ <kbd>number</kbd> - World position X.
+* __y__ <kbd>number</kbd> - World position Y.
+
 ### rendercam.screen_to_world_ray(x, y)
 Takes `x` and `y` screen coordinates and returns two points describing the start and end of a ray from the camera's near plane to its far plane, through that point on the screen. You can use these points to cast a ray to check for collisions "underneath" the mouse cursor, or any other screen point.
 
@@ -251,6 +258,17 @@ _PARAMETERS_
 _RETURNS_
 * __start__ <kbd>vector3</kbd> - Start point on the camera near plane, in world coordinates.
 * __end__ <kbd>vector3</kbd> - End point on the camera far plane, in world coordinates.
+
+### rendercam.screen_to_world_ray_raw(x, y)
+Same as above, but returns x1, y1, z1, x2, y2, z2 values instead of new vectors for a minor performance improvement. (New vectors create more garbage that needs to be collected.)
+
+_RETURNS_
+* __x1__ <kbd>number</kbd> - X value of start point on the camera near plane, in world coordinates.
+* __y1__ <kbd>number</kbd> - Y value of start point on the camera near plane, in world coordinates.
+* __z1__ <kbd>number</kbd> - Z value of start point on the camera near plane, in world coordinates.
+* __x2__ <kbd>number</kbd> - X value of end point on the camera far plane, in world coordinates.
+* __y2__ <kbd>number</kbd> - Y value of end point on the camera far plane, in world coordinates.
+* __z2__ <kbd>number</kbd> - Z value of end point on the camera far plane, in world coordinates.
 
 ### rendercam.screen_to_world_plane(x, y, planeNormal, pointOnPlane)
 Gets the screen-to-world ray and intersects it with a world-space plane. The equivalent of `rendercam.screen_to_world_2d` for 3D cameras. Note: this will return `nil` if the camera angle is exactly parallel to the plane (perpendicular to the normal).
@@ -317,6 +335,13 @@ _PARAMETERS_
 
 _RETURNS_
 * __pos__ <kbd>vector3</kbd> - Screen position
+
+### rendercam.world_to_screen_raw(pos, [adjust])
+Same as above, but returns x and y values instead of a new vector for a minor performance improvement. (New vectors create more garbage that needs to be collected.)
+
+_RETURNS_
+* __x__ <kbd>number</kbd> - Screen position X.
+* __y__ <kbd>number</kbd> - Screen position Y.
 
 ## Custom Render Scripts
 For a lot of projects you will want to write your own custom render script, to mess with material predicates, use render targets, etc. You can definitely do that with Rendercam. Just copy the "rendercam.render_script" out of the rendercam folder, hook it up, and change whatever you want in it. The Rendercam render script is not very complicated, all the real work is done in the rendercam module. As long as you don't change the view, projection, or viewport stuff, you should be able to do whatever you want without interfering with Rendercam.
