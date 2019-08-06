@@ -52,6 +52,7 @@ local curCam = fallback_cam -- current camera data table, defaults and resets to
 -- Vectors used in calculations for public transform functions
 local nv = vmath.vector4(0, 0, -1, 1)
 local fv = vmath.vector4(0, 0, 1, 1)
+local pv = vmath.vector4(0, 0, 0, 1)
 
 -- ---------------------------------------------------------------------------------
 --| 							PRIVATE FUNCTIONS									|
@@ -470,37 +471,37 @@ end
 
 function M.world_to_screen(pos, adjust)
 	local m = M.proj * M.view
-	pos = vmath.vector4(pos.x, pos.y, pos.z, 1)
+	pv.x, pv.y, pv.z, pv.w = pos.x, pos.y, pos.z, 1
 
-	pos = m * pos
-	pos = pos * (1/pos.w)
-	pos.x = (pos.x / 2 + 0.5) * M.viewport.width + M.viewport.x
-	pos.y = (pos.y / 2 + 0.5) * M.viewport.height + M.viewport.y
+	pv = m * pv
+	pv = pv * (1/pv.w)
+	pv.x = (pv.x / 2 + 0.5) * M.viewport.width + M.viewport.x
+	pv.y = (pv.y / 2 + 0.5) * M.viewport.height + M.viewport.y
 
 	if adjust then
-		pos.x = pos.x / M.guiAdjust[adjust].sx - M.guiAdjust[adjust].ox
-		pos.y = pos.y / M.guiAdjust[adjust].sy - M.guiAdjust[adjust].oy
+		pv.x = pv.x / M.guiAdjust[adjust].sx - M.guiAdjust[adjust].ox
+		pv.y = pv.y / M.guiAdjust[adjust].sy - M.guiAdjust[adjust].oy
 	end
 
-	return vmath.vector3(pos.x, pos.y, 0)
+	return vmath.vector3(pv.x, pv.y, 0)
 end
 
 -- Same as M.world_to_screen but returns raw x,y values instead of a new vector
 function M.world_to_screen_raw(pos, adjust)
 	local m = M.proj * M.view
-	pos = vmath.vector4(pos.x, pos.y, pos.z, 1)
+	pv.x, pv.y, pv.z, pv.w = pos.x, pos.y, pos.z, 1
 
-	pos = m * pos
-	pos = pos * (1/pos.w)
-	pos.x = (pos.x / 2 + 0.5) * M.viewport.width + M.viewport.x
-	pos.y = (pos.y / 2 + 0.5) * M.viewport.height + M.viewport.y
+	pv = m * pv
+	pv = pv * (1/pv.w)
+	pv.x = (pv.x / 2 + 0.5) * M.viewport.width + M.viewport.x
+	pv.y = (pv.y / 2 + 0.5) * M.viewport.height + M.viewport.y
 
 	if adjust then
-		pos.x = pos.x / M.guiAdjust[adjust].sx - M.guiAdjust[adjust].ox
-		pos.y = pos.y / M.guiAdjust[adjust].sy - M.guiAdjust[adjust].oy
+		pv.x = pv.x / M.guiAdjust[adjust].sx - M.guiAdjust[adjust].ox
+		pv.y = pv.y / M.guiAdjust[adjust].sy - M.guiAdjust[adjust].oy
 	end
 
-	return pos.x, pos.y
+	return pv.x, pv.y
 end
 
 return M
