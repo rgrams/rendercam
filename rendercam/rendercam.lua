@@ -394,7 +394,7 @@ function M.screen_to_world_2d_raw(x, y, delta, worldz)
 
 	local t = ( worldz - curCam.abs_nearZ) / (curCam.abs_farZ - curCam.abs_nearZ) -- normalize desired Z to 0-1 from abs_nearZ to abs_farZ
 	local worldpos = vmath.lerp(t, np, fp)
-	return worldpos.x, worldpos.y
+	return worldpos.x, worldpos.y, worldpos.z
 end
 
 -- Returns start and end points for a ray from the camera through the supplied screen coordinates
@@ -501,7 +501,7 @@ function M.world_to_screen_raw(pos, adjust)
 		pv.y = pv.y / M.guiAdjust[adjust].sy - M.guiAdjust[adjust].oy
 	end
 
-	return pv.x, pv.y
+	return pv.x, pv.y, 0
 end
 
 return M
