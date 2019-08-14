@@ -229,51 +229,37 @@ _RETURNS_
 * __x__ <kbd>number</kbd> - Viewport X.
 * __y__ <kbd>number</kbd> - Viewport Y.
 
-### rendercam.screen_to_world_2d(x, y, [delta], [worldz])
-Transforms `x` and `y` from screen coordinates to world coordinates at a certain Z position—either a specified `worldz` or by default the current camera's "2d World Z". This function returns a position on a plane perpendicular to the camera angle, so it's only accurate for 2D-oriented cameras (facing along the Z axis). It works for 2D-oriented perspective cameras, but will have some small imprecision based on the size of the view depth (farZ - nearZ). For 3D cameras, use `rendercam.screen_to_world_plane` or `rendercam.screen_to_world_ray`.
+### rendercam.screen_to_world_2d(x, y, [delta], [worldz], [raw])
+Transforms `x` and `y` from screen coordinates to world coordinates at a certain Z position—either a specified `worldz` or by default the current camera's "2d World Z". This function returns a position on a plane perpendicular to the camera angle, so it's only accurate for 2D-oriented cameras (facing along the Z axis). It works for 2D-oriented perspective cameras, but will have some small imprecision based on the size of the view depth (farZ - nearZ). For 3D cameras, use `rendercam.screen_to_world_plane` or `rendercam.screen_to_world_ray`. Set the [raw] parameter to true to return raw x, y, and z values instead of a vector. This provides a minor performance improvement since returning a vector creates more garbage for the garbage collector.
 
 _PARAMETERS_
 * __x__ <kbd>number</kbd> - Screen X
 * __y__ <kbd>number</kbd> - Screen Y
 * __delta__ <kbd>bool</kbd> - If `x` and `y` are for a delta (change in) screen position, rather than an absolute screen position.
 * __worlds__ <kbd>number</kbd> - World Z position to find the X and Y coordinates at. Defaults to the current camera's "2d World Z" setting.
+* __raw__ <kbd>bool</kbd> - If the function should return a vector (nil/false), or return raw x, y, and z values (true)
 
-_RETURNS_
+_RETURNS if raw is nil/false_
 * __pos__ <kbd>vector3</kbd> - World position.
 
-### rendercam.screen_to_world_2d_raw(x, y, [delta], [worldz])
-Same as above, but returns x, y, and z values instead of a new vector for a minor performance improvement. (New vectors create more garbage that needs to be collected.)
-
-_PARAMETERS_
-* __x__ <kbd>number</kbd> - Screen X
-* __y__ <kbd>number</kbd> - Screen Y
-* __delta__ <kbd>bool</kbd> - If `x` and `y` are for a delta (change in) screen position, rather than an absolute screen position.
-* __worlds__ <kbd>number</kbd> - World Z position to find the X and Y coordinates at. Defaults to the current camera's "2d World Z" setting.
-
-_RETURNS_
+_RETURNS if raw is true_
 * __x__ <kbd>number</kbd> - World position X.
 * __y__ <kbd>number</kbd> - World position Y.
 * __z__ <kbd>number</kbd> - World position Z.
 
-### rendercam.screen_to_world_ray(x, y)
-Takes `x` and `y` screen coordinates and returns two points describing the start and end of a ray from the camera's near plane to its far plane, through that point on the screen. You can use these points to cast a ray to check for collisions "underneath" the mouse cursor, or any other screen point.
+### rendercam.screen_to_world_ray(x, y, [raw])
+Takes `x` and `y` screen coordinates and returns two points describing the start and end of a ray from the camera's near plane to its far plane, through that point on the screen. You can use these points to cast a ray to check for collisions "underneath" the mouse cursor, or any other screen point. Set the [raw] parameter to true to return raw x, y, and z values instead of vectors. This provides a minor performance improvement since returning vectors creates more garbage for the garbage collector.
 
 _PARAMETERS_
 * __x__ <kbd>number</kbd> - Screen X
 * __y__ <kbd>number</kbd> - Screen Y
+* __raw__ <kbd>bool</kbd> - If the function should return vectors (nil/false), or return raw x, y, and z values (true)
 
-_RETURNS_
+_RETURNS if raw is nil/false_
 * __start__ <kbd>vector3</kbd> - Start point on the camera near plane, in world coordinates.
 * __end__ <kbd>vector3</kbd> - End point on the camera far plane, in world coordinates.
 
-### rendercam.screen_to_world_ray_raw(x, y)
-Same as above, but returns x1, y1, z1, x2, y2, z2 values instead of new vectors for a minor performance improvement. (New vectors create more garbage that needs to be collected.)
-
-_PARAMETERS_
-* __x__ <kbd>number</kbd> - Screen X
-* __y__ <kbd>number</kbd> - Screen Y
-
-_RETURNS_
+_RETURNS if raw is true_
 * __x1__ <kbd>number</kbd> - X value of start point on the camera near plane, in world coordinates.
 * __y1__ <kbd>number</kbd> - Y value of start point on the camera near plane, in world coordinates.
 * __z1__ <kbd>number</kbd> - Z value of start point on the camera near plane, in world coordinates.
@@ -327,8 +313,8 @@ _RETURNS_
 * __x__ <kbd>number</kbd> - X
 * __y__ <kbd>number</kbd> - Y
 
-### rendercam.world_to_screen(pos, [adjust])
-Transforms the supplied world position into screen (viewport) coordinates. Can take an optional `adjust` parameter to calculate an accurate screen coordinate for a gui node with any adjust mode: Fit, Zoom, or Stretch.
+### rendercam.world_to_screen(pos, [adjust], [raw])
+Transforms the supplied world position into screen (viewport) coordinates. Can take an optional `adjust` parameter to calculate an accurate screen coordinate for a gui node with any adjust mode: Fit, Zoom, or Stretch. Set the [raw] parameter to true to return raw x, y, and z values instead of a vector. This provides a minor performance improvement since returning a vector creates more garbage for the garbage collector.
 
 _PARAMETERS_
 * __pos__ <kbd>vector3</kbd> - World position.
@@ -343,28 +329,12 @@ _PARAMETERS_
 		* rendercam.GUI_ADJUST_STRETCH
 	* _Or_
 		* The result of `gui.get_adjust_mode`
+* __raw__ <kbd>bool</kbd> - If the function should return a vector (nil/false), or return raw x, y, and z values (true)
 
-_RETURNS_
+_RETURNS if raw is nil/false_
 * __pos__ <kbd>vector3</kbd> - Screen position
 
-### rendercam.world_to_screen_raw(pos, [adjust])
-Same as above, but returns x, y, and z values instead of a new vector for a minor performance improvement. (New vectors create more garbage that needs to be collected.)
-
-_PARAMETERS_
-* __pos__ <kbd>vector3</kbd> - World position.
-* __adjust__ <kbd>constant</kbd> - GUI adjust mode to use for calculation.
-    * You can use
-	    * gui.ADJUST_FIT
-		* gui.ADJUST_ZOOM
-		* gui.ADJUST_STRETCH
-	* Or
-	    * rendercam.GUI_ADJUST_FIT
-		* rendercam.GUI_ADJUST_ZOOM
-		* rendercam.GUI_ADJUST_STRETCH
-	* _Or_
-		* The result of `gui.get_adjust_mode`
-
-_RETURNS_
+_RETURNS if raw is true_
 * __x__ <kbd>number</kbd> - Screen position X.
 * __y__ <kbd>number</kbd> - Screen position Y.
 * __z__ <kbd>number</kbd> - Screen position Z.
