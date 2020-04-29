@@ -18,6 +18,7 @@ M.debug = {
 
 M.ortho_zoom_speed = 0.01
 M.follow_lerp_speed = 3
+M.default_shake_rot_mult = 0.005
 M.viewport_align = vmath.vector3(0.5, 0.5, 0)
 
 -- Data table for the fallback camera - used when no user camera is active
@@ -236,13 +237,16 @@ function M.set_bounds(left, right, top, bottom, cam_id)
 	end
 end
 
-function M.shake(dist, dur, freq, cam_id)
+function M.shake(dist, dur, freq, rot_mult, cam_id)
 	local cam = validate_cam_id(cam_id, "shake")
-	local t = { dist = dist, dur = dur, t = dur }
+	rot_mult = rot_mult or M.default_shake_rot_mult
+	rot_mult = rot_mult > 0 and rot_mult or nil
+	local t = { dist = dist, dur = dur, t = dur, rot_mult = rot_mult }
 	if freq then -- Simplex shake.
 		t.freq = freq
 		t.seed1 = math.random() * 1000
 		t.seed2 = t.seed1 + 1
+		if rot_mult then  t.seed3 = t.seed1 + 2  end
 	end
 	table.insert(cam.shakes, t)
 end

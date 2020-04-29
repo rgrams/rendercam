@@ -87,6 +87,7 @@ function init(self)
 	self.id = go.get_id()
 	self.url = msg.url() -- script url
 	self.shake = vmath.vector3()
+	self.shakeRot = vmath.quat()
 	self.recoil = vmath.vector3()
 	self.followPos = vmath.vector3()
 
@@ -218,9 +219,6 @@ function on_message(self, message_id, message, sender)
 		data.wpos = go.get_world_position() -- Up-to-date world pos after regular updates.
 		self.wrot = go.get_world_rotation()
 		self.wscale = go.get_world_scale()
-		data.wrightVec = vmath.rotate(self.wrot, RIGHTVEC)
-		data.wforwardVec = vmath.rotate(self.wrot, FORWARDVEC)
-		data.wupVec = vmath.rotate(self.wrot, UPVEC)
 		-- Local:
 		self.lrot = go.get_rotation()
 		data.lforwardVec = vmath.rotate(self.lrot, FORWARDVEC)
@@ -234,6 +232,7 @@ function on_message(self, message_id, message, sender)
 		-- Subtract last frame's shake and recoil (in world pos).
 		data.wpos = data.wpos - self.shake
 		data.wpos = data.wpos - self.recoil
+		self.wrot = self.wrot * vmath.conj(self.shakeRot)
 		-- data.lpos is now out of date.
 
 		-- Camera Follow.
@@ -284,18 +283,28 @@ function on_message(self, message_id, message, sender)
 
 		-- Camera Shake.
 		self.shake.x = 0;  self.shake.y = 0;  self.shake.z = 0
+		self.shakeRot = vmath.quat()
 		for i=#data.shakes,1,-1 do -- Iterate backwards so elements can be removed without problems.
 			local sh = data.shakes[i]
 			local falloffMult = sh.t / sh.dur
-			local x, y
+			local x, y, a
 			if sh.freq then -- Simplex shake.
 				local d = sh.dist * falloffMult
-				x = simplex(sh.seed1, sh.t * sh.freq) * d
-				y = simplex(sh.seed2, sh.t * sh.freq) * d
+				local val2 = sh.t * sh.freq
+				x = simplex(sh.seed1, val2) * d
+				y = simplex(sh.seed2, val2) * d
+				if sh.rot_mult then
+					a = simplex(sh.seed3, val2) * d * sh.rot_mult
+					self.shakeRot = self.shakeRot * vmath.quat_rotation_z(a)
+				end
 			else -- Standard random shake.
 				local d = math.random() * sh.dist * falloffMult
 				local angle = math.random() * TWO_PI
 				x = math.cos(angle) * d;  y = math.sin(angle) * d
+				if sh.rot_mult then
+					a = math.random() * sh.dist * falloffMult * sh.rot_mult
+					self.shakeRot = self.shakeRot * vmath.quat_rotation_z(a)
+				end
 			end
 			self.shake = self.shake + data.lrightVec * x -- Local shake pos.
 			self.shake = self.shake + data.lupVec * y
@@ -309,6 +318,9 @@ function on_message(self, message_id, message, sender)
 			self.shake = self.shake - data.wpos
 			-- Apply shake to camera world pos.
 			data.wpos = data.wpos + self.shake
+
+			self.lrot = self.lrot * self.shakeRot
+			self.wrot = self.wrot * self.shakeRot
 		end
 
 		-- Camera Recoil.
@@ -335,6 +347,10 @@ function on_message(self, message_id, message, sender)
 		end
 		go.set_position(data.lpos)
 
+		data.wrightVec = vmath.rotate(self.wrot, RIGHTVEC)
+		data.wforwardVec = vmath.rotate(self.wrot, FORWARDVEC)
+		data.wupVec = vmath.rotate(self.wrot, UPVEC)
+		if #data.shakes > 0 then  print(data.wupVec)  end
 		-- Absolute/world near and far positions for screen-to-world transform.
 		data.abs_nearZ = data.wpos.z - data.nearZ
 		data.abs_farZ = data.wpos.z - data.farZ
