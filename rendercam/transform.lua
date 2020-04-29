@@ -14,6 +14,11 @@ function M.v3_by_matrix(v3, m)
 	return v3
 end
 
+function M.get_to_world_matrix_2(url)
+	local m = go.get_world_transform(url)
+	return m
+end
+
 -- If you want the world-to-local matrix, just invert the result with vmath.inv().
 function M.get_to_world_matrix(wp, wr, ws)
 	-- Make matrix4 from rotation quaternion.
