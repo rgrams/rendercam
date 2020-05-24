@@ -236,7 +236,7 @@ _PARAMETERS_
 * __x__ <kbd>number</kbd> - Screen X
 * __y__ <kbd>number</kbd> - Screen Y
 * __delta__ <kbd>bool</kbd> - If `x` and `y` are for a delta (change in) screen position, rather than an absolute screen position.
-* __worlds__ <kbd>number</kbd> - World Z position to find the X and Y coordinates at. Defaults to the current camera's "2d World Z" setting.
+* __worldz__ <kbd>number</kbd> - World Z position to find the X and Y coordinates at. Defaults to the current camera's "2d World Z" setting.
 * __raw__ <kbd>bool</kbd> - If the function should return a vector (nil/false), or return raw x, y, and z values (true)
 
 _RETURNS if raw is nil/false_
