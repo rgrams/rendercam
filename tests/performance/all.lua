@@ -1,0 +1,2 @@
+
+require "tests.performance.transform"

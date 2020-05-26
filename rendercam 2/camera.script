@@ -1,0 +1,66 @@
+
+local rendercam = require "rendercam 2.rendercam"
+
+go.property("enabled", true)
+go.property("orthographic", true)
+go.property("nearZ", -1)
+go.property("farZ", 1)
+go.property("viewDistance", 0)
+go.property("fov", -1) -- Always in degrees (or -1 for auto-fov).
+go.property("zoom", 1)
+go.property("fixedAspectRatio", false)
+go.property("aspectRatio", vmath.vector3(16, 9, 0))
+go.property("useViewArea", false)
+go.property("viewArea", vmath.vector3(800, 600, 0))
+go.property("expandView", false)
+go.property("fixedArea", true)
+go.property("fixedWidth", false)
+go.property("fixedHeight", false)
+go.property("viewportAlign", vmath.vector3(0.5, 0.5, 0))
+go.property("updateWhenDisabled", false)
+
+local POST_UPDATE = hash("post-update")
+local SCALE_MODE_NAMES = { "expandView", "fixedArea", "fixedWidth", "fixedHeight" }
+
+function init(self)
+	-- Get hashed scale mode name.
+	for i,modeName in ipairs(SCALE_MODE_NAMES) do -- Get first checked mode.
+		if self[modeName] then
+			self.scaleMode = hash(modeName)
+			break
+		end
+	end
+	self.scaleMode = self.scaleMode or hash("fixedArea") -- Default to fixedArea.
+
+	self.url = msg.url()
+	self.id = go.get_id()
+	self.offsetURL = msg.url(factory.create("#factory"))
+	go.set_parent(self.offsetURL, self.id)
+	self.camURL = msg.url(nil, self.offsetURL.path, "camera")
+	self.viewport = { x = 0, y = 0, w = 1, h = 1 }
+	self.update_window = rendercam.update_cam_window
+	self.aspectRatio = self.aspectRatio.x / self.aspectRatio.y -- Convert to a single decimal.
+
+	self.view = rendercam.get_view(self)
+	self.projection = rendercam.get_projection(self)
+
+	rendercam.camera_init(self)
+end
+
+function final(self)
+	rendercam.camera_final(self)
+end
+
+function update(self, dt)
+	self.dt = dt -- Save for post-update. Faster to store than send in message.
+	if self.enabled or self.updateWhenDisabled then
+		msg.post(self.url, "post-update")
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == POST_UPDATE then
+		local w, h = rendercam.winW, rendercam.winH
+		self:update_window(0, 0, w, h)
+	end
+end

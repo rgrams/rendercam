@@ -1,0 +1,37 @@
+
+local rcam = require "rendercam 2.rendercam"
+
+local EXPAND_VIEW = hash("expandView")
+local FIXED_AREA = hash("fixedArea")
+local FIXED_WIDTH = hash("fixedWidth")
+local FIXED_HEIGHT = hash("fixedHeight")
+
+local scaleMode = EXPAND_VIEW
+local oldW, oldH = 1600, 900
+local newW, newH = 500, 400
+
+local z = rcam.get_zoom_for_resize(scaleMode, newW, newH, oldW, oldH)
+print("Zoom = ", z)
+local zw, zh = newW / z, newH / z
+print("Zoomed dimensions = ", zw, zh)
+
+local startAspect
+local animAspect = 16/6--vmath.vector3(16, 5, 0)
+local animT = 5
+local flipflop = true
+
+local function timer_end(self, handle, time_elapsed)
+	local cam = rcam.current
+	flipflop = not flipflop
+	cam.aspectRatio = vmath.vector3(flipflop and startAspect or animAspect)
+end
+
+function init(self)
+	-- require "tests.performance.all"
+	local cam = rcam.current
+	print(cam)
+	local aspect = animAspect
+	startAspect = cam.aspectRatio
+	go.animate(cam.url, "aspectRatio", go.PLAYBACK_LOOP_PINGPONG, aspect, go.EASING_INOUTCUBIC, animT)
+	-- timer.delay(1, true, timer_end)
+end
