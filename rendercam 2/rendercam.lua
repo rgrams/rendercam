@@ -116,6 +116,13 @@ function M.update_camera_transforms()
 	_G[CONTEXT_KEY] = oldContext
 end
 
+function M.camera_apply(self) -- Can only be called from the render script.
+	local vp = self.viewport
+	render.set_viewport(vp.x, vp.y, vp.w, vp.h)
+	render.set_view(self.view)
+	render.set_projection(self.projection)
+end
+
 function M.camera_enable(self)
 	if M.current then  M.camera_disable(M.current)  end
 	self.enabled = true

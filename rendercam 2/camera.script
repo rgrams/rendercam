@@ -38,8 +38,10 @@ function init(self)
 	go.set_parent(self.offsetURL, self.id)
 	self.camURL = msg.url(nil, self.offsetURL.path, "camera")
 	self.viewport = { x = 0, y = 0, w = 1, h = 1 }
-	self.update_window = rendercam.update_cam_window
 	self.aspectRatio = self.aspectRatio.x / self.aspectRatio.y -- Convert to a single decimal.
+
+	self.update_window = rendercam.update_cam_window
+	self.apply = rendercam.camera_apply
 
 	self.view = rendercam.get_view(self)
 	self.projection = rendercam.get_projection(self)

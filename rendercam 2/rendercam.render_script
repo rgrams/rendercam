@@ -38,11 +38,7 @@ function update(self, dt)
 
 	local cam = rendercam.current
 	if cam then
-		local vp = cam.viewport
-		render.set_viewport(vp.x, vp.y, vp.w, vp.h)
-		render.set_view(cam.view)
-		render.set_projection(cam.projection)
-
+		cam:apply()
 		render.draw(self.tile_pred)
 	end
 
