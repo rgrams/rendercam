@@ -43,6 +43,74 @@ key_trigger {
   action: "4"
 }
 key_trigger {
+  input: KEY_5
+  action: "5"
+}
+key_trigger {
+  input: KEY_6
+  action: "6"
+}
+key_trigger {
+  input: KEY_7
+  action: "7"
+}
+key_trigger {
+  input: KEY_8
+  action: "8"
+}
+key_trigger {
+  input: KEY_9
+  action: "9"
+}
+key_trigger {
+  input: KEY_0
+  action: "10"
+}
+key_trigger {
+  input: KEY_F1
+  action: "F1"
+}
+key_trigger {
+  input: KEY_F2
+  action: "F2"
+}
+key_trigger {
+  input: KEY_F3
+  action: "F3"
+}
+key_trigger {
+  input: KEY_F4
+  action: "F4"
+}
+key_trigger {
+  input: KEY_F5
+  action: "F5"
+}
+key_trigger {
+  input: KEY_F6
+  action: "F6"
+}
+key_trigger {
+  input: KEY_F7
+  action: "F7"
+}
+key_trigger {
+  input: KEY_F8
+  action: "F8"
+}
+key_trigger {
+  input: KEY_F9
+  action: "F9"
+}
+key_trigger {
+  input: KEY_F10
+  action: "F10"
+}
+key_trigger {
+  input: KEY_F11
+  action: "toggle profiler"
+}
+key_trigger {
   input: KEY_LSHIFT
   action: "shift"
 }

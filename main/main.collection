@@ -16,21 +16,6 @@ instances {
   component_properties {
     id: "script"
     properties {
-      id: "enabled"
-      value: "true"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-    properties {
-      id: "fixedAspectRatio"
-      value: "true"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-    properties {
-      id: "aspectRatio"
-      value: "16.0, 7.0, 0.0"
-      type: PROPERTY_TYPE_VECTOR3
-    }
-    properties {
       id: "useViewArea"
       value: "true"
       type: PROPERTY_TYPE_BOOLEAN
@@ -42,17 +27,12 @@ instances {
     }
     properties {
       id: "expandView"
-      value: "false"
+      value: "true"
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
       id: "fixedArea"
       value: "false"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-    properties {
-      id: "fixedWidth"
-      value: "true"
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
@@ -68,41 +48,6 @@ instances {
   }
 }
 scale_along_z: 0
-embedded_instances {
-  id: "go"
-  data: "components {\n"
-  "  id: \"test\"\n"
-  "  component: \"/test.script\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  ""
-  position {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
-}
 embedded_instances {
   id: "background grid"
   data: "embedded_components {\n"
