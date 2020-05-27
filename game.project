@@ -4,7 +4,7 @@ version = 1.0
 dependencies = 
 
 [bootstrap]
-main_collection = /main.collectionc
+main_collection = /main/main.collectionc
 render = /rendercam 2/rendercam.renderc
 
 [input]

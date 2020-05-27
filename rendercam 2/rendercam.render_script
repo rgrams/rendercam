@@ -4,6 +4,8 @@ local rendercam = require "rendercam 2.rendercam"
 local CLEAR_COLOR = hash("clear_color")
 local WINDOW_RESIZED = hash("window_resized")
 
+local IDENTITY_MATRIX = vmath.matrix4()
+
 function init(self)
 	self.tile_pred = render.predicate({"tile"})
 	self.gui_pred = render.predicate({"gui"})
@@ -29,7 +31,10 @@ end
 
 function update(self, dt)
 	rendercam.update_camera_transforms()
+
 	render.clear(self.buffers_to_clear)
+	render.enable_state(render.STATE_BLEND)
+	render.set_blend_func(render.BLEND_SRC_ALPHA, render.BLEND_ONE_MINUS_SRC_ALPHA)
 
 	local cam = rendercam.current
 	if cam then
@@ -40,6 +45,15 @@ function update(self, dt)
 
 		render.draw(self.tile_pred)
 	end
+
+	-- Gui Rendering
+	render.set_viewport(0, 0, self.win_w, self.win_h)
+	render.set_view(IDENTITY_MATRIX)
+	render.set_projection(self.gui_projection)
+
+	render.enable_state(render.STATE_STENCIL_TEST)
+	render.draw(self.gui_pred)
+	render.disable_state(render.STATE_STENCIL_TEST)
 end
 
 function on_message(self, message_id, message, sender)
