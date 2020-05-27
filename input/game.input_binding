@@ -64,7 +64,7 @@ key_trigger {
 }
 key_trigger {
   input: KEY_0
-  action: "10"
+  action: "0"
 }
 key_trigger {
   input: KEY_F1

@@ -35,7 +35,8 @@ end
 
 function Button.release(self, dontFire, isKeyboard)
 	if self.callback and not dontFire then
-		self:callback()
+		if self.args then  self:callback(unpack(self.args))
+		else  self:callback()  end
 	end
 	if isKeyboard then  self.isKeyboardPressed = false  end
 	-- Stay pressed if keyboard press is held.
@@ -52,7 +53,7 @@ end
 
 local ButtonGroup = {}
 
-function ButtonGroup.newButton(self, text, pos, shortcut, callback)
+function ButtonGroup.newButton(self, text, pos, shortcut, callback, args)
 	shortcut = tostring(shortcut)
 	local nodes = gui.clone_tree(self.protoBtn)
 	local bodyNode = nodes[BUTTON_NODE_KEY]
@@ -67,6 +68,7 @@ function ButtonGroup.newButton(self, text, pos, shortcut, callback)
 	local btn = {
 		text = text,
 		callback = callback,
+		args = args,
 		bodyNode = bodyNode,
 		textNode = textNode,
 		shortcutAction = hash(shortcut),
@@ -113,6 +115,12 @@ function ButtonGroup.input(self, action_id, action)
 		elseif action.released then
 			button:release(false, true)
 		end
+	end
+end
+
+function ButtonGroup.destroy(self)
+	for i,button in ipairs(self.buttons) do
+		gui.delete_node(button.bodyNode)
 	end
 end
 

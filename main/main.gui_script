@@ -6,38 +6,119 @@ local ButtonGroup = require "main.ButtonGroup"
 
 local profilerIsEnabled = false
 
-local scenes = {
-	{ text = "run unit tests"},
-	{ text = "run perf. tests"},
-	{ text = "bounds"},
-}
+local scenes = require "main.scenes"
 
-local buttonBaseX = 75
-local buttonBaseY = rendercam.configH/2
-local winCenterX = rendercam.configW/2
-local buttonSpacingX = 125
+local buttonWidth = 100
+local endPadding = 50
+local maxButtonCount = 10
+
+local buttonBaseX = endPadding + buttonWidth/2
+local winW, winH = rendercam.configW, rendercam.configH
+local buttonBaseY = winH/2
+local winCenterX = winW/2
+local freeSpace = winW - endPadding * 2 - maxButtonCount * buttonWidth
+local interPadding = freeSpace / (maxButtonCount - 1)
+local buttonSpacing = buttonWidth + interPadding
 
 local function getButtonPos(i)
 	local pos = vmath.vector3(buttonBaseX, buttonBaseY, 0)
-	pos.x = pos.x + (i-1) * buttonSpacingX
+	pos.x = pos.x + (i-1) * buttonSpacing
 	return pos
 end
 
-local function activateButton(button)
-	print(button.text, "activated")
+local function dummyButtonCallback(button, self)
+	print(button.text, "activated", self)
+end
+
+local buttonCallbacks = {
+	-- openChildren, backToMain, back, prevPage, nextPage, loadScene, runModuleFunc,
+}
+
+local function deepCopy(t)
+	local t2 = {}
+	for k,v in pairs(t) do
+		if type(v) == "table" then
+			t2[k] = deepCopy(v)
+		else
+			t2[k] = v
+		end
+	end
+	return t2
+end
+
+local function loadButtons(self, btnSpecs)
+	assert(#btnSpecs <= maxButtonCount, "main.gui-loadButtons: Too many buttons spawned! :"..#btnSpecs)
+	if self.buttons then  self.buttons:destroy()  end
+	local protoBtn = gui.get_node("button")
+	gui.set_enabled(protoBtn, true)
+	self.buttons = ButtonGroup(protoBtn)
+
+	for i,data in ipairs(btnSpecs) do
+		local text, callback, args = unpack(data)
+		args = args and deepCopy(args) or {} -- Don't modify the original list if it exists.
+		table.insert(args, 1, self)
+		callback = buttonCallbacks[callback] or dummyButtonCallback
+		local shortcut = i % maxButtonCount
+		self.buttons:newButton(text, getButtonPos(i), shortcut, callback, args)
+	end
+	gui.set_enabled(protoBtn, false)
+	print("Page Number: "..self.page.num)
+end
+
+local BACK_BUTTON_SPECS = { "Back", "back" }
+local PREV_BUTTON_SPECS = { "Previous Page", "prevPage" }
+local NEXT_BUTTON_SPECS = { "Next Page", "nextPage" }
+
+local function loadPage(self, allItems, startI)
+	self.page.startI = startI and math.max(1, startI) or 1
+	local remainingItemCount = #allItems - (self.page.startI - 1)
+	if remainingItemCount <= (maxButtonCount - 1) then -- No Next button needed.
+		self.page.endI = #allItems
+	else
+		self.page.endI = (self.page.startI - 1) + (maxButtonCount - 2) -- Next & Prev buttons.
+	end
+	local items = {}
+	local backBtn = self.page.startI == 1 and BACK_BUTTON_SPECS or PREV_BUTTON_SPECS
+	table.insert(items, backBtn)
+	for i=self.page.startI,self.page.endI do
+		table.insert(items, allItems[i])
+	end
+	if self.page.endI < #items then
+		table.insert(items, NEXT_BUTTON_SPECS)
+	end
+	loadButtons(self, items)
+end
+
+function buttonCallbacks.nextPage(button, self)
+	self.page.num = self.page.num + 1
+	local allItems = self.menuItemHistory[#self.menuItemHistory]
+	loadPage(self, allItems, self.page.endI + 1)
+end
+
+function buttonCallbacks.prevPage(button, self)
+	self.page.num = self.page.num - 1
+	local allItems = self.menuItemHistory[#self.menuItemHistory]
+	loadPage(self, allItems, self.page.startI - (maxButtonCount - 2))
+end
+
+function buttonCallbacks.back(button, self)
+	table.remove(self.menuItemHistory)
+	local allItems = self.menuItemHistory[#self.menuItemHistory]
+	loadButtons(self, allItems)
+end
+
+function buttonCallbacks.openChildren(button, self, ...)
+	local items = {...}
+	loadPage(self, items)
+	table.insert(self.menuItemHistory, items) -- Last == latest (use unmodified list).
 end
 
 function init(self)
 	msg.post(".", "acquire_input_focus")
 
-	local protoBtn = gui.get_node("button")
-	self.buttons = ButtonGroup(protoBtn)
-
-	for i,data in ipairs(scenes) do
-		self.buttons:newButton(data.text, getButtonPos(i), i, activateButton)
-	end
-
-	gui.set_enabled(protoBtn, false)
+	self.page = { num = 1 } -- { startI, endI, num }
+	self.menuItemHistory = { scenes }
+	loadButtons(self, scenes)
 
 	local topLine = gui.get_node("line top")
 	local botLine = gui.get_node("line bottom")
