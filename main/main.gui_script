@@ -83,7 +83,7 @@ local function loadPage(self, allItems, startI)
 	for i=self.page.startI,self.page.endI do
 		table.insert(items, allItems[i])
 	end
-	if self.page.endI < (#items - 1) then -- Subtract 1 for back/prev button.
+	if self.page.endI < #allItems then
 		table.insert(items, NEXT_BUTTON_SPECS)
 	end
 	loadButtons(self, items)
