@@ -1,0 +1,19 @@
+
+local LOAD_SCENE = hash("load scene")
+local PROXY_LOADED = hash("proxy_loaded")
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	msg.post("#menu", "load")
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == LOAD_SCENE then
+		local address = "#" .. message.scene
+		msg.post(address, "load")
+	elseif message_id == PROXY_LOADED then
+		if self.current then  msg.post(self.current, "unload")  end
+		msg.post(sender, "enable")
+		self.current = sender
+	end
+end
