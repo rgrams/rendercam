@@ -59,5 +59,6 @@ function on_message(self, message_id, message, sender)
 		self.gui_projection = vmath.matrix4_orthographic(0, self.win_w, 0, self.win_h, -1, 1)
 	elseif message_id == CLEAR_COLOR then
 		self.clear_color = message.color
+		self.buffers_to_clear[render.BUFFER_COLOR_BIT] = self.clear_color
 	end
 end
