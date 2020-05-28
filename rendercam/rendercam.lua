@@ -75,7 +75,6 @@ function M.update_cam_viewport(self, x, y, w, h)
 	end
 end
 
--- a = Y for vertical FOV, X for horizontal FOV.
 function M.get_fov(viewDist, a)
 	return deg(atan(a / viewDist) * 2) -- opp / adj
 end
@@ -103,7 +102,8 @@ function M.update_cam_window(self, x, y, newW, newH, oldW, oldH)
 	self.viewArea.x = self.viewport.w / self.zoom -- New viewArea == zoomed viewport area.
 	self.viewArea.y = self.viewport.h / self.zoom
 	if not self.orthographic then
-		self.fov = M.get_fov(self.viewDistance, self.viewArea.y)
+		-- Must use Y, vmath.matrix4_perspective uses vertical FOV.
+		self.fov = M.get_fov(self.viewDistance, self.viewArea.y * 0.5) -- View triangle is with half-Y - from center to edge.
 	end
 	self.projection = M.get_projection(self) -- Window resize happens after update, so this is necessary.
 end
