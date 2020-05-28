@@ -14,14 +14,6 @@ instances {
     z: 0.0
     w: 1.0
   }
-  component_properties {
-    id: "script"
-    properties {
-      id: "active"
-      value: "false"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-  }
   scale3 {
     x: 1.0
     y: 1.0
@@ -64,19 +56,6 @@ instances {
     z: 0.0
     w: 1.0
   }
-  component_properties {
-    id: "script"
-    properties {
-      id: "parent"
-      value: "/anim parent"
-      type: PROPERTY_TYPE_URL
-    }
-    properties {
-      id: "active"
-      value: "false"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-  }
   scale3 {
     x: 1.0
     y: 1.0
@@ -97,14 +76,6 @@ instances {
     y: 0.0
     z: 0.0
     w: 1.0
-  }
-  component_properties {
-    id: "script"
-    properties {
-      id: "active"
-      value: "false"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
   }
   scale3 {
     x: 1.0

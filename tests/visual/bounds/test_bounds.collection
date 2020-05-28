@@ -13,34 +13,6 @@ instances {
     z: 0.64278764
     w: 0.76604444
   }
-  component_properties {
-    id: "script"
-    properties {
-      id: "active"
-      value: "false"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-    properties {
-      id: "fixedAspectRatio"
-      value: "true"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-    properties {
-      id: "aspectRatio"
-      value: "16.0, 5.0, 0.0"
-      type: PROPERTY_TYPE_VECTOR3
-    }
-    properties {
-      id: "useViewArea"
-      value: "true"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-    properties {
-      id: "viewArea"
-      value: "400.0, 300.0, 0.0"
-      type: PROPERTY_TYPE_VECTOR3
-    }
-  }
   scale3 {
     x: 1.0
     y: 1.0

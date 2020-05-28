@@ -13,29 +13,6 @@ instances {
     z: 0.0
     w: 1.0
   }
-  component_properties {
-    id: "script"
-    properties {
-      id: "nearZ"
-      value: "-20.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "farZ"
-      value: "20.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "useViewArea"
-      value: "true"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-    properties {
-      id: "viewArea"
-      value: "2000.0, 1200.0, 0.0"
-      type: PROPERTY_TYPE_VECTOR3
-    }
-  }
   scale3 {
     x: 1.0
     y: 1.0

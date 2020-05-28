@@ -1,18 +1,10 @@
 
 local rendercam = require "rendercam.rendercam"
-local rdebug = rendercam.debug
-local vp = rendercam.viewport
 
-local IDENTITY_MATRIX = vmath.matrix4()
 local CLEAR_COLOR = hash("clear_color")
 local WINDOW_RESIZED = hash("window_resized")
-local UPDATE_WINDOW = hash("update window")
 
-
-local function update_window(self)
-	rendercam.update_window(render.get_window_width(), render.get_window_height())
-	self.gui_proj = vmath.matrix4_orthographic(0, rendercam.window.x, 0, rendercam.window.y, -1, 1)
-end
+local IDENTITY_MATRIX = vmath.matrix4()
 
 function init(self)
 	self.tile_pred = render.predicate({"tile"})
@@ -21,68 +13,52 @@ function init(self)
 	self.model_pred = render.predicate({"model"})
 	self.particle_pred = render.predicate({"particle"})
 
-	self.clear_color = vmath.vector4(0)
+	self.clear_color = vmath.vector4(0, 0, 0, 0)
+	self.clear_color.x = sys.get_config("render.clear_color_red", 0)
+	self.clear_color.y = sys.get_config("render.clear_color_green", 0)
+	self.clear_color.z = sys.get_config("render.clear_color_blue", 0)
+	self.clear_color.w = sys.get_config("render.clear_color_alpha", 0)
 
-	rendercam.configWin.x = render.get_width();  rendercam.configWin.y = render.get_height()
-	rendercam.update_window_size(render.get_window_width(), render.get_window_height())
-	update_window(self)
+	self.win_w, self.win_h = render.get_width(), render.get_height()
+	self.gui_projection = vmath.matrix4_orthographic(0, self.win_w, 0, self.win_h, -1, 1)
+
+	self.buffers_to_clear = {
+		[render.BUFFER_COLOR_BIT] = self.clear_color,
+		[render.BUFFER_DEPTH_BIT] = 1,
+		[render.BUFFER_STENCIL_BIT] = 0
+	}
 end
 
-function update(self)
-	render.set_depth_mask(true)
-	render.set_stencil_mask(0xff)
-	render.clear({[render.BUFFER_COLOR_BIT] = self.clear_color, [render.BUFFER_DEPTH_BIT] = 1, [render.BUFFER_STENCIL_BIT] = 0})
+function update(self, dt)
+	rendercam.update_camera_transforms()
 
-	render.set_viewport(vp.x, vp.y, vp.width, vp.height)
-
-	render.set_view(rendercam.calculate_view())
-	render.set_projection(rendercam.calculate_proj())
-
-	-- Sprite and particle rendering
-	render.set_depth_mask(false)
-	render.disable_state(render.STATE_DEPTH_TEST)
-	render.disable_state(render.STATE_STENCIL_TEST)
+	render.clear(self.buffers_to_clear)
 	render.enable_state(render.STATE_BLEND)
 	render.set_blend_func(render.BLEND_SRC_ALPHA, render.BLEND_ONE_MINUS_SRC_ALPHA)
-	render.disable_state(render.STATE_CULL_FACE)
 
-	render.draw(self.tile_pred)
-	render.draw(self.particle_pred)
+	local cam = rendercam.current
+	if cam then
+		cam:apply()
+		render.draw(self.tile_pred)
+	end
 
-	-- Model rendering
-	render.set_blend_func(render.BLEND_SRC_ALPHA, render.BLEND_ONE_MINUS_SRC_ALPHA)
-	render.enable_state(render.STATE_CULL_FACE)
-	render.enable_state(render.STATE_DEPTH_TEST)
-	render.set_depth_mask(true)
-	render.draw(self.model_pred)
-
-	-- Debug rendering - physics debug, draw_line
-	render.disable_state(render.STATE_DEPTH_TEST)
-	render.disable_state(render.STATE_CULL_FACE)
-	render.draw_debug3d()
-
-	-- GUI Rendering
-	render.set_viewport(0, 0, rendercam.window.x, rendercam.window.y)
+	-- Gui Rendering
+	render.set_viewport(0, 0, self.win_w, self.win_h)
 	render.set_view(IDENTITY_MATRIX)
-	render.set_projection(self.gui_proj) -- gui_proj only calculated on update_window
+	render.set_projection(self.gui_projection)
 
 	render.enable_state(render.STATE_STENCIL_TEST)
 	render.draw(self.gui_pred)
-	render.draw(self.text_pred) -- Includes debug text from "draw_text" messages.
 	render.disable_state(render.STATE_STENCIL_TEST)
-
-	if rdebug.show_camera_name then
-		local curCam = rendercam.get_current_camera()
-		local txt = string.sub(tostring(curCam.id), 8, -2) -- Cut off "hash: [" and "]".
-		local x, y = 5, rendercam.window.y - 5
-		msg.post("@render:", "draw_text", {text = txt, position = vmath.vector3(x, y, 0)})
-	end
 end
 
-function on_message(self, message_id, message)
-	if message_id == CLEAR_COLOR then
+function on_message(self, message_id, message, sender)
+	if message_id == WINDOW_RESIZED then
+		rendercam.window_resized(message.width, message.height, self.win_w, self.win_h)
+		self.win_w, self.win_h = message.width, message.height
+		self.gui_projection = vmath.matrix4_orthographic(0, self.win_w, 0, self.win_h, -1, 1)
+	elseif message_id == CLEAR_COLOR then
 		self.clear_color = message.color
-	elseif message_id == WINDOW_RESIZED then -- sent by engine
-		update_window(self)
+		self.buffers_to_clear[render.BUFFER_COLOR_BIT] = self.clear_color
 	end
 end

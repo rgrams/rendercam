@@ -1,508 +1,160 @@
 
 local M = {}
 
--- Check if 'shared_state' setting is on
-if sys.get_config("script.shared_state") ~= "1" then
-	error("rendercam - 'shared_state' setting in game.project must be enabled for rendercam to work.", 0)
+-- Localized stuff: (for a small speed boost)
+local sqrt = math.sqrt
+local min = math.min
+local atan = math.atan
+local floor = math.floor
+local deg, rad = math.deg, math.rad
+local matrix4_orthographic = vmath.matrix4_orthographic
+local matrix4_perspective = vmath.matrix4_perspective
+local ortho_inv = vmath.ortho_inv
+local get_world_transform = go.get_world_transform
+
+local function round(x)
+	return floor(x + 0.5)
 end
 
-local SCALEMODE_EXPANDVIEW = hash("expandView")
-local SCALEMODE_FIXEDAREA = hash("fixedArea")
-local SCALEMODE_FIXEDWIDTH = hash("fixedWidth")
-local SCALEMODE_FIXEDHEIGHT = hash("fixedHeight")
+-- Constants:
+local EXPAND_VIEW = hash("expandView")
+local FIXED_AREA = hash("fixedArea")
+local FIXED_WIDTH = hash("fixedWidth")
+local FIXED_HEIGHT = hash("fixedHeight")
+local CONTEXT_KEY = 3700146495
 
-M.debug = {
-	bounds = true,
-	show_camera_name = true,
-}
+-- Public Variables:
+M.configW = sys.get_config("display.width", 960) -- Original window width/height from game.project.
+M.configH = sys.get_config("display.height", 480)
+M.winW, M.winH = M.configW, M.configH
+M.current = nil -- The current camera.
 
-M.ortho_zoom_speed = 0.01
-M.follow_lerp_speed = 3
-M.default_shake_rot_mult = 0.005
-M.viewport_align = vmath.vector3(0.5, 0.5, 0)
+local cameras = {}
 
--- Data table for the fallback camera - used when no user camera is active
-local fallback_cam = {
-	should_print_warning = true, -- Used to print a warning on the first render update that the fallback cam is used
-	orthographic = true, scaleMode = SCALEMODE_EXPANDVIEW, orthoScale = 1, useViewArea = false,
-	viewArea = vmath.vector3(960, 640, 0), halfViewArea = vmath.vector3(480, 320, 0),
-	fixedAspectRatio = false, aspectRatio = 1.5, worldZ = 0, nearZ = -1, farZ = 1, abs_nearZ = -1,
-	abs_farZ = 1, lpos = vmath.vector3(), wpos = vmath.vector3(), wupVec = vmath.vector3(0, 1, 0),
-	wforwardVec = vmath.vector3(0, 0, -1), lupVec = vmath.vector3(0, 1, 0),
-	lforwardVec = vmath.vector3(0, 0, -1), lrightVec = vmath.vector3(1, 0, 0),
-	following = false, follows = {}, recoils = {}, shakes = {},
-	isCameraFocusZone = false, cameraFocusZoneBounds= vmath.vector4(0, 0, 0,0),
-}
-
-M.view = vmath.matrix4() -- current view matrix
-M.proj = vmath.matrix4() -- current proj matrix
-
--- Current window size
-M.window = vmath.vector3() -- only set in `M.update_window_size`, in `M.update_window`
--- Viewport offset, size, and scale - only differs from M.window when using a fixed aspect ratio camera
-M.viewport = { x = 0, y = 0, width = M.window.x, height = M.window.y, scale = { x = 1, y = 1 } }
--- Initial window size - set on init in render script
-M.configWin = vmath.vector3()
-
--- GUI "transform" data - set in `calculate_gui_adjust_data` and used for screen-to-gui transforms in multiple places
---				Fit		(scale)		(offset)	Zoom						Stretch
-M.guiAdjust = { [0] = {sx=1, sy=1, ox=0, oy=0}, [1] = {sx=1, sy=1, ox=0, oy=0}, [2] = {sx=1, sy=1, ox=0, oy=0} }
-M.guiOffset = vmath.vector3()
-
--- GUI Adjust modes - these match up with the gui library properties (gui.ADJUST_FIT, etc.)
-M.GUI_ADJUST_FIT = 0
-M.GUI_ADJUST_ZOOM = 1
-M.GUI_ADJUST_STRETCH = 2
-
-local cameras = {} -- master table of camera data tables. Elements added and removed on M.camera_init and M.camera_final
-local curCam = fallback_cam -- current camera data table, defaults and resets to `fallback_cam` if no user camera is active
-
-
--- ---------------------------------------------------------------------------------
---| 							PRIVATE FUNCTIONS									|
--- ---------------------------------------------------------------------------------
-
-local function get_target_worldViewSize(cam, lastX, lastY, lastWinX, lastWinY, winX, winY)
-	local x, y
-
-	if cam.fixedAspectRatio then
-		if cam.scaleMode == SCALEMODE_EXPANDVIEW then
-			local z = math.max(lastX / lastWinX, lastY / lastWinY)
-			x, y = winX * z, winY * z
-		else -- Fixed Area, Fixed Width, and Fixed Height all work the same with a fixed aspect ratio
-			--		The proportion and world view area remain the same.
-			x, y = lastX, lastY
-		end
-		-- Enforce aspect ratio
-		local scale = math.min(x / cam.aspectRatio, y / 1)
-		x, y = scale * cam.aspectRatio, scale
-
-	else -- Non-fixed aspect ratio
-		if cam.scaleMode == SCALEMODE_EXPANDVIEW then
-			local z = math.max(lastX / lastWinX, lastY / lastWinY)
-			x, y = winX * z, winY * z
-		elseif cam.scaleMode == SCALEMODE_FIXEDAREA then
-			if not cam.fixedAspectRatio then -- x, y stay at lastX, lastY with fixed aspect ratio
-				local lastArea = lastX * lastY
-				local windowArea = winX * winY
-				local axisScale = math.sqrt(lastArea / windowArea)
-				x, y = winX * axisScale, winY * axisScale
-			end
-		elseif cam.scaleMode == SCALEMODE_FIXEDWIDTH then
-			local ratio = winX / winY
-			x, y = lastX, lastX / ratio
-		elseif cam.scaleMode == SCALEMODE_FIXEDHEIGHT then
-			local ratio = winX / winY
-			x, y = lastY * ratio, lastY
-		else
-			error("rendercam - get_target_worldViewSize() - camera: " .. cam.id .. ", scale mode not found.")
-		end
-	end
-
-	return x, y
-end
-
-local function get_fov(distance, y) -- must use Y, not X
-	return math.atan(y / distance) * 2
-end
-
-local function calculate_gui_adjust_data(winX, winY, configX, configY)
-	local sx, sy = winX / configX, winY / configY
-
-	-- Fit
-	local adj = M.guiAdjust[M.GUI_ADJUST_FIT]
-	local scale = math.min(sx, sy)
-	adj.sx = scale;  adj.sy = scale
-	adj.ox = (winX - configX * adj.sx) * 0.5 / adj.sx
-	adj.oy = (winY - configY * adj.sy) * 0.5 / adj.sy
-
-	-- Zoom
-	adj = M.guiAdjust[M.GUI_ADJUST_ZOOM]
-	scale = math.max(sx, sy)
-	adj.sx = scale;  adj.sy = scale
-	adj.ox = (winX - configX * adj.sx) * 0.5 / adj.sx
-	adj.oy = (winY - configY * adj.sy) * 0.5 / adj.sy
-
-	-- Stretch
-	adj = M.guiAdjust[M.GUI_ADJUST_STRETCH]
-	adj.sx = sx;  adj.sy = sy
-	-- distorts to fit window, offsets always zero
-end
-
-
--- ---------------------------------------------------------------------------------
---| 					PUBLIC FUNCTIONS I: CAMERA STUFF							|
--- ---------------------------------------------------------------------------------
-
-local function validate_cam_id(cam_id, func_name)
-	-- Returns the current cam if the id is nil, or looks for a camera with the supplied ID.
-	local cam = not cam_id and curCam or cameras[cam_id]
-	if not cam then
-		-- Calling an error will stop the execution of the calling function,
-		-- so there's no need to check if the return value is nil or not.
-		error("rendercam." .. func_name .. "() - No camera with the ID: '" .. tostring(cam_id) .. "' exists.")
-	end
-	return cam
-end
-
-function M.get_current_camera()
-	return curCam
-end
-
-function M.activate_camera(cam_id)
-	local cam = validate_cam_id(cam_id, "activate_camera")
-	if cam ~= curCam then
-		if curCam then curCam.active = false end
-		curCam = cam
-		M.update_window()
-		-- Update view and proj so transform functions will immediately work with the new camera.
-		M.calculate_view()
-		M.calculate_proj()
-		curCam.active = true
+function M.get_zoom_for_resize(scaleMode, newW, newH, oldW, oldH)
+	if scaleMode == EXPAND_VIEW then
+		return 1
+	elseif scaleMode == FIXED_AREA then
+		local newArea = newW * newH
+		local oldArea = oldW * oldH
+		return sqrt(newArea / oldArea) -- Zoom is the scale on both axes, hence the square root.
+	elseif scaleMode == FIXED_WIDTH then
+		return newW / oldW
+	elseif scaleMode == FIXED_HEIGHT then
+		return newH / oldH
 	end
 end
 
-function M.camera_init(cam_id, data)
-	if cameras[cam_id] then
-		error("rendercam.camera_init() - Camera name conflict with ID: " .. cam_id .. ". \n\tNew camera will overwrite the old! Your cameras must have unique IDs.")
-	end
-	cameras[cam_id] = data
-	if data.active then
-		M.activate_camera(cam_id)
-	end
-end
-
-function M.camera_final(cam_id)
-	if curCam == cameras[cam_id] then
-		curCam = fallback_cam
-		M.update_window()
-		M.calculate_view()
-		M.calculate_proj()
-		curCam.active = true
-	end
-	cameras[cam_id] = nil
-end
-
-function M.zoom_in(z, cam_id)
-	local cam = validate_cam_id(cam_id, "zoom_in")
-	if cam.orthographic then
-		cam.orthoScale = cam.orthoScale + z * M.ortho_zoom_speed
-		go.set(cam.script, "zoom", 1/cam.orthoScale)
+-- Update the camera's viewport to fit within the specified rect.
+function M.update_cam_viewport(self, x, y, w, h)
+	local vp = self.viewport
+	if self.fixedAspectRatio then
+		local vpw = min(w, h * self.aspectRatio)
+		local vph = vpw / self.aspectRatio
+		local extraX, extraY = w - vpw, h - vph
+		-- Keep everything as integers to prevent subpixel jitter when animating aspect ratio.
+		local ox = round(extraX * self.viewportAlign.x) -- Letterbox offset within rect.
+		local oy = round(extraY * self.viewportAlign.y)
+		local _ox = round(extraX * (1 - self.viewportAlign.x)) -- Letterbox offset on the opposite corner.
+		local _oy = round(extraY * (1 - self.viewportAlign.y))
+		vp.x, vp.y = x + ox, y + oy
+		vp.w, vp.h = w - ox - _ox, h - oy - _oy -- Width/height is the remaining space.
 	else
-		cam.lpos = cam.lpos - cam.lforwardVec * z
-		go.set_position(cam.lpos, cam.id) -- don't need to check for fallback_cam because it's orthographic
+		vp.x, vp.y, vp.w, vp.h = x, y, w, h
 	end
 end
 
-function M.get_zoom(cam_id)
-	local cam = validate_cam_id(cam_id, "get_zoom")
-	if cam.orthographic then
-		return go.get(cam.script, "zoom")
+-- a = Y for vertical FOV, X for horizontal FOV.
+function M.get_fov(viewDist, a)
+	return deg(atan(a / viewDist) * 2) -- opp / adj
+end
+
+function M.get_view(self)
+	return ortho_inv(get_world_transform(self.offsetURL))
+end
+
+function M.get_projection(self)
+	if self.orthographic then
+		local hw, hh = self.viewArea.x/2, self.viewArea.y/2
+		return matrix4_orthographic(-hw, hw, -hh, hh, self.nearZ, self.farZ)
 	else
-		print("WARNING: rendercam.get_zoom() - 'zoom' is only used for orthographic cameras, set Z position to zoom perspective cameras.")
+		local aspectRatio = self.viewArea.x / self.viewArea.y
+		return matrix4_perspective(rad(self.fov), aspectRatio, self.nearZ, self.farZ)
 	end
 end
 
-function M.set_zoom(z, cam_id)
-	local cam = validate_cam_id(cam_id, "set_zoom")
-	if cam.orthographic then
-		go.set(cam.script, "zoom", z)
-		cam.orthoScale = 1/z
-	else
-		print("WARNING: rendercam.set_zoom() - 'zoom' is only used for orthographic cameras, set Z position to zoom perspective cameras.")
+function M.update_cam_window(self, x, y, newW, newH, oldW, oldH)
+	local vp = self.viewport
+	local oldVpW, oldVpH = vp.w, vp.h
+	M.update_cam_viewport(self, x, y, newW, newH)
+	local z = M.get_zoom_for_resize(self.scaleMode, vp.w, vp.h, oldVpW, oldVpH) -- Zoom based on viewport size change.
+	self.zoom = self.zoom * z -- It's relative zoom.
+	self.viewArea.x = self.viewport.w / self.zoom -- New viewArea == zoomed viewport area.
+	self.viewArea.y = self.viewport.h / self.zoom
+	if not self.orthographic then
+		self.fov = M.get_fov(self.viewDistance, self.viewArea.y)
 	end
+	self.projection = M.get_projection(self) -- Window resize happens after update, so this is necessary.
 end
 
-function M.pan(dx, dy, cam_id)
-	local cam = validate_cam_id(cam_id, "pan")
-	cam.lpos = cam.lpos + cam.lrightVec * dx + cam.lupVec * dy
-	if cam.id then go.set_position(cam.lpos, cam.id) end -- fallback_cam has no cam.id, it will ignore panning
-end
-
-function M.set_bounds(left, right, top, bottom, cam_id)
-	local cam = validate_cam_id(cam_id, "set_bounds")
-	if left == nil and right == nil and top == nil and bottom == nil then
-		cam.viewportBounds = nil
-	elseif left and right and top and bottom then
-		cam.viewportBounds = {
-			lt = left, rt = right, top = top, bot = bottom,
-			width = right - left, height = top - bottom,
-			centerX = left + (right - left)/2,
-			centerY = bottom + (top - bottom)/2,
-			topRight = vmath.vector3(right, top, 0),
-			bottomLeft = vmath.vector3(left, bottom, 0),
-		}
-	else
-		error("rendercam.set_bounds() - Missing a valid argument. Requires left, right, top, and bottom.")
+function M.window_resized(newW, newH, oldW, oldH) -- From render script. NOT called on engine start.
+	for i,cam in ipairs(cameras) do
+		cam:update_window(0, 0, newW, newH, oldW, oldH)
 	end
+	M.winW, M.winH = newW, newH
 end
 
-function M.shake(dist, dur, freq, rot_mult, cam_id)
-	local cam = validate_cam_id(cam_id, "shake")
-	rot_mult = rot_mult or M.default_shake_rot_mult
-	rot_mult = rot_mult > 0 and rot_mult or nil
-	local t = { dist = dist, dur = dur, t = dur, rot_mult = rot_mult }
-	if freq then -- Simplex shake.
-		t.freq = freq
-		t.seed1 = math.random() * 1000
-		t.seed2 = t.seed1 + 1
-		if rot_mult then  t.seed3 = t.seed1 + 2  end
-	end
-	table.insert(cam.shakes, t)
-end
-
-function M.recoil(vec, dur, cam_id)
-	local cam = validate_cam_id(cam_id, "recoil")
-	table.insert(cam.recoils, { vec = vec, dur = dur, t = dur })
-end
-
-function M.stop_shaking(cam_id)
-	local cam = validate_cam_id(cam_id, "stop_shaking")
-	cam.shakes = {}
-	cam.recoils = {}
-end
-
-function M.follow(target_id, allowMultiFollow, cam_id)
-	local cam = validate_cam_id(cam_id, "follow")
-	if allowMultiFollow then
-		table.insert(cam.follows, target_id)
-	else
-		cam.follows = { target_id }
-	end
-	cam.following = true
-end
-
-function M.unfollow(target_id, cam_id)
-	local cam = validate_cam_id(cam_id, "unfollow")
-	if #cam.follows == 0 then
-		return
-	elseif not target_id and #cam.follows == 1 then
-		table.remove(cam.follows, 1)
-	else
-		for i, v in ipairs(cam.follows) do
-			if v == target_id then
-				table.remove(cam.follows, i)
-				if #cam.follows == 0 then cam.following = false end
-			end
+ -- Update the view matrices of all cameras. Should call in render script update.
+function M.update_camera_transforms()
+	local oldContext = _G[CONTEXT_KEY] -- Questionable practice? Yes. Solves all problems easily? Yes.
+	for i,cam in ipairs(cameras) do
+		if cam.enabled or cam.updateWhenDisabled then
+			_G[CONTEXT_KEY] = cam
+			cam.view = M.get_view(cam)
 		end
 	end
+	_G[CONTEXT_KEY] = oldContext
 end
 
-function M.follow_lerp_func(curPos, targetPos, dt)
-	return vmath.lerp(0.5^(dt * M.follow_lerp_speed), targetPos, curPos)
+function M.camera_apply(self) -- Can only be called from the render script.
+	local vp = self.viewport
+	render.set_viewport(vp.x, vp.y, vp.w, vp.h)
+	render.set_view(self.view)
+	render.set_projection(self.projection)
 end
 
-function M.set_follow_deadzone(left, right, top, bottom, cam_id)
-	local cam = validate_cam_id(cam_id, "set_follow_deadzone")
-	if left and right and top and bottom then
-		cam.followDeadzone = vmath.vector4(left, right, top, bottom)
-		if vmath.length(cam.followDeadzone) == 0 then
-			cam.hasFollowDeadzone = false
-		else
-			cam.hasFollowDeadzone = true
-		end
-	else
-		error("rendercam.set_follow_deadzone() - Missing a valid argument. Requires left, right, top, and bottom")
+function M.camera_enable(self)
+	if M.current then  M.camera_disable(M.current)  end
+	self.enabled = true
+	-- msg.post(self.camURL, "acquire_camera_focus") -- Will send projection before this frame renders.
+	M.current = self
+end
+
+function M.camera_disable(self)
+	self.enabled = false
+	-- msg.post(self.camURL, "release_camera_focus")
+	M.current = nil
+end
+
+function M.camera_init(self)
+	table.insert(cameras, self)
+	if not self.useViewArea then
+		self.viewArea.x, self.viewArea.y = M.configW, M.configH
 	end
+	M.update_cam_viewport(self, 0, 0, self.viewArea.x, self.viewArea.y)
+	self:update_window(0, 0, M.configW, M.configH, self.viewArea.x, self.viewArea.y)
+	self:update_window(0, 0, M.winW, M.winH, self.viewArea.x, self.viewArea.y)
+	if self.enabled then  M.camera_enable(self)  end
 end
 
--- ---------------------------------------------------------------------------------
---| 			   PUBLIC FUNCTIONS II: WINDOW UPDATE LISTENERS						|
--- ---------------------------------------------------------------------------------
-
-local listeners = {}
-
-function M.add_window_listener(url)
-	table.insert(listeners, url)
-end
-
-function M.remove_window_listener(url)
-	for i, v in ipairs(listeners) do
-		if v == url then
-			table.remove(listeners, i)
-		end
-	end
-end
-
--- ---------------------------------------------------------------------------------
---| 					PUBLIC FUNCTIONS III: RENDER SCRIPT							|
--- ---------------------------------------------------------------------------------
-
-function M.calculate_view() -- called from render script on update
-	-- The view matrix is just the camera object transform. (Translation & rotation. Scale is ignored)
-	--		It changes as the camera is translated and rotated, but has nothing to do with aspect ratio or anything else.
-
-	if curCam.should_print_warning then -- using fallback camera and haven't printed the warning yet
-		print("NOTE: rendercam - No active camera found this frame...using fallback camera. There will be no more warnings about this.")
-		fallback_cam.should_print_warning = false
-	end
-
-	M.view = vmath.matrix4_look_at(curCam.wpos, curCam.wpos + curCam.wforwardVec, curCam.wupVec)
-	return M.view
-end
-
-function M.calculate_proj() -- called from render script on update
-	if curCam.orthographic then
-		local x = curCam.halfViewArea.x * curCam.orthoScale
-		local y = curCam.halfViewArea.y * curCam.orthoScale
-		M.proj = vmath.matrix4_orthographic(-x, x, -y, y, curCam.nearZ, curCam.farZ)
-	else -- perspective
-		M.proj = vmath.matrix4_perspective(curCam.fov, curCam.aspectRatio, curCam.nearZ, curCam.farZ)
-	end
-	return M.proj
-end
-
-function M.update_window_size(x, y)
-	M.window.x = x;  M.window.y = y
-	M.viewport.width = x;  M.viewport.height = y -- if using a fixed aspect ratio this will be immediately overwritten in M.update_window
-end
-
-function M.update_window(newX, newY)
-	if curCam then
-		newX = newX or M.window.x
-		newY = newY or M.window.y
-
-		local x, y = get_target_worldViewSize(curCam, curCam.viewArea.x, curCam.viewArea.y, M.window.x, M.window.y, newX, newY)
-		curCam.viewArea.x = x;  curCam.viewArea.y = y
-		curCam.aspectRatio = x / y
-		M.update_window_size(newX, newY)
-
-		if curCam.fixedAspectRatio then -- if fixed aspect ratio, calculate viewport cropping
-			local scale = math.min(M.window.x / curCam.aspectRatio, M.window.y / 1)
-			M.viewport.width = curCam.aspectRatio * scale
-			M.viewport.height = scale
-
-			-- Viewport offset: bar on edge of screen from fixed aspect ratio
-			M.viewport.x = (M.window.x - M.viewport.width) * M.viewport_align.x
-			M.viewport.y = (M.window.y - M.viewport.height) * M.viewport_align.y
-
-			-- For screen-to-viewport coordinate conversion
-			M.viewport.scale.x = M.viewport.width / newX
-			M.viewport.scale.y = M.viewport.height / newY
-		else
-			M.viewport.x = 0;  M.viewport.y = 0
-			M.viewport.width = newX;  M.viewport.height = newY
-		end
-
-		if curCam.orthographic then
-			curCam.halfViewArea.x = x/2;  curCam.halfViewArea.y = y/2
-		else
-			curCam.fov = get_fov(curCam.viewArea.z, curCam.viewArea.y * 0.5)
-		end
-
-		calculate_gui_adjust_data(M.window.x, M.window.y, M.configWin.x, M.configWin.y)
-
-		-- send window update messages to listeners
-		for i, v in ipairs(listeners) do
-			msg.post(v, "window_update", { window = M.window, viewport = M.viewport, aspect = curCam.aspectRatio, fov = curCam.fov })
+function M.camera_final(self)
+	for i,cam in ipairs(cameras) do
+		if cam == self then
+			table.remove(cameras, i)
+			break
 		end
 	end
+	if self.enabled then  M.camera_disable(self)  end
 end
-
--- ---------------------------------------------------------------------------------
---| 					  PUBLIC FUNCTIONS IV: TRANSFORMS							|
--- ---------------------------------------------------------------------------------
-
-function M.screen_to_viewport(x, y, delta)
-	if delta then
-		x = x / M.viewport.scale.x
-		y = y / M.viewport.scale.y
-	else
-		x = (x - M.viewport.x) / M.viewport.scale.x
-		y = (y - M.viewport.y) / M.viewport.scale.y
-	end
-	return x, y
-end
-
-function M.screen_to_world_2d(x, y, delta, worldz)
-	worldz = worldz or curCam.worldZ
-
-	if curCam.fixedAspectRatio then
-		x, y = M.screen_to_viewport(x, y, delta)
-	end
-
-	local m = not delta and vmath.inv(M.proj * M.view) or vmath.inv(M.proj)
-
-	-- Remap coordinates to range -1 to 1
-	local x1 = (x - M.window.x * 0.5) / M.window.x * 2
-	local y1 = (y - M.window.y * 0.5) / M.window.y * 2
-
-	if delta then x1 = x1 + 1;  y1 = y1 + 1 end
-
-	local np = m * vmath.vector4(x1, y1, -1, 1)
-	local fp = m * vmath.vector4(x1, y1, 1, 1)
-	np = np * (1/np.w)
-	fp = fp * (1/fp.w)
-
-	local t = ( worldz - curCam.abs_nearZ) / (curCam.abs_farZ - curCam.abs_nearZ) -- normalize desired Z to 0-1 from abs_nearZ to abs_farZ
-	local worldpos = vmath.lerp(t, np, fp)
-	return vmath.vector3(worldpos.x, worldpos.y, worldpos.z) -- convert vector4 to vector3
-end
-
--- Returns start and end points for a ray from the camera through the supplied screen coordinates
--- Start point is on the camera near plane, end point is on the far plane.
-function M.screen_to_world_ray(x, y)
-	if curCam.fixedAspectRatio then -- convert screen coordinates to viewport coordinates
-		x, y = M.screen_to_viewport(x, y)
-	end
-
-	local m = vmath.inv(M.proj * M.view)
-
-	-- Remap coordinates to range -1 to 1
-	local x1 = (x - M.window.x * 0.5) / M.window.x * 2
-	local y1 = (y - M.window.y * 0.5) / M.window.y * 2
-
-	local np = m * vmath.vector4(x1, y1, -1, 1)
-	local fp = m * vmath.vector4(x1, y1, 1, 1)
-	np = np * (1/np.w)
-	fp = fp * (1/fp.w)
-
-	return vmath.vector3(np.x, np.y, np.z), vmath.vector3(fp.x, fp.y, fp.z)
-end
-
--- Gets screen to world ray and intersects it with a plane
-function M.screen_to_world_plane(x, y, planeNormal, pointOnPlane)
-	local np, fp = M.screen_to_world_ray(x, y)
-	local denom = vmath.dot(planeNormal, fp - np)
-	if denom == 0 then
-		-- ray is perpendicular to plane normal, so there are either 0 or infinite intersections
-		return
-	end
-	local numer = vmath.dot(planeNormal, pointOnPlane - np)
-	return vmath.lerp(numer / denom, np, fp)
-end
-
-function M.screen_to_gui(x, y, adjust, isSize)
-	if not isSize then
-		x = x / M.guiAdjust[adjust].sx - M.guiAdjust[adjust].ox
-		y = y / M.guiAdjust[adjust].sy - M.guiAdjust[adjust].oy
-	else
-		x = x / M.guiAdjust[adjust].sx
-		y = y / M.guiAdjust[adjust].sy
-	end
-	return x, y
-end
-
-function M.screen_to_gui_pick(x, y)
-	return x / M.guiAdjust[2].sx, y / M.guiAdjust[2].sy
-end
-
-function M.world_to_screen(pos, adjust)
-	local m = M.proj * M.view
-	pos = vmath.vector4(pos.x, pos.y, pos.z, 1)
-
-	pos = m * pos
-	pos = pos * (1/pos.w)
-	pos.x = (pos.x / 2 + 0.5) * M.viewport.width + M.viewport.x
-	pos.y = (pos.y / 2 + 0.5) * M.viewport.height + M.viewport.y
-
-	if adjust then
-		pos.x = pos.x / M.guiAdjust[adjust].sx - M.guiAdjust[adjust].ox
-		pos.y = pos.y / M.guiAdjust[adjust].sy - M.guiAdjust[adjust].oy
-	end
-
-	return vmath.vector3(pos.x, pos.y, 0)
-end
-
 
 return M

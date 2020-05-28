@@ -1,5 +1,5 @@
 
-local rcam = require "rendercam 2.rendercam"
+local rcam = require "rendercam.rendercam"
 
 go.property("animAspect", vmath.vector3(16, 5, 0))
 

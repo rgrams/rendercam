@@ -1,7 +1,7 @@
 
 -- Manage buttons for switching to different test scenes, running tests, etc.
 
-local rendercam = require "rendercam 2.rendercam"
+local rendercam = require "rendercam.rendercam"
 local ButtonGroup = require "main.ButtonGroup"
 
 local profilerIsEnabled = false

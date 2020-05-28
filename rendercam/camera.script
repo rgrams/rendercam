@@ -1,364 +1,71 @@
 
--- RENDERCAM CAMERA SCRIPT
--- 1. It holds the properties so the user can set them in the editor.
--- 2. It handles most of the mechanics of shaking, recoil, and following.
--- 3. It updates the camera's position and rotation with the rendercam module.
-
 local rendercam = require "rendercam.rendercam"
-local transform = require "rendercam.transform"
-local debugdraw = require "rendercam.debug-draw"
-local rdebug = rendercam.debug
-local simplex = require "rendercam.simplex2d"
 
-go.property("parent", msg.url())
-go.property("active", true)
+go.property("enabled", true)
 go.property("orthographic", true)
 go.property("nearZ", -1)
 go.property("farZ", 1)
 go.property("viewDistance", 0)
-go.property("fov", -1)
+go.property("fov", -1) -- Always in degrees (or -1 for auto-fov).
 go.property("zoom", 1)
-
 go.property("fixedAspectRatio", false)
--- Using a vector property to set aspectRatio so it can be more accurate.
--- This way you don't end up with 800 x 599.9994812093 px view areas.
-go.property("aspectRatio", vmath.vector3(16, 9, 0)) -- only used with a fixed aspect ratio
-
+go.property("aspectRatio", vmath.vector3(16, 9, 0))
 go.property("useViewArea", false)
 go.property("viewArea", vmath.vector3(800, 600, 0))
-
 go.property("expandView", false)
 go.property("fixedArea", true)
 go.property("fixedWidth", false)
 go.property("fixedHeight", false)
-
-local TWO_PI = math.pi * 2
-local FORWARDVEC = vmath.vector3(0, 0, -1)
-local UPVEC = vmath.vector3(0, 1, 0)
-local RIGHTVEC = vmath.vector3(1, 0, 0)
-local ZEROVEC = vmath.vector3()
+go.property("viewportAlign", vmath.vector3(0.5, 0.5, 0))
+go.property("updateWhenDisabled", false)
 
 local POST_UPDATE = hash("post-update")
-local FOLLOW = hash("follow")
-local SET_BOUNDS = hash("set_bounds")
+local ENABLE = hash("enable")
+local SCALE_MODE_NAMES = { "expandView", "fixedArea", "fixedWidth", "fixedHeight" }
 
 function init(self)
-	-- Get initial scale mode
-	for i,v in ipairs({ "expandView", "fixedArea", "fixedWidth", "fixedHeight" }) do
-		self[v] = self[v] and hash(v)
-	end
-	self.scaleMode = self.expandView or self.fixedArea or self.fixedWidth or self.fixedHeight -- get first checked
-	if not self.scaleMode then  self.scaleMode = hash("fixedArea")  end
-
-	-- Make sure nearZ and farZ are valid values (if a perspective camera)
-	if not self.orthographic then
-		if self.nearZ <= 0 then  self.nearZ = 0.1  end
-		if self.farZ < 0 then  self.farZ = 0.1  end
-	end
-
-	-- Turn aspect ratio from x, y into a single number
-	self.aspectRatio = self.aspectRatio.x / self.aspectRatio.y
-
-	-- Modify viewArea based on aspect ratio, etc.
-	if self.fixedAspectRatio then
-		if self.useViewArea then
-			-- aspectRatio overrides proportion of viewArea (uses viewArea.x)
-			self.viewArea.y = self.viewArea.x / self.aspectRatio
-		else
-			-- or get fixed aspect viewArea inside current window
-			local scale = math.min(rendercam.window.x / self.aspectRatio, rendercam.window.y / 1)
-			self.viewArea.x = scale * self.aspectRatio;  self.viewArea.y = scale
+	-- Get hashed scale mode name.
+	for i,modeName in ipairs(SCALE_MODE_NAMES) do -- Get first checked mode.
+		if self[modeName] then
+			self.scaleMode = hash(modeName)
+			break
 		end
-	elseif not self.useViewArea then -- not using viewArea and non-fixed aspect ratio
-		-- Set viewArea to current window size
-		self.viewArea.x = rendercam.window.x;  self.viewArea.y = rendercam.window.y
 	end
+	self.scaleMode = self.scaleMode or hash("fixedArea") -- Default to fixedArea.
 
-	-- Get initial vectors & stuff
-	self.lpos = go.get_position()
-	self.wpos = go.get_world_position()
-	self.wrot = go.get_world_rotation()
-	self.wforwardVec = vmath.rotate(self.wrot, FORWARDVEC)
-	self.wupVec = vmath.rotate(self.wrot, UPVEC)
-	self.lrot = go.get_rotation()
-	self.lforwardVec = vmath.rotate(self.lrot, FORWARDVEC)
-	self.lupVec = vmath.rotate(self.lrot, UPVEC)
-	self.lrightVec = vmath.rotate(self.lrot, RIGHTVEC)
+	self.url = msg.url()
 	self.id = go.get_id()
-	self.url = msg.url() -- script url
-	self.shake = vmath.vector3()
-	self.shakeRot = vmath.quat()
-	self.recoil = vmath.vector3()
-	self.followPos = vmath.vector3()
+	self.offsetURL = msg.url(factory.create("#factory"))
+	go.set_parent(self.offsetURL, self.id)
+	self.camURL = msg.url(nil, self.offsetURL.path, "camera")
+	self.viewport = { x = 0, y = 0, w = 1, h = 1 }
+	self.aspectRatio = self.aspectRatio.x / self.aspectRatio.y -- Convert to a single decimal.
 
-	self.viewArea.z = self.viewDistance
-	-- viewArea.z only used (with viewArea.y) in rendercam.update_window to get the FOV
+	self.update_window = rendercam.update_cam_window
+	self.apply = rendercam.camera_apply
 
-	-- Fixed FOV -- just have to set initial viewArea to match the FOV
-	-- to -maintain- a fixed FOV, must use "Fixed Height" mode, or a fixed aspect ratio and any "Fixed" scale mode.
-	if self.fov > 0 then
-		self.fov = math.rad(self.fov) -- FOV is set in degrees
-		if not self.orthographic and not self.useViewArea then -- don't use FOV if using view area
-			if self.viewArea.z == 0 then  self.viewArea.z = 1  end -- view distance doesn't matter for fixed FOV, it just can't be zero.
-			self.viewArea.y = (self.viewArea.z * math.tan(self.fov * 0.5)) * 2
-			if self.fixedAspectRatio then
-				self.viewArea.x = self.viewArea.y * self.aspectRatio
-			end
-		end
-	end
+	self.view = rendercam.get_view(self)
+	self.projection = rendercam.get_projection(self)
 
-	-- Put all camera data into a table for rendercam module and init camera.
-	self.data = {
-		active = self.active,
-		id = self.id,
-		script = self.url,
-		nearZ = self.nearZ,
-		farZ = self.farZ,
-		abs_nearZ = self.nearZ,
-		abs_farZ = self.farZ,
-		worldZ = self.wpos.z - self.viewDistance, -- worldZ only used for screen_to_world_2d
-		orthographic = self.orthographic,
-		fov = self.fov,
-		fixedAspectRatio = self.fixedAspectRatio,
-		orthoScale = 1/self.zoom,
-		aspectRatio = self.aspectRatio,
-		scaleMode = self.scaleMode,
-		useViewArea = self.useViewArea,
-		viewArea = self.viewArea,
-		halfViewArea = vmath.vector3(self.viewArea) * 0.5,
-		wpos = self.wpos,
-		wforwardVec = self.wforwardVec, -- for calculating view matrix
-		wupVec = self.wupVec, -- for calculating view matrix
-		lpos = self.lpos,
-		lforwardVec = self.lforwardVec, -- for zooming
-		lupVec = self.lupVec, -- for panning
-		lrightVec = self.lrightVec, -- for panning
-		shakes = {},
-		recoils = {},
-		follows = {},
-		following = false,
-		hasFollowDeadzone = false,
-		followDeadzone= vmath.vector4(0, 0, 0, 0)
-	}
-	rendercam.camera_init(self.id, self.data)
-
-	-- If the "parent" property is not set, do a little check to see if it should be (only works in some circumstances.)
-	if self.parent == self.url then
-		if self.lpos ~= self.wpos or self.lrot ~= self.wrot then
-			error("Rendercam - Camera '" .. tostring(self.url) .. "' is the child of a transformed game object, but its 'parent' property is not set.")
-		end
-	end
+	rendercam.camera_init(self)
 end
 
 function final(self)
-	rendercam.camera_final(self.id)
+	rendercam.camera_final(self)
 end
 
 function update(self, dt)
-	self.dt = dt -- faster to store than to send in message
-	msg.post("#", "post-update")
-end
-
-local function enforce_bounds(self)
-	rendercam.calculate_view() -- To have no jitter, need up-to-date view matrix for transforms.
-	local b = self.data.viewportBounds
-	local vp = rendercam.viewport
-
-	-- Get viewport corner positions in world space.
-	local tl = rendercam.screen_to_world_2d(vp.x, vp.y + vp.height)
-	local tr = rendercam.screen_to_world_2d(vp.x + vp.width, vp.y + vp.height)
-	local bl = rendercam.screen_to_world_2d(vp.x, vp.y)
-	local br = rendercam.screen_to_world_2d(vp.x + vp.width, vp.y)
-
-	-- Get world-aligned viewport bounding box.
-	local w_lt = math.min(tl.x, tr.x, bl.x, br.x)
-	local w_rt = math.max(tl.x, tr.x, bl.x, br.x)
-	local w_top = math.max(tl.y, tr.y, bl.y, br.y)
-	local w_bot = math.min(tl.y, tr.y, bl.y, br.y)
-	local w_w, w_h = w_rt - w_lt, w_top - w_bot -- world width, height
-
-	if rdebug.bounds then -- Draw bounds rect + an inner border rect so you can actually see it.
-		debugdraw.rect(b.lt, b.rt, b.top, b.bot)
-		debugdraw.rect(b.lt+20, b.rt-20, b.top-20, b.bot+20, "orange")
-		debugdraw.box(tl.x, tl.y, 15, 15, "yellow") -- Draw viewport corner world positions.
-		debugdraw.box(tr.x, tr.y, 15, 15, "yellow")
-		debugdraw.box(br.x, br.y, 15, 15, "yellow")
-		debugdraw.box(bl.x, bl.y, 15, 15, "yellow")
+	self.dt = dt -- Save for post-update. Faster to store than send in message.
+	if self.enabled or self.updateWhenDisabled then
+		msg.post(self.url, "post-update")
 	end
-
-	local finalX, finalY
-	if w_w > b.width then
-		finalX = b.centerX
-	else
-		finalX = w_lt < b.lt and (w_lt-b.lt) or w_rt > b.rt and (w_rt-b.rt) or 0
-		finalX = self.data.wpos.x - finalX
-	end
-	if w_h > b.height then
-		finalY = b.centerY
-	else
-		finalY = w_top > b.top and (w_top-b.top) or w_bot < b.bot and (w_bot-b.bot) or 0
-		finalY = self.data.wpos.y - finalY
-	end
-
-	if rdebug.bounds then -- Draw diamond & line showing offset outside of bounds.
-		if finalX ~= self.data.wpos.x or finalY ~= self.data.wpos.y then
-			debugdraw.circle(self.data.wpos.x, self.data.wpos.y, 10, "yellow", 4)
-			debugdraw.line(self.data.wpos.x, self.data.wpos.y, finalX, finalY, "yellow")
-		end
-	end
-
-	self.data.wpos.x = finalX;  self.data.wpos.y = finalY
 end
 
 function on_message(self, message_id, message, sender)
-	if message_id == POST_UPDATE then -- Have to update pos after update or it jitters like crazy
-		local data = self.data
-
-		-- Update transform stuff.
-		-- World:
-		data.wpos = go.get_world_position() -- Up-to-date world pos after regular updates.
-		self.wrot = go.get_world_rotation()
-		self.wscale = go.get_world_scale()
-		-- Local:
-		self.lrot = go.get_rotation()
-		data.lforwardVec = vmath.rotate(self.lrot, FORWARDVEC)
-		data.lupVec = vmath.rotate(self.lrot, UPVEC)
-		data.lrightVec = vmath.rotate(self.lrot, RIGHTVEC)
-
-		if self.orthographic then
-			data.orthoScale = 1/self.zoom
-		end
-
-		-- Subtract last frame's shake and recoil (in world pos).
-		data.wpos = data.wpos - self.shake
-		data.wpos = data.wpos - self.recoil
-		self.wrot = self.wrot * vmath.conj(self.shakeRot)
-		-- data.lpos is now out of date.
-
-		-- Camera Follow.
-		if data.following then
-			self.followPos.x = 0;  self.followPos.y = 0 -- Avoid creating a new vector every frame.
-			-- Get average world position of all follow targets.
-			for i,v in ipairs(data.follows) do
-				self.followPos = self.followPos + go.get_world_position(v)
-			end
-			self.followPos = self.followPos * (1/#data.follows)
-
-			-- Follow Deadzone.
-			local targetPos
-			if data.hasFollowDeadzone then
-				-- Begin with targetPos == current pos, adjust it if followPos is outside the deadzone.
-				targetPos = vmath.vector3(data.wpos)
-
-				local leftEdge = data.wpos.x - data.followDeadzone.x
-				local rightEdge = data.wpos.x + data.followDeadzone.y
-				local topEdge = data.wpos.y + data.followDeadzone.z
-				local bottomEdge = data.wpos.y - data.followDeadzone.w
-				if self.followPos.x < leftEdge then
-					-- If followPos is outside the deadzone, shift targetPos by followPos's offset from the edge of the deadzone.
-					targetPos.x = targetPos.x - (leftEdge - self.followPos.x)
-				elseif self.followPos.x > rightEdge then
-					targetPos.x = targetPos.x + (self.followPos.x - rightEdge)
-				end
-				if self.followPos.y > topEdge then
-					targetPos.y = targetPos.y + (self.followPos.y - topEdge)
-				elseif self.followPos.y < bottomEdge then
-					targetPos.y = targetPos.y - (bottomEdge - self.followPos.y)
-				end
-			else
-				targetPos = self.followPos
-			end
-
-			targetPos = rendercam.follow_lerp_func(data.wpos, targetPos, self.dt)
-
-			data.wpos.x = targetPos.x;  data.wpos.y = targetPos.y
-		end
-
-		-- View bounds.
-		if data.viewportBounds and data.active then
-			-- Can't enforce bounds if this camera is not active because screen_to_world_2d
-			-- (and every other transform function) uses the current camera's matrices.
-			enforce_bounds(self)
-		end
-
-		-- Camera Shake.
-		self.shake.x = 0;  self.shake.y = 0;  self.shake.z = 0
-		self.shakeRot = vmath.quat()
-		for i=#data.shakes,1,-1 do -- Iterate backwards so elements can be removed without problems.
-			local sh = data.shakes[i]
-			local falloffMult = sh.t / sh.dur
-			local x, y, a
-			if sh.freq then -- Simplex shake.
-				local d = sh.dist * falloffMult
-				local val2 = sh.t * sh.freq
-				x = simplex(sh.seed1, val2) * d
-				y = simplex(sh.seed2, val2) * d
-				if sh.rot_mult then
-					a = simplex(sh.seed3, val2) * d * sh.rot_mult
-					self.shakeRot = self.shakeRot * vmath.quat_rotation_z(a)
-				end
-			else -- Standard random shake.
-				local d = math.random() * sh.dist * falloffMult
-				local angle = math.random() * TWO_PI
-				x = math.cos(angle) * d;  y = math.sin(angle) * d
-				if sh.rot_mult then
-					a = math.random() * sh.dist * falloffMult * sh.rot_mult
-					self.shakeRot = self.shakeRot * vmath.quat_rotation_z(a)
-				end
-			end
-			self.shake = self.shake + data.lrightVec * x -- Local shake pos.
-			self.shake = self.shake + data.lupVec * y
-			sh.t = sh.t - self.dt
-			if sh.t <= 0 then  table.remove(data.shakes, i)  end
-		end
-		if self.shake.x ~= 0 or self.shake.y ~= 0 or self.shake.z ~= 0 then
-			-- Convert shake from a local offset from the camera to an absolute world position.
-			self.shake = transform.local_to_world(self.shake, data.wpos, self.wrot, self.wscale)
-			-- Convert shake to a world offset so we can subtract it next frame.
-			self.shake = self.shake - data.wpos
-			-- Apply shake to camera world pos.
-			data.wpos = data.wpos + self.shake
-
-			self.lrot = self.lrot * self.shakeRot
-			self.wrot = self.wrot * self.shakeRot
-		end
-
-		-- Camera Recoil.
-		self.recoil.x = 0;  self.recoil.y = 0;  self.recoil.z = 0
-		for i=#data.recoils, 1, -1 do
-			local v = data.recoils[i]
-			local d = v.t / v.dur
-			d = d*d -- Square falloff.
-			self.recoil = self.recoil + v.vec * d -- Recoil is a world-spoce offset.
-			v.t = v.t - self.dt
-			if v.t <= 0 then  table.remove(data.recoils, i)  end
-		end
-		if self.recoil.x ~= 0 or self.recoil.y ~= 0 or self.recoil.z ~= 0 then
-			data.wpos = data.wpos + self.recoil
-		end
-
-		if self.parent ~= self.url then
-			local wp = go.get_world_position(self.parent)
-			local wr = go.get_world_rotation(self.parent)
-			local ws = go.get_world_scale(self.parent)
-			data.lpos = transform.world_to_local(vmath.vector3(data.wpos), wp, wr, ws)
-		else
-			data.lpos = data.wpos
-		end
-		go.set_position(data.lpos)
-
-		data.wrightVec = vmath.rotate(self.wrot, RIGHTVEC)
-		data.wforwardVec = vmath.rotate(self.wrot, FORWARDVEC)
-		data.wupVec = vmath.rotate(self.wrot, UPVEC)
-		if #data.shakes > 0 then  print(data.wupVec)  end
-		-- Absolute/world near and far positions for screen-to-world transform.
-		data.abs_nearZ = data.wpos.z - data.nearZ
-		data.abs_farZ = data.wpos.z - data.farZ
-
-	elseif message_id == FOLLOW then
-		rendercam.follow(message.target_id, message.allowMultiFollow, self.id)
-	elseif message_id == SET_BOUNDS then
-		rendercam.set_bounds(message.left, message.right, message.top, message.bottom, self.id)
+	if message_id == POST_UPDATE then
+		local w, h = rendercam.winW, rendercam.winH
+		self:update_window(0, 0, w, h)
+	elseif message_id == ENABLE then
+		rendercam.camera_enable(self)
 	end
 end
-

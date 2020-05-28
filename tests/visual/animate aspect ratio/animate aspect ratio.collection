@@ -1,7 +1,7 @@
 name: "default"
 instances {
   id: "camera"
-  prototype: "/rendercam 2/camera.go"
+  prototype: "/rendercam/camera.go"
   position {
     x: 0.0
     y: 0.0
@@ -54,7 +54,7 @@ instances {
 }
 instances {
   id: "camera1"
-  prototype: "/rendercam 2/camera.go"
+  prototype: "/rendercam/camera.go"
   position {
     x: 0.0
     y: 0.0
