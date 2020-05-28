@@ -43,6 +43,7 @@ function init(self)
 	self.script = msg.url()
 	self.offsetURL = msg.url(factory.create("#factory", ZERO_POS, ZERO_ROT, nil, ZERO_SCALE))
 	go.set_parent(self.offsetURL, self.url)
+	self.viewScale = 1 -- View scale factor from window resizing. Separate from user zoom.
 	self.viewport = { x = 0, y = 0, w = 1, h = 1 }
 	self.aspectRatio = self.aspectRatio.x / self.aspectRatio.y -- Convert to a single decimal.
 

@@ -9,6 +9,7 @@ local M = {
 		{ "animate aspect ratio", "loadScene", {"animate aspect ratio"} },
 		{ "get camera by url", "loadScene", {"get camera by url"} },
 		{ "initial zoom", "loadScene", {"initial zoom"} },
+		{ "animate zoom", "loadScene", {"animate zoom"} },
 	} },
 	{ "Examples", "openChildren", {
 	} },

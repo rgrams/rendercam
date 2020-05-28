@@ -98,9 +98,9 @@ function M.update_cam_window(self, x, y, newW, newH, oldW, oldH)
 	local oldVpW, oldVpH = vp.w, vp.h
 	M.update_cam_viewport(self, x, y, newW, newH)
 	local z = M.get_zoom_for_resize(self.scaleMode, vp.w, vp.h, oldVpW, oldVpH) -- Zoom based on viewport size change.
-	self.zoom = self.zoom * z -- It's relative zoom.
-	self.viewArea.x = self.viewport.w / self.zoom -- New viewArea == zoomed viewport area.
-	self.viewArea.y = self.viewport.h / self.zoom
+	self.viewScale = self.viewScale * z -- It's relative zoom.
+	self.viewArea.x = self.viewport.w / (self.viewScale * self.zoom) -- New viewArea == zoomed viewport area.
+	self.viewArea.y = self.viewport.h / (self.viewScale * self.zoom)
 	if not self.orthographic then
 		-- Must use Y, vmath.matrix4_perspective uses vertical FOV.
 		self.fov = M.get_fov(self.viewDistance, self.viewArea.y * 0.5) -- View triangle is with half-Y - from center to edge.

@@ -1,0 +1,33 @@
+
+local rendercam = require "rendercam.rendercam"
+
+local actions = { [hash("1")] = 1, [hash("2")] = 2, [hash("3")] = 3, [hash("4")] = 4 }
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	msg.post("#", "post-init")
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("post-init") then
+		self.cams = {
+			rendercam.get_camera(msg.url("camera")),
+			rendercam.get_camera(msg.url("camera1")),
+			rendercam.get_camera(msg.url("camera2")),
+			rendercam.get_camera(msg.url("camera3"))
+		}
+	end
+	for i=1,4 do
+		local url = self.cams[i].script
+		go.animate(url, "zoom", go.PLAYBACK_LOOP_PINGPONG, 1, go.EASING_INOUTCUBIC, 4)
+	end
+end
+
+function on_input(self, action_id, action)
+	if action.pressed then
+		if actions[action_id] then
+			local camIdx = actions[action_id]
+			rendercam.camera_enable(self.cams[camIdx])
+		end
+	end
+end
