@@ -1,0 +1,23 @@
+
+local rendercam = require "rendercam.rendercam"
+
+local ACTION_1, ACTION_2 = hash("1"), hash("2")
+local ACTION_3, ACTION_4 = hash("3"), hash("4")
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+end
+
+function on_input(self, action_id, action)
+	if action.pressed then
+		if action_id == ACTION_1 then
+			rendercam.camera_enable(rendercam.get_camera(msg.url("camera")))
+		elseif action_id == ACTION_2 then
+			rendercam.camera_enable(rendercam.get_camera(msg.url("camera1")))
+		elseif action_id == ACTION_3 then
+			rendercam.camera_enable(rendercam.get_camera(msg.url("camera2")))
+		elseif action_id == ACTION_4 then
+			rendercam.camera_enable(rendercam.get_camera(msg.url("camera3")))
+		end
+	end
+end
