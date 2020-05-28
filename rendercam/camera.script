@@ -26,7 +26,7 @@ local POST_UPDATE = hash("post-update")
 local ENABLE = hash("enable")
 local SCALE_MODE_NAMES = { "expandView", "fixedArea", "fixedWidth", "fixedHeight" }
 local DEBUG_STATS = {
-	"nearZ", "farZ", "viewDistance", "fov", "zoom", "fixedAspectRatio", "aspectRatio", "viewArea", "scaleMode"
+	"orthographic", "nearZ", "farZ", "viewDistance", "fov", "zoom", "fixedAspectRatio", "aspectRatio", "viewArea", "scaleMode"
 }
 
 function init(self)
