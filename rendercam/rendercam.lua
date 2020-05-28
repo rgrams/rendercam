@@ -1,6 +1,10 @@
 
 local M = {}
 
+if sys.get_config("script.shared_state") ~= "1" then
+	error("rendercam - 'shared_state' setting in game.project (under 'Script') must be enabled for rendercam to work.", 0)
+end
+
 -- Localized stuff: (for a small speed boost)
 local sqrt = math.sqrt
 local min = math.min
