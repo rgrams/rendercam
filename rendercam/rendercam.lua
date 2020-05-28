@@ -37,7 +37,6 @@ M.debug = {
 }
 for k,v in pairs(M.debug) do
 	M.debug[k] = v == "1" and true or false -- Convert to boolean.
-	print(M.debug[k])
 end
 
 local cameras = {}
@@ -140,13 +139,34 @@ function M.camera_enable(self)
 	M.current = self
 end
 
+function M.get_camera(url)
+	for i,cam in ipairs(cameras) do
+		if cam.url == url then
+			return cam
+		end
+	end
+end
+
+local function register_camera(self)
+	table.insert(cameras, self)
+end
+
+local function unregister_camera(self)
+	for i,cam in ipairs(cameras) do
+		if cam == self then
+			table.remove(cameras, i)
+			break
+		end
+	end
+end
+
 function M.camera_disable(self)
 	self.enabled = false
 	M.current = nil
 end
 
 function M.camera_init(self)
-	table.insert(cameras, self)
+	register_camera(self)
 	if not self.useViewArea then
 		self.viewArea.x, self.viewArea.y = M.configW, M.configH
 	end
@@ -157,12 +177,7 @@ function M.camera_init(self)
 end
 
 function M.camera_final(self)
-	for i,cam in ipairs(cameras) do
-		if cam == self then
-			table.remove(cameras, i)
-			break
-		end
-	end
+	unregister_camera(self)
 	if self.enabled then  M.camera_disable(self)  end
 end
 

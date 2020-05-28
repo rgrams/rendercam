@@ -36,10 +36,10 @@ function init(self)
 	end
 	self.scaleMode = self.scaleMode or hash("fixedArea") -- Default to fixedArea.
 
-	self.url = msg.url()
-	self.id = go.get_id()
-	go.set_parent(self.offsetURL, self.id)
+	self.url = msg.url(".")
+	self.script = msg.url()
 	self.offsetURL = msg.url(factory.create("#factory", ZERO_POS, ZERO_ROT, nil, ZERO_SCALE))
+	go.set_parent(self.offsetURL, self.url)
 	self.viewport = { x = 0, y = 0, w = 1, h = 1 }
 	self.aspectRatio = self.aspectRatio.x / self.aspectRatio.y -- Convert to a single decimal.
 
@@ -59,7 +59,7 @@ end
 function update(self, dt)
 	self.dt = dt -- Save for post-update. Faster to store than send in message.
 	if self.enabled or self.updateWhenDisabled then
-		msg.post(self.url, "post-update")
+		msg.post(self.script, "post-update")
 	end
 	if self.enabled and rdebug.cameraName then
 		local cleanURL = string.sub(tostring(self.url), 7, -2) -- cut off "url: [" and "]".

@@ -11,6 +11,7 @@ local M = {
 	{ "Visual Tests", "openChildren", {
 		{ "starting transform", "loadScene", {"starting transform"} },
 		{ "animate aspect ratio", "loadScene", {"animate aspect ratio"} },
+		{ "get camera by url", "loadScene", {"get camera by url"} },
 	} },
 	{ "Examples", "openChildren", {
 	} },

@@ -1,0 +1,40 @@
+
+local rendercam = require "rendercam.rendercam"
+
+local cams = { "camera", "camera1", "camera2", "camera3" }
+local actions = {}
+for i=1,#cams do
+	actions[hash(i)] = "cam" .. i
+end
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	-- Have to delay getting cameras since init order is semi-random.
+	-- Cameras may not have init yet (and therefore may not be registered).
+	msg.post("#", "post-init")
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("post-init") then
+		for i,path in ipairs(cams) do
+			local url = msg.url(path)
+			local key = "cam" .. i
+			self[key] = rendercam.get_camera(url)
+			assert(
+				self[key],
+				"\nERROR - Test: 'get camera by url' - get_camera failed with url: " ..
+				tostring(url) .. ", result: " .. tostring(self[key])
+			)
+		end
+	end
+end
+
+function on_input(self, action_id, action)
+	if action.pressed then
+		local cameraKey = actions[action_id]
+		if cameraKey then
+			local cam = self[cameraKey]
+			rendercam.camera_enable(self[cameraKey])
+		end
+	end
+end
