@@ -63,7 +63,7 @@ function update(self, dt)
 	end
 	if self.enabled and rdebug.cameraName then
 		local cleanURL = string.sub(tostring(self.url), 7, -2) -- cut off "url: [" and "]".
-		debug_draw.text(url, 5, rendercam.winH - 5)
+		debug_draw.text(cleanURL, 5, rendercam.winH - 5)
 	end
 end
 
