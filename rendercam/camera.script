@@ -25,6 +25,9 @@ local ZERO_POS, ZERO_ROT, ZERO_SCALE = vmath.vector3(), vmath.quat(), vmath.vect
 local POST_UPDATE = hash("post-update")
 local ENABLE = hash("enable")
 local SCALE_MODE_NAMES = { "expandView", "fixedArea", "fixedWidth", "fixedHeight" }
+local DEBUG_STATS = {
+	"nearZ", "farZ", "viewDistance", "fov", "zoom", "fixedAspectRatio", "aspectRatio", "viewArea", "scaleMode"
+}
 
 function init(self)
 	-- Get hashed scale mode name.
@@ -61,9 +64,18 @@ function update(self, dt)
 	if self.enabled or self.updateWhenDisabled then
 		msg.post(self.script, "post-update")
 	end
-	if self.enabled and rdebug.cameraName then
-		local cleanURL = string.sub(tostring(self.url), 7, -2) -- cut off "url: [" and "]".
-		debug_draw.text(cleanURL, 5, rendercam.winH - 5)
+	if self.enabled then
+		if rdebug.name then
+			local cleanURL = string.sub(tostring(self.url), 7, -2) -- cut off "url: [" and "]".
+			debug_draw.text(cleanURL, 5, rendercam.winH - 5)
+		end
+		if rdebug.stats then
+			local text = ""
+			for i,k in ipairs(DEBUG_STATS) do
+				text = text .. k .. ": " .. tostring(self[k]) .. "\n"
+			end
+			debug_draw.text(text, 15, rendercam.winH - 25, vmath.vector4(1, 1, 0, 0.5))
+		end
 	end
 end
 
