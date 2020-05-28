@@ -5,10 +5,10 @@
 -- 3. It updates the camera's position and rotation with the rendercam module.
 
 local rendercam = require "rendercam.rendercam"
-local transform = require "rendercam.transform"
+local transform = require "rendercam -old.transform"
 local debugdraw = require "rendercam.debug-draw"
 local rdebug = rendercam.debug
-local simplex = require "rendercam.simplex2d"
+local simplex = require "rendercam -old.simplex2d"
 
 go.property("parent", msg.url())
 go.property("active", true)

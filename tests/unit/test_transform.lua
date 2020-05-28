@@ -1,5 +1,5 @@
 
-local transform = require 'rendercam.transform'
+local transform = require 'rendercam -old.transform'
 local T = require 'tests.lib.simple-test'
 local eq = require 'tests.lib.roughly-equal'
 

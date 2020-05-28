@@ -1,6 +1,6 @@
 
 local rendercam = require "rendercam.rendercam"
-local transform = require "rendercam.transform"
+local transform = require "rendercam -old.transform"
 local perf_test = require "tests.lib.perf-test"
 
 local function v4_to_v3(v4)

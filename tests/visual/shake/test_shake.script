@@ -1,7 +1,7 @@
 
 local rendercam = require "rendercam.rendercam"
 local debugdraw = require "rendercam.debug-draw"
-local simplex = require "rendercam.simplex2d"
+local simplex = require "rendercam -old.simplex2d"
 
 function init(self)
 	self.lt, self.rt, self.top, self.bot = 0, 0, 0, 0
