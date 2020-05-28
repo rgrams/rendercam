@@ -21,6 +21,7 @@ go.property("fixedHeight", false)
 go.property("viewportAlign", vmath.vector3(0.5, 0.5, 0))
 go.property("updateWhenDisabled", false)
 
+local ZERO_POS = vmath.vector3()
 local POST_UPDATE = hash("post-update")
 local ENABLE = hash("enable")
 local SCALE_MODE_NAMES = { "expandView", "fixedArea", "fixedWidth", "fixedHeight" }
@@ -37,9 +38,9 @@ function init(self)
 
 	self.url = msg.url()
 	self.id = go.get_id()
-	self.offsetURL = msg.url(factory.create("#factory"))
 	go.set_parent(self.offsetURL, self.id)
 	self.camURL = msg.url(nil, self.offsetURL.path, "camera")
+	self.offsetURL = msg.url(factory.create("#factory", ZERO_POS))
 	self.viewport = { x = 0, y = 0, w = 1, h = 1 }
 	self.aspectRatio = self.aspectRatio.x / self.aspectRatio.y -- Convert to a single decimal.
 
