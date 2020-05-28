@@ -1,117 +1,16 @@
 
 local rendercam = require 'rendercam.rendercam'
 
-go.property("camera1", msg.url("/camera"))
-go.property("camera2", msg.url())
-go.property("camera3", msg.url())
-go.property("camera4", msg.url())
-go.property("initCamera", 1)
-
-local keyMoveSpeed = 200
-local keyRotSpeed = 1.25
-local inputMap = {
-	[hash("up")] = "up",
-	[hash("down")] = "down",
-	[hash("left")] = "left",
-	[hash("right")] = "right",
-}
-local mouseWheelZoomIncrement = 10
-local cameraSwitchInputs = {
-	[hash("1")] = 1, [hash("2")] = 2, [hash("3")] = 3, [hash("4")] = 4,
-}
-local shakes = {
-	{ dist = 10, dur = 1 },
-	{ dist = 30, dur = 0.1 },
-	{ dist = 20, dur = 0.25 },
-}
-local recoils = {
-	{ vec = vmath.vector3(-20, 0, 0), dur = 0.3 },
-	{ vec = vmath.vector3(5, 15, 0), dur = 2.0 },
-	{ vec = vmath.vector3(0, -125, 0), dur = 2.0 },
-}
+local LOADER_URL = msg.url("main:/proxies#loader")
 
 function init(self)
 	msg.post(".", "acquire_input_focus")
-	self.url = msg.url()
-	self.up, self.down, self.left, self.right = 0, 0, 0, 0
-	self.inputVec = vmath.vector3()
-	self.mScreenPos = vmath.vector3()
-	self.panning = false
-	self.cam = self["camera" .. self.initCamera].path
-	self.shakeIndex, self.recoilIndex = 1, 1
-end
-
-function update(self, dt)
-	self.inputVec.x = self.right - self.left
-	self.inputVec.y = self.up - self.down
-	local inputLength = vmath.length(self.inputVec)
-	if inputLength > 0 then
-		if self.rotating then
-			local rot = go.get_rotation(self.cam)
-			if self.inputVec.y == 1 then -- Shift-Up to reset rotation.
-				go.set_rotation(vmath.quat(), self.cam)
-			elseif self.inputVec.y == -1 then -- Shift-Down to reset position.
-				go.set_position(vmath.vector3(), self.cam)
-			else -- Shift-Side-Arrows to rotate.
-				rot = rot * vmath.quat_rotation_z(-self.inputVec.x * keyRotSpeed * dt)
-				go.set_rotation(rot, self.cam)
-			end
-		else
-			if inputLength > 1 then
-				self.inputVec = vmath.normalize(self.inputVec)
-			end
-			local pos = go.get_position(self.cam)
-			self.inputVec = vmath.rotate(go.get_rotation(self.cam), self.inputVec)
-			pos = pos + self.inputVec * keyMoveSpeed * dt
-			go.set_position(pos, self.cam)
-		end
-	end
-end
-
-function on_message(self, message_id, message, sender)
-	if message_id == hash("set shake data") then
-		shakes = message
-	elseif message_id == hash("set recoil data") then
-		recoils = message
-	end
 end
 
 function on_input(self, action_id, action)
-	if not action_id then
-		self.mScreenPos.x = action.screen_x
-		self.mScreenPos.y = action.screen_y
-		if self.panning then
-			local dv = rendercam.screen_to_world_2d(action.screen_dx, action.screen_dy, true)
-			rendercam.pan(-dv.x, -dv.y)
-		end
-	elseif action_id == hash("escape") then
+	if action_id == hash("escape") then
 		sys.exit(0)
-	elseif inputMap[action_id] then
-		self[inputMap[action_id]] = action.value
-	elseif action_id == hash("middle click") then
-		if action.pressed then  self.panning = true
-		elseif action.released then  self.panning = false  end
-	elseif action_id == hash("shift") then
-		if action.pressed then  self.rotating = true
-		elseif action.released then  self.rotating = false  end
-	elseif action_id == hash("mouse wheel up") then
-		rendercam.zoom_in(-mouseWheelZoomIncrement)
-	elseif action_id == hash("mouse wheel down") then
-		rendercam.zoom_in(mouseWheelZoomIncrement)
-	elseif action_id == hash("space") and action.pressed then
-		local sh = shakes[self.shakeIndex]
-		rendercam.shake(sh.dist, sh.dur, sh.freq)
-		self.shakeIndex = self.shakeIndex % #shakes + 1
-	elseif action_id == hash("enter") and action.pressed then
-		local rec = recoils[self.recoilIndex]
-		rendercam.recoil(rec.vec, rec.dur)
-		self.recoilIndex = self.recoilIndex % #recoils + 1
-	elseif action.pressed and cameraSwitchInputs[action_id] then
-		local camIndex = cameraSwitchInputs[action_id]
-		local camURL = self["camera" .. camIndex]
-		if camURL ~= self.url then
-			self.cam = camURL.path
-			rendercam.activate_camera(self.cam)
-		end
+	elseif action_id == hash("exit scene") then
+		msg.post(LOADER_URL, "go to menu")
 	end
 end

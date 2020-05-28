@@ -7,6 +7,8 @@ local ButtonGroup = require "main.ButtonGroup"
 local profilerIsEnabled = false
 
 local scenes = require "main.scenes"
+local LOADER_URL = msg.url("main:/proxies#loader")
+local REENABLED = hash("reenabled")
 
 local buttonWidth = 100
 local endPadding = 50
@@ -62,7 +64,6 @@ local function loadButtons(self, btnSpecs)
 		self.buttons:newButton(text, getButtonPos(i), shortcut, callback, args)
 	end
 	gui.set_enabled(protoBtn, false)
-	print("Page Number: "..self.page.num)
 end
 
 local BACK_BUTTON_SPECS = { "Back", "back" }
@@ -113,6 +114,10 @@ function buttonCallbacks.openChildren(button, self, ...)
 	table.insert(self.menuItemHistory, items) -- Last == latest (use unmodified list).
 end
 
+function buttonCallbacks.loadScene(button, self, sceneName)
+	msg.post(LOADER_URL, "load scene", {scene = sceneName})
+end
+
 function init(self)
 	msg.post(".", "acquire_input_focus")
 
@@ -136,5 +141,11 @@ function on_input(self, action_id, action)
 	if action_id == hash("toggle profiler") and action.pressed then
 		profilerIsEnabled = not profilerIsEnabled
 		profiler.enable_ui(profilerIsEnabled)
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == REENABLED then -- From main_loader.
+		msg.post("camera", "enable")
 	end
 end

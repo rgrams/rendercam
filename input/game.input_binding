@@ -118,6 +118,10 @@ key_trigger {
   input: KEY_RSHIFT
   action: "shift"
 }
+key_trigger {
+  input: KEY_BACKQUOTE
+  action: "exit scene"
+}
 mouse_trigger {
   input: MOUSE_BUTTON_LEFT
   action: "left click"

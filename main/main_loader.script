@@ -1,10 +1,13 @@
 
 local LOAD_SCENE = hash("load scene")
+local GO_TO_MENU = hash("go to menu")
 local PROXY_LOADED = hash("proxy_loaded")
+local MENU_GUI_URL = msg.url("menu:/gui")
 
 function init(self)
 	msg.post(".", "acquire_input_focus")
 	msg.post("#menu", "load")
+	self.menu = msg.url("#menu")
 end
 
 function on_message(self, message_id, message, sender)
@@ -14,6 +17,14 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == PROXY_LOADED then
 		if self.current then  msg.post(self.current, "unload")  end
 		msg.post(sender, "enable")
-		self.current = sender
+		if sender ~= self.menu then
+			self.current = sender
+			msg.post(self.menu, "disable")
+		end
+	elseif message_id == GO_TO_MENU then
+		if self.current then  msg.post(self.current, "unload")  end
+		self.current = nil
+		msg.post(self.menu, "enable")
+		msg.post(MENU_GUI_URL, "reenabled")
 	end
 end
