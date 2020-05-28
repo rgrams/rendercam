@@ -39,7 +39,6 @@ function init(self)
 	self.url = msg.url()
 	self.id = go.get_id()
 	go.set_parent(self.offsetURL, self.id)
-	self.camURL = msg.url(nil, self.offsetURL.path, "camera")
 	self.offsetURL = msg.url(factory.create("#factory", ZERO_POS, ZERO_ROT, nil, ZERO_SCALE))
 	self.viewport = { x = 0, y = 0, w = 1, h = 1 }
 	self.aspectRatio = self.aspectRatio.x / self.aspectRatio.y -- Convert to a single decimal.

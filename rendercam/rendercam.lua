@@ -137,13 +137,11 @@ end
 function M.camera_enable(self)
 	if M.current then  M.camera_disable(M.current)  end
 	self.enabled = true
-	-- msg.post(self.camURL, "acquire_camera_focus") -- Will send projection before this frame renders.
 	M.current = self
 end
 
 function M.camera_disable(self)
 	self.enabled = false
-	-- msg.post(self.camURL, "release_camera_focus")
 	M.current = nil
 end
 
