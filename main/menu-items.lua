@@ -9,6 +9,7 @@ local M = {
 	{ "Performance Tests", "openChildren", {
 	} },
 	{ "Visual Tests", "openChildren", {
+		{ "starting transform", "loadScene", {"starting transform"} },
 		{ "animate aspect ratio", "loadScene", {"animate aspect ratio"} },
 	} },
 	{ "Examples", "openChildren", {
