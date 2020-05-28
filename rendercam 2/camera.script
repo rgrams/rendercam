@@ -20,6 +20,7 @@ go.property("viewportAlign", vmath.vector3(0.5, 0.5, 0))
 go.property("updateWhenDisabled", false)
 
 local POST_UPDATE = hash("post-update")
+local ENABLE = hash("enable")
 local SCALE_MODE_NAMES = { "expandView", "fixedArea", "fixedWidth", "fixedHeight" }
 
 function init(self)
@@ -64,5 +65,7 @@ function on_message(self, message_id, message, sender)
 	if message_id == POST_UPDATE then
 		local w, h = rendercam.winW, rendercam.winH
 		self:update_window(0, 0, w, h)
+	elseif message_id == ENABLE then
+		rendercam.camera_enable(self)
 	end
 end
