@@ -9,6 +9,9 @@ render = /rendercam/rendercam.renderc
 [input]
 game_binding = /input/game.input_bindingc
 
+[rendercam]
+debug_camera_name = 1
+
 [display]
 width = 1280
 height = 600

@@ -32,6 +32,13 @@ M.configW = sys.get_config("display.width", 960) -- Original window width/height
 M.configH = sys.get_config("display.height", 480)
 M.winW, M.winH = M.configW, M.configH
 M.current = nil -- The current camera.
+M.debug = {
+	cameraName = sys.get_config("rendercam.debug_camera_name", "0"),
+}
+for k,v in pairs(M.debug) do
+	M.debug[k] = v == "1" and true or false -- Convert to boolean.
+	print(M.debug[k])
+end
 
 local cameras = {}
 

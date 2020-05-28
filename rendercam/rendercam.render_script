@@ -41,6 +41,10 @@ function update(self, dt)
 		cam:apply()
 		render.draw(self.tile_pred)
 	end
+	-- Debug rendering - physics debug, draw_line. --NOT draw_debug_text - that's in the "text" predicate.
+	render.disable_state(render.STATE_DEPTH_TEST)
+	render.disable_state(render.STATE_CULL_FACE)
+	render.draw_debug3d()
 
 	-- Gui Rendering
 	render.set_viewport(0, 0, self.win_w, self.win_h)
@@ -49,6 +53,7 @@ function update(self, dt)
 
 	render.enable_state(render.STATE_STENCIL_TEST)
 	render.draw(self.gui_pred)
+	render.draw(self.text_pred) -- Includes debug text from "draw_debug_text" messages.
 	render.disable_state(render.STATE_STENCIL_TEST)
 end
 

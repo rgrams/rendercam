@@ -1,5 +1,7 @@
 
 local rendercam = require "rendercam.rendercam"
+local debug_draw = require "rendercam.debug-draw"
+local rdebug = rendercam.debug
 
 go.property("enabled", true)
 go.property("orthographic", true)
@@ -58,6 +60,10 @@ function update(self, dt)
 	self.dt = dt -- Save for post-update. Faster to store than send in message.
 	if self.enabled or self.updateWhenDisabled then
 		msg.post(self.url, "post-update")
+	end
+	if self.enabled and rdebug.cameraName then
+		local cleanURL = string.sub(tostring(self.url), 7, -2) -- cut off "url: [" and "]".
+		debug_draw.text(url, 5, rendercam.winH - 5)
 	end
 end
 
