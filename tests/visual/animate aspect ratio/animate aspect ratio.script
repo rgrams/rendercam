@@ -1,5 +1,5 @@
 
-local rcam = require "rendercam.rendercam"
+local rendercam = require "rendercam.rendercam"
 
 go.property("animAspect", vmath.vector3(16, 5, 0))
 
@@ -7,8 +7,8 @@ local startAspect
 local animT = 5
 
 function init(self)
-	local cam = rcam.current
+	local cam = rendercam.current
 	local aspect = self.animAspect.x / self.animAspect.y
 	startAspect = cam.aspectRatio
-	go.animate(cam.url, "aspectRatio", go.PLAYBACK_LOOP_PINGPONG, aspect, go.EASING_INOUTCUBIC, animT)
+	go.animate(cam.script, "aspectRatio", go.PLAYBACK_LOOP_PINGPONG, aspect, go.EASING_INOUTCUBIC, animT)
 end

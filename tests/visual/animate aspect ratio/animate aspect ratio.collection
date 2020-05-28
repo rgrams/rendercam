@@ -110,34 +110,13 @@ instances {
     z: 1.0
   }
 }
-scale_along_z: 0
-embedded_instances {
-  id: "background"
-  data: "embedded_components {\n"
-  "  id: \"sprite\"\n"
-  "  type: \"sprite\"\n"
-  "  data: \"tile_set: \\\"/assets/images/images.atlas\\\"\\n"
-  "default_animation: \\\"1920x1080_grid\\\"\\n"
-  "material: \\\"/builtins/materials/sprite.material\\\"\\n"
-  "blend_mode: BLEND_MODE_ALPHA\\n"
-  "\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  ""
+collection_instances {
+  id: "common stuff"
+  collection: "/tests/visual/_common/common stuff.collection"
   position {
     x: 0.0
     y: 0.0
-    z: -1.0
+    z: 0.0
   }
   rotation {
     x: 0.0
@@ -151,26 +130,12 @@ embedded_instances {
     z: 1.0
   }
 }
+scale_along_z: 0
 embedded_instances {
   id: "go"
   data: "components {\n"
   "  id: \"animate aspect ratio\"\n"
   "  component: \"/tests/visual/animate aspect ratio/animate aspect ratio.script\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  "components {\n"
-  "  id: \"basic test controls\"\n"
-  "  component: \"/tests/visual/basic test controls.script\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"

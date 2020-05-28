@@ -88,7 +88,7 @@ embedded_instances {
   id: "test"
   data: "components {\n"
   "  id: \"basic test inputs\"\n"
-  "  component: \"/tests/visual/basic test controls.script\"\n"
+  "  component: \"/tests/visual/_common/back & quit.script\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"

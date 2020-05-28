@@ -1,6 +1,4 @@
 
-local rendercam = require 'rendercam.rendercam'
-
 local LOADER_URL = msg.url("main:/proxies#loader")
 
 function init(self)
