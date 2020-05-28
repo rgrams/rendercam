@@ -117,7 +117,7 @@ embedded_instances {
   "\\\"\\n"
   "  \\\"positioned at (-120, 120),\\\\n"
   "\\\"\\n"
-  "  \\\"and  viewing a 480x480 square.\\\"\\n"
+  "  \\\"and viewing a 480x480 square.\\\"\\n"
   "font: \\\"/builtins/fonts/system_font.font\\\"\\n"
   "material: \\\"/builtins/fonts/label.material\\\"\\n"
   "\"\n"
