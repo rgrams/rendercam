@@ -1,7 +1,8 @@
 name: "model"
 tags: "model"
-vertex_program: "/main/materials/model.vp"
-fragment_program: "/main/materials/model.fp"
+vertex_program: "/assets/materials/model.vp"
+fragment_program: "/assets/materials/model.fp"
+vertex_space: VERTEX_SPACE_WORLD
 vertex_constants {
   name: "mtx_view"
   type: CONSTANT_TYPE_VIEW

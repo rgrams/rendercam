@@ -6,7 +6,7 @@ local ButtonGroup = require "main.ButtonGroup"
 
 local profilerIsEnabled = false
 
-local scenes = require "main.scenes"
+local menu_items = require "main.menu-items"
 local LOADER_URL = msg.url("main:/proxies#loader")
 local REENABLED = hash("reenabled")
 
@@ -122,8 +122,8 @@ function init(self)
 	msg.post(".", "acquire_input_focus")
 
 	self.page = { num = 1 } -- { startI, endI, num }
-	self.menuItemHistory = { scenes }
-	loadButtons(self, scenes)
+	self.menuItemHistory = { menu_items }
+	loadButtons(self, menu_items)
 
 	local topLine = gui.get_node("line top")
 	local botLine = gui.get_node("line bottom")

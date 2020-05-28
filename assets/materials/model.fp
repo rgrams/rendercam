@@ -18,7 +18,7 @@ void main()
     vec3 diff_light = vec3(normalize(var_light.xyz - var_position.xyz));
     diff_light = max(dot(var_normal,diff_light), 0.0) + ambient_light;
     diff_light = clamp(diff_light, 0.0, 1.0);
-	vec3 light_color = vec3(1.0, 0.97, 0.8);
+    vec3 light_color = vec3(1.0, 0.97, 0.8);
 
     gl_FragColor = vec4(color.rgb * diff_light * light_color,1.0);
 }

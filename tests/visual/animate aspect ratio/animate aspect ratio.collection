@@ -116,7 +116,7 @@ embedded_instances {
   data: "embedded_components {\n"
   "  id: \"sprite\"\n"
   "  type: \"sprite\"\n"
-  "  data: \"tile_set: \\\"/main/images/grid.atlas\\\"\\n"
+  "  data: \"tile_set: \\\"/assets/images/images.atlas\\\"\\n"
   "default_animation: \\\"1920x1080_grid\\\"\\n"
   "material: \\\"/builtins/materials/sprite.material\\\"\\n"
   "blend_mode: BLEND_MODE_ALPHA\\n"

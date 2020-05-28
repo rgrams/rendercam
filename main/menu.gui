@@ -1,11 +1,11 @@
-script: "/main/main.gui_script"
+script: "/main/menu.gui_script"
 fonts {
   name: "OpenSans"
-  font: "/main/fonts/OpenSans_DF.font"
+  font: "/assets/fonts/OpenSans_DF.font"
 }
 textures {
   name: "images"
-  texture: "/main/images/images.atlas"
+  texture: "/assets/images/images.atlas"
 }
 textures {
   name: "particle_blob"
@@ -230,7 +230,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "images/TEX_Square_64"
+  texture: "images/square_64"
   id: "buttons background"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE

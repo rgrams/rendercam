@@ -1,4 +1,4 @@
-font: "/main/fonts/source/OpenSans-Semibold.ttf"
+font: "/assets/fonts/source/OpenSans-Semibold.ttf"
 material: "/builtins/fonts/font-df.material"
 size: 12
 antialias: 1
