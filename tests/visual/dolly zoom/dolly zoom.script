@@ -1,0 +1,32 @@
+
+local rendercam = require "rendercam.rendercam"
+
+go.property("anim", 0)
+
+function init(self)
+	msg.post("#", "post-init")
+end
+
+local zoom = 4
+
+function update(self, dt)
+	local zoom = vmath.lerp(self.anim, self.startZoom, zoom)
+	local zPos = vmath.lerp(self.anim, self.startPos.z, self.endZ)
+	local pos = go.get_position(self.cam.url)
+	pos.z = zPos
+	go.set(self.cam.script, "zoom", zoom)
+	go.set_position(pos, self.cam.url)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("post-init") then
+		self.cam = rendercam.get_camera(msg.url("camera"))
+		go.animate(msg.url(), "anim", go.PLAYBACK_LOOP_PINGPONG, 1, go.EASING_INOUTCUBIC, 4)
+
+		self.startZoom = go.get(self.cam.script, "zoom")
+		self.startPos = go.get_position(self.cam.url)
+		local viewDist = go.get(self.cam.script, "viewDistance")
+		local relZoom = zoom / self.startZoom
+		self.endZ = self.startPos.x + (viewDist * relZoom)
+	end
+end

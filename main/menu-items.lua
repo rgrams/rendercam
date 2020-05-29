@@ -10,6 +10,7 @@ local M = {
 		{ "get camera by url", "loadScene", {"get camera by url"} },
 		{ "initial zoom", "loadScene", {"initial zoom"} },
 		{ "animate zoom", "loadScene", {"animate zoom"} },
+		{ "dolly zoom", "loadScene", {"dolly zoom"} },
 	} },
 	{ "Examples", "openChildren", {
 	} },
