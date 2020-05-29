@@ -11,6 +11,7 @@ local M = {
 		{ "initial zoom", "loadScene", {"initial zoom"} },
 		{ "animate zoom", "loadScene", {"animate zoom"} },
 		{ "dolly zoom", "loadScene", {"dolly zoom"} },
+		{ "world to screen", "loadScene", {"world to screen"} },
 	} },
 	{ "Examples", "openChildren", {
 	} },

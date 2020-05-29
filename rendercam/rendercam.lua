@@ -13,7 +13,7 @@ local floor = math.floor
 local deg, rad = math.deg, math.rad
 local matrix4_orthographic = vmath.matrix4_orthographic
 local matrix4_perspective = vmath.matrix4_perspective
-local ortho_inv = vmath.ortho_inv
+local m_inv, ortho_inv = vmath.inv, vmath.ortho_inv
 local get_world_transform = go.get_world_transform
 
 local function round(x)
@@ -182,4 +182,18 @@ function M.camera_final(self)
 	if self.enabled then  M.camera_disable(self)  end
 end
 
+local v4 = vmath.vector4()
+
+function M.world_to_screen(self, wPos)
+	self._toScreen = self._toScreen or self.projection * self.view
+	local sPos = v4
+	sPos.x, sPos.y, sPos.z, sPos.w = wPos.x, wPos.y, wPos.z, 1
+	sPos = self._toScreen * sPos -- Transform from World, through View, into Projection space.
+	local x, y, z, w = sPos.x, sPos.y, sPos.z, sPos.w
+	x, y, z = x/w, y/w, z/w -- Convert to window -1 to +1.
+	x, y = (x / 2 + 0.5), (y / 2 + 0.5) -- Convert to window 0 to 1.
+	x, y = x * M.winW, y * M.winH -- Convert to window pixels.
+	-- Include zero so we can send the result directly to vmath.vector3().
+	return x, y, 0 -- NOTE: Results are NOT rounded
+end
 return M

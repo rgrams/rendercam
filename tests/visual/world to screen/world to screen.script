@@ -1,0 +1,68 @@
+
+local rendercam = require "rendercam.rendercam"
+local debug_draw = require "rendercam.debug-draw"
+
+local camPaths = { "camera", "camera1", "camera2", "camera3" }
+local actionActions, camActions = {}, {}
+for i=1,#camPaths do
+	camActions[hash("F" .. i)] = i -- F keys to switch cameras.
+end
+local actionCount = 4
+for i=0,(actionCount-1) do
+	actionActions[hash(i+1)] = i -- Number keys to do stuff.
+end
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	msg.post("#", "post-init")
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("post-init") then
+		self.cams = {}
+		for i,path in ipairs(camPaths) do
+			local url = msg.url(path)
+			self.cams[i] = rendercam.get_camera(url)
+		end
+	end
+end
+
+local ZERO_VEC = vmath.vector3()
+
+function update(self, dt)
+	if self.mouseX and self.mouseY then
+		debug_draw.text("`last mouse click: " .. self.mouseX .. ", " .. self.mouseY, self.mouseX, self.mouseY)
+	end
+	if self.wPos then
+		debug_draw.ray(ZERO_VEC, self.wPos)
+	end
+end
+
+function on_input(self, action_id, action)
+	if camActions[action_id] and action.pressed then
+		local idx = camActions[action_id]
+		rendercam.camera_enable(self.cams[idx])
+		self.mouseX, self.mouseY, self.wPos = nil, nil, nil -- reset debug draw stuff
+		-- Clear all screen-position labels.
+		for i=0,(actionCount-1) do
+			local suffix = i == 0 and "" or i
+			local labelURL = "target" .. suffix .. "#label"
+			label.set_text(labelURL, "")
+		end
+	elseif actionActions[action_id] and action.pressed then
+		local idx = actionActions[action_id]
+		local suffix = idx == 0 and "" or idx -- First one has no suffix, not 0.
+		local wPos = go.get_position("target" .. suffix)
+		local sx, sy = rendercam.world_to_screen(rendercam.current, wPos)
+		print("Converting world-pos to screen-pos")
+		print("  world-pos = ", wPos)
+		print("  screen-pos = ", sx, sy)
+		local labelURL = "target" .. suffix .. "#label"
+		label.set_text(labelURL, string.format("scrn-pos:(%0.1f,%0.1f)", sx, sy))
+		self.wPos = wPos
+	elseif action_id == hash("left click") and action.pressed then
+		print("Click screen pos = ", action.screen_x, action.screen_y)
+		self.mouseX, self.mouseY = action.screen_x, action.screen_y
+	end
+end
+
