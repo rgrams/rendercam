@@ -27,3 +27,6 @@ shared_state = 1
 [library]
 include_dirs = rendercam
 
+[collection_proxy]
+max_count = 128
+
