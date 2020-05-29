@@ -1,0 +1,76 @@
+
+local rendercam = require "rendercam.rendercam"
+local debug_draw = require "rendercam.debug-draw"
+
+local camPaths = { "camera", "camera1", "camera2", "camera3" }
+local camActions = {}
+for i=1,#camPaths do
+	camActions[hash(i)] = i -- F keys to switch cameras.
+end
+targetCount = 4
+
+local function rand_1_to_1()
+	return (math.random() - 0.5) * 2
+end
+
+function init(self)
+	math.randomseed(socket.gettime() * 10000)
+
+	msg.post(".", "acquire_input_focus")
+	msg.post("#", "post-init")
+	for i=0,(targetCount-1) do
+		local suffix = i == 0 and "" or i
+		local url = "target" .. suffix
+		local pos = go.get_position(url)
+		local dist = 30
+		local offset = vmath.vector3(rand_1_to_1()*dist, rand_1_to_1()*dist, rand_1_to_1()*dist)
+		local finalPos = pos + offset
+		go.animate(url, "position", go.PLAYBACK_LOOP_PINGPONG, finalPos, go.EASING_INOUTCUBIC, 3)
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("post-init") then
+		self.cams = {}
+		for i,path in ipairs(camPaths) do
+			local url = msg.url(path)
+			self.cams[i] = rendercam.get_camera(url)
+			local pos = go.get_position(url)
+			local dist = 150
+			local offset = vmath.vector3(rand_1_to_1()*dist, rand_1_to_1()*dist, rand_1_to_1()*dist)
+			local finalPos = pos + offset
+			go.animate(url, "position", go.PLAYBACK_LOOP_PINGPONG, finalPos, go.EASING_INOUTCUBIC, 10)
+		end
+	end
+end
+
+local ZERO_VEC = vmath.vector3()
+
+function update(self, dt)
+	if self.mouseX and self.mouseY then
+		debug_draw.text("`last mouse click: " .. self.mouseX .. ", " .. self.mouseY, self.mouseX, self.mouseY)
+	end
+	for i=0,(targetCount-1) do
+		local suffix = i == 0 and "" or i
+		local wPos = go.get_position("target" .. suffix)
+		local sx, sy = rendercam.world_to_screen(rendercam.current, wPos)
+		debug_draw.text(string.format("`%s(%0.1f,%0.1f)", i+1, sx, sy), sx, sy, "blue")
+	end
+end
+
+function on_input(self, action_id, action)
+	if camActions[action_id] and action.pressed then
+		local idx = camActions[action_id]
+		rendercam.camera_enable(self.cams[idx])
+		self.mouseX, self.mouseY, self.wPos = nil, nil, nil -- reset debug draw stuff
+		-- Clear all screen-position labels.
+		for i=0,(targetCount-1) do
+			local suffix = i == 0 and "" or i
+			local labelURL = "target" .. suffix .. "#label"
+			label.set_text(labelURL, "")
+		end
+	elseif action_id == hash("left click") and action.pressed then
+		self.mouseX, self.mouseY = action.screen_x, action.screen_y
+	end
+end
+

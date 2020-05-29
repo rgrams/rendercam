@@ -123,6 +123,7 @@ function M.update_camera_transforms()
 			_G[CONTEXT_KEY] = cam
 			cam.view = M.get_view(cam)
 		end
+		cam._toScreen = nil
 	end
 	_G[CONTEXT_KEY] = oldContext
 end
