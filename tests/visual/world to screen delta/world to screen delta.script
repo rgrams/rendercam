@@ -43,8 +43,8 @@ function update(self, dt)
 	end
 	local wPos = go.get_position("target")
 	local sx, sy = rendercam.world_to_screen(rendercam.current, wPos, true)
-	debug_draw.text(string.format("`%s(%0.1f,%0.1f)", i+1, sx, sy), sx, sy, "cyan")
-	debug_draw.text(string.format("`%s(%0.1f,%0.1f)", i+1, sx, sy), 15, 15, "pink")
+	debug_draw.text(string.format("`(%0.1f,%0.1f)", sx, sy), sx, sy, "cyan")
+	debug_draw.text(string.format("`(%0.1f,%0.1f)", sx, sy), 15, 15, "pink")
 end
 
 function on_input(self, action_id, action)
