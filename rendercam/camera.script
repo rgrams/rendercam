@@ -50,6 +50,7 @@ function init(self)
 	self.update_window = rendercam.update_cam_window
 	self.apply = rendercam.camera_apply
 
+	self.transform = rendercam.get_transform(self)
 	self.view = rendercam.get_view(self)
 	self.projection = rendercam.get_projection(self)
 

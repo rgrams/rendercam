@@ -79,8 +79,13 @@ function M.get_fov(viewDist, a)
 	return deg(atan(a / viewDist) * 2) -- opp / adj
 end
 
-function M.get_view(self)
-	return ortho_inv(get_world_transform(self.offsetURL))
+function M.get_transform(self)
+	return get_world_transform(self.offsetURL)
+end
+
+function M.get_view(self, transform)
+	local transform = transform or self.transform or get_world_transform(self.offsetURL)
+	return ortho_inv(transform)
 end
 
 function M.get_projection(self)
@@ -121,6 +126,7 @@ function M.update_camera_transforms()
 	for i,cam in ipairs(cameras) do
 		if cam.enabled or cam.updateWhenDisabled then
 			_G[CONTEXT_KEY] = cam
+			cam.transform = M.get_transform(cam)
 			cam.view = M.get_view(cam)
 		end
 		cam._toScreen = nil
