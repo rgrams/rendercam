@@ -1,0 +1,66 @@
+
+local rendercam = require "rendercam.rendercam"
+local debug_draw = require "rendercam.debug-draw"
+
+local ZERO_VEC = vmath.vector3()
+local dirActions = {
+	[hash("left")] = "left",
+	[hash("right")] = "right",
+	[hash("up")] = "up",
+	[hash("down")] = "down",
+}
+local speed = 200
+
+local function rand_1_to_1()
+	return (math.random() - 0.5) * 2
+end
+
+function init(self)
+	math.randomseed(socket.gettime() * 10000)
+
+	msg.post(".", "acquire_input_focus")
+	msg.post("#", "post-init")
+	self.left = 0
+	self.right = 0
+	self.up = 0
+	self.down = 0
+end
+
+function update(self, dt)
+	local inputVec = vmath.vector3(self.right - self.left, self.up - self.down, 0)
+	if self.shiftPressed then
+		local rot = go.get_rotation(rendercam.current.url)
+		rot = rot * vmath.quat_rotation_z(dt * inputVec.x) * vmath.quat_rotation_x(dt * inputVec.y)
+		go.set_rotation(rot, rendercam.current.url)
+	else
+		local rot = go.get_world_rotation(rendercam.current.url)
+		local pos = go.get_position(rendercam.current.url)
+		pos = pos + vmath.rotate(rot, inputVec * (speed * dt))
+		go.set_position(pos, rendercam.current.url)
+	end
+	if self.mouseX and self.mouseY then
+		debug_draw.text("`last mouse click: " .. self.mouseX .. ", " .. self.mouseY, self.mouseX, self.mouseY)
+	end
+	local wPos = go.get_position("target")
+	local sx, sy = rendercam.world_to_screen(rendercam.current, wPos, true)
+	debug_draw.text(string.format("`%s(%0.1f,%0.1f)", i+1, sx, sy), sx, sy, "cyan")
+	debug_draw.text(string.format("`%s(%0.1f,%0.1f)", i+1, sx, sy), 15, 15, "pink")
+end
+
+function on_input(self, action_id, action)
+	if action_id == hash("left click") and action.pressed then
+		self.mouseX, self.mouseY = action.screen_x, action.screen_y
+	elseif dirActions[action_id] then
+		self[dirActions[action_id]] = action.value
+	elseif action_id == hash("mouse wheel up") and action.pressed then
+		rendercam.current.zoom = rendercam.current.zoom * 1.1
+	elseif action_id == hash("mouse wheel down") and action.pressed then
+		rendercam.current.zoom = rendercam.current.zoom * (1/1.1)
+	elseif action_id == hash("shift") then
+		if action.pressed then  self.shiftPressed = true
+		elseif action.released then  self.shiftPressed = false  end
+	elseif action_id == hash("home") and action.pressed then
+		go.set_position(vmath.vector3(), rendercam.current.url)
+		go.set_rotation(vmath.quat(), rendercam.current.url)
+	end
+end

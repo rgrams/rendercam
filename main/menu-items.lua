@@ -13,6 +13,7 @@ local M = {
 		{ "dolly zoom", "loadScene", {"dolly zoom"} },
 		{ "world to screen", "loadScene", {"world to screen"} },
 		{ "world to screen animated", "loadScene", {"world to screen animated"} },
+		{ "world to screen delta", "loadScene", {"world to screen delta"} },
 	} },
 	{ "Examples", "openChildren", {
 	} },

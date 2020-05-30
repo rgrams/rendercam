@@ -122,6 +122,10 @@ key_trigger {
   input: KEY_BACKQUOTE
   action: "exit scene"
 }
+key_trigger {
+  input: KEY_HOME
+  action: "home"
+}
 mouse_trigger {
   input: MOUSE_BUTTON_LEFT
   action: "left click"

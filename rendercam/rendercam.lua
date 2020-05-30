@@ -191,14 +191,19 @@ end
 
 local v4 = vmath.vector4()
 
-function M.world_to_screen(self, wPos)
+function M.world_to_screen(self, wPos, isDelta)
 	self._toScreen = self._toScreen or self.projection * self.view
 	local sPos = v4
 	sPos.x, sPos.y, sPos.z, sPos.w = wPos.x, wPos.y, wPos.z, 1
+	if isDelta then
+		local pos = self.transform.c3
+		sPos.x, sPos.y, sPos.z = pos.x + sPos.x, pos.y + sPos.y, pos.z + sPos.z
+	end
 	sPos = self._toScreen * sPos -- Transform from World, through View, into Projection space.
 	local x, y, z, w = sPos.x, sPos.y, sPos.z, sPos.w
 	x, y, z = x/w, y/w, z/w -- Convert to window -1 to +1.
 	x, y = (x / 2 + 0.5), (y / 2 + 0.5) -- Convert to window 0 to 1.
+	if isDelta then  x, y = x - 0.5, y - 0.5  end
 	x, y = x * M.winW, y * M.winH -- Convert to window pixels.
 	-- Include zero so we can send the result directly to vmath.vector3().
 	return x, y, 0 -- NOTE: Results are NOT rounded
