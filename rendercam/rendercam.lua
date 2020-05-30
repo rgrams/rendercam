@@ -35,6 +35,7 @@ M.current = nil -- The current camera.
 M.debug = {
 	name = sys.get_config("rendercam.debug_camera_name", "0"),
 	stats = sys.get_config("rendercam.debug_camera_stats", "0"),
+	position = sys.get_config("rendercam.debug_camera_position", "0"),
 }
 for k,v in pairs(M.debug) do
 	M.debug[k] = v == "1" and true or false -- Convert to boolean.

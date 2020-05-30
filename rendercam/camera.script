@@ -85,6 +85,11 @@ function on_message(self, message_id, message, sender)
 	if message_id == POST_UPDATE then
 		local w, h = rendercam.winW, rendercam.winH
 		self:update_window(0, 0, w, h)
+		if rdebug.position then -- Do in post-update to use any pos changes made in update.
+			local pos = go.get_world_position()
+			debug_draw.circle(pos.x, pos.y, 1, nil, 12)
+			debug_draw.circle(pos.x, pos.y, 20, nil, 12)
+		end
 	elseif message_id == ENABLE then
 		rendercam.camera_enable(self)
 	end
