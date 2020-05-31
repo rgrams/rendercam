@@ -131,6 +131,7 @@ function M.update_camera_transforms()
 			cam.view = M.get_view(cam)
 		end
 		cam._toScreen = nil
+		cam._toWorld = nil
 	end
 	_G[CONTEXT_KEY] = oldContext
 end
@@ -209,4 +210,36 @@ function M.world_to_screen(self, wPos, isDelta)
 	-- Include zero so we can send the result directly to vmath.vector3().
 	return x, y, 0 -- NOTE: Results are NOT rounded
 end
+
+-- Get the points on the near/far planes that match the specified screen position.
+function M.screen_to_world_ray(self, x, y)
+	self._toWorld = self._toWorld or m_inv(self.projection * self.view)
+
+	x, y = x / M.winW, y / M.winH -- Convert from window pixels to 0 to 1
+	x, y = (x - 0.5) * 2, (y - 0.5) * 2 -- Convert to window -1 to +1
+
+	v4.x, v4.y, v4.z, v4.w = x, y, -1, 1
+	local nearP = self._toWorld * v4 -- Transform near-point: (x, y, -1, 1)
+	v4.z = 1
+	local farP = self._toWorld * v4 -- Transform far-point: (x, y, 1, 1)
+
+	local nx, ny, nz, nw = nearP.x, nearP.y, nearP.z, nearP.w
+	nx, ny, nz = nx/nw, ny/nw, nz/nw
+	local fx, fy, fz, fw = farP.x, farP.y, farP.z, farP.w
+	fx, fy, fz = fx/fw, fy/fw, fz/fw
+	return nx, ny, nz, fx, fy, fz
+end
+
+-- Get the point at the camera's viewDistance.
+function M.screen_to_world_2d(self, x, y)
+	local nx, ny, nz, fx, fy, fz = M.screen_to_world_ray(self, x, y)
+	-- Get viewDistance as a froction between nearZ and farZ
+	local t = ( self.viewDistance - self.nearZ) / (self.farZ - self.nearZ)
+	-- Lerp each dimension from near-point to far-point.
+	local x = nx + (fx - nx) * t
+	local y = ny + (fy - ny) * t
+	local z = nz + (fz - nz) * t
+	return x, y, z
+end
+
 return M

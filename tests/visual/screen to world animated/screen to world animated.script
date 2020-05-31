@@ -1,0 +1,70 @@
+
+local rendercam = require "rendercam.rendercam"
+local debug_draw = require "rendercam.debug-draw"
+
+local camPaths = { "camera", "camera1", "camera2", "camera3" }
+local camActions = {}
+for i=1,#camPaths do
+	camActions[hash(i)] = i -- F keys to switch cameras.
+end
+targetCount = 4
+
+local function rand_1_to_1()
+	return (math.random() - 0.5) * 2
+end
+
+function init(self)
+	math.randomseed(socket.gettime() * 10000)
+
+	msg.post(".", "acquire_input_focus")
+	msg.post("#", "post-init")
+	self.mx, self.my = 400, 300
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("post-init") then
+		self.cams = {}
+		for i,path in ipairs(camPaths) do
+			local url = msg.url(path)
+			self.cams[i] = rendercam.get_camera(url)
+			local pos = go.get_position(url)
+			local dist = 150
+			local offset = vmath.vector3(rand_1_to_1()*dist, rand_1_to_1()*dist, 0)
+			local finalPos = pos + offset
+			go.animate(url, "position", go.PLAYBACK_LOOP_PINGPONG, finalPos, go.EASING_INOUTCUBIC, 10)
+		end
+	end
+end
+
+local ZERO_VEC = vmath.vector3()
+
+function update(self, dt)
+	debug_draw.text("  "..self.mx..", "..self.my, self.mx, self.my, "orange")
+	local nx, ny, nz, fx, fy, fz = rendercam.screen_to_world_ray(rendercam.current, self.mx, self.my)
+	debug_draw.cross(nx, ny, 20, 20, "magenta")
+	debug_draw.cross(fx, fy, 10, 10, "magenta", math.pi/4)
+	debug_draw.line(nx, ny, fx, fy, "magenta")
+	local wx, wy = rendercam.screen_to_world_2d(rendercam.current, self.mx, self.my)
+	debug_draw.cross(wx, wy, 20, 20, "orange", -0.3)
+
+	if self.clickX and self.clickY then
+		debug_draw.text("`last mouse click: " .. self.clickX .. ", " .. self.clickY, self.clickX, self.clickY)
+	end
+end
+
+function on_input(self, action_id, action)
+	if not action_id then
+		self.mx, self.my = action.screen_x, action.screen_y
+	elseif camActions[action_id] and action.pressed then
+		local idx = camActions[action_id]
+		rendercam.camera_enable(self.cams[idx])
+	elseif action_id == hash("left click") and action.pressed then
+		self.clickX, self.clickY = action.screen_x, action.screen_y
+		local wpos = vmath.vector3(rendercam.screen_to_world_2d(rendercam.current, self.clickX, self.clickY))
+		go.set_position(wpos, "target")
+		local str = string.format("Last click world pos: (%0.1f,%0.1f,%0.1f)", wpos.x, wpos.y, wpos.z)
+		label.set_text("#label1", str)
+		print("click world pos: " .. str)
+	end
+end
+

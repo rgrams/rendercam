@@ -14,6 +14,7 @@ local M = {
 		{ "world to screen", "loadScene", {"world to screen"} },
 		{ "world to screen animated", "loadScene", {"world to screen animated"} },
 		{ "world to screen delta", "loadScene", {"world to screen delta"} },
+		{ "screen to world animated", "loadScene", {"screen to world animated"} },
 	} },
 	{ "Examples", "openChildren", {
 	} },
