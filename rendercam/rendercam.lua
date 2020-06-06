@@ -281,14 +281,20 @@ function M.calculate_proj() -- called from render script on update
 end
 
 function M.update_window_size(x, y)
-	M.window.x = x;  M.window.y = y
-	M.viewport.width = x;  M.viewport.height = y -- if using a fixed aspect ratio this will be immediately overwritten in M.update_window
+	if x > 0 and y > 0 then
+		M.window.x = x;  M.window.y = y
+		M.viewport.width = x;  M.viewport.height = y -- if using a fixed aspect ratio this will be immediately overwritten in M.update_window
+	end
 end
 
 function M.update_window(newX, newY)
 	if curCam then
 		newX = newX or M.window.x
 		newY = newY or M.window.y
+
+		if newX == 0 or newY == 0 then
+			return
+		end
 
 		local x, y = get_target_worldViewSize(curCam, curCam.viewArea.x, curCam.viewArea.y, M.window.x, M.window.y, newX, newY)
 		curCam.viewArea.x = x;  curCam.viewArea.y = y
