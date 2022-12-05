@@ -1,4 +1,7 @@
 # Rendercam
+
+> **NOTE: This library is no longer maintained.**
+
 A universal render script & camera package for all the common camera types: perspective or orthographic, fixed aspect ratio or unfixed aspect ratio, plus four options for how the view changes for different resolutions and window sizes, and more. Also does screen-to-world and world-to-screen transforms for any camera type; camera switching, zooming, panning, shaking, recoil, and lerped following.
 
 ---
